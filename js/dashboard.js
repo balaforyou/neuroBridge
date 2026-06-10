@@ -80,6 +80,21 @@ export async function renderParentControls() {
                         class="setting-input w-full p-2 bg-slate-900 border border-slate-700 rounded text-sm">
                 </div>
 
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Forced Stage Override</label>
+                    <select
+                        data-game="${game.id}"
+                        data-setting="forcedStageOverride"
+                        class="setting-input w-full p-2 bg-slate-900 border border-slate-700 rounded text-sm">
+                        <option value="0" ${config.forcedStageOverride === 0 ? 'selected' : ''}>Auto</option>
+                        <option value="1" ${config.forcedStageOverride === 1 ? 'selected' : ''}>1</option>
+                        <option value="2" ${config.forcedStageOverride === 2 ? 'selected' : ''}>2</option>
+                        <option value="3" ${config.forcedStageOverride === 3 ? 'selected' : ''}>3</option>
+                        <option value="4" ${config.forcedStageOverride === 4 ? 'selected' : ''}>4</option>
+                        <option value="5" ${config.forcedStageOverride === 5 ? 'selected' : ''}>5</option>
+                    </select>
+                </div>
+
                 <p 
                     data-status="${game.id}" 
                     class="text-[11px] text-slate-500 min-h-[16px]">

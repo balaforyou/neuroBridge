@@ -18,5 +18,6 @@ export const GAME_IDS = {
 export const DEFAULT_GAME_CONFIG = {
     maxDifficultyCeiling: 5,
     timeLimitSeconds: 45,
-    trialsPerBlock: 10
+    trialsPerBlock: 10,
+    forcedStageOverride: 0
 };

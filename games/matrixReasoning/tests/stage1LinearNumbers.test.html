@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage 1 Linear Numbers - Unit Tests</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 2rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-run {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-run:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-clear {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-clear:hover {
+            background: #e5e7eb;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .output {
+            padding: 2rem;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            max-height: 600px;
+            overflow-y: auto;
+            background: #f9fafb;
+            color: #1f2937;
+        }
+
+        .output-line {
+            margin: 0.25rem 0;
+        }
+
+        .success {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .error {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .header-text {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .section {
+            color: #7c3aed;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary {
+            padding: 1.5rem 2rem;
+            background: #f0fdf4;
+            border-top: 1px solid #e5e7eb;
+            font-weight: 600;
+            color: #166534;
+        }
+
+        .summary.failed {
+            background: #fef2f2;
+            color: #7f1d1d;
+        }
+
+        .status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        .status.running {
+            background: #f59e0b;
+        }
+
+        .status.idle {
+            background: #d1d5db;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Stage 1 Unit Tests</h1>
+            <p>Linear Numbers - Pattern Generation & Validation</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn-run" id="runBtn">Run All Tests</button>
+            <button class="btn-clear" id="clearBtn">Clear Output</button>
+        </div>
+
+        <div class="output" id="output"></div>
+        <div class="summary" id="summary">Ready to run tests. Click "Run All Tests" to begin.</div>
+    </div>
+
+    <script type="module">
+        import { runAllTests } from './stage1LinearNumbers.test.js';
+
+        const outputDiv = document.getElementById('output');
+        const summaryDiv = document.getElementById('summary');
+        const runBtn = document.getElementById('runBtn');
+        const clearBtn = document.getElementById('clearBtn');
+
+        const originalLog = console.log;
+        const originalError = console.error;
+        let logs = [];
+        let testsPassed = 0;
+        let testsFailed = 0;
+
+        console.log = (...args) => {
+            const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+            logs.push({ type: 'log', message });
+            originalLog(...args);
+        };
+
+        console.error = (...args) => {
+            const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+            logs.push({ type: 'error', message });
+            originalError(...args);
+        };
+
+        console.assert = (condition, message) => {
+            if (!condition) {
+                testsFailed++;
+                logs.push({ type: 'error', message: `❌ ${message}` });
+                originalError(`Assertion failed: ${message}`);
+            } else {
+                testsPassed++;
+            }
+        };
+
+        function renderOutput() {
+            outputDiv.innerHTML = logs.map(log => {
+                const className = log.type === 'error' ? 'error' : log.message.includes('✓') ? 'success' : '';
+                return `<div class="output-line ${className}">${escapeHtml(log.message)}</div>`;
+            }).join('');
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+        }
+
+        function updateSummary() {
+            const total = testsPassed + testsFailed;
+            if (total === 0) {
+                summaryDiv.className = 'summary';
+                summaryDiv.textContent = 'Ready to run tests. Click "Run All Tests" to begin.';
+                return;
+            }
+
+            summaryDiv.className = testsFailed === 0 ? 'summary' : 'summary failed';
+            summaryDiv.textContent = `${testsPassed}/${total} assertions passed${testsFailed > 0 ? ` - ${testsFailed} failed` : ' ✓'}`;
+        }
+
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        runBtn.addEventListener('click', async () => {
+            logs = [];
+            testsPassed = 0;
+            testsFailed = 0;
+            outputDiv.innerHTML = '<div class="output-line">Running tests...</div>';
+            runBtn.disabled = true;
+
+            try {
+                await runAllTests();
+                renderOutput();
+                updateSummary();
+            } catch (error) {
+                logs.push({ type: 'error', message: `❌ Test execution failed: ${error.message}` });
+                renderOutput();
+                updateSummary();
+            } finally {
+                runBtn.disabled = false;
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            logs = [];
+            testsPassed = 0;
+            testsFailed = 0;
+            outputDiv.innerHTML = '';
+            summaryDiv.className = 'summary';
+            summaryDiv.textContent = 'Output cleared. Click "Run All Tests" to begin.';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage 3 Shape Pattern - Unit Tests</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 1.5rem; background: #f3f4f6; }
+        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,.1); overflow: hidden; }
+        .header { padding: 1.5rem; background: #4338ca; color: white; }
+        .header h1 { margin: 0 0 .5rem; font-size: 1.8rem; }
+        .header p { margin: 0; opacity: .85; }
+        .controls { display: flex; gap: 1rem; padding: 1.5rem; }
+        button { border: none; border-radius: 12px; padding: .9rem 1.4rem; font-size: 1rem; cursor: pointer; }
+        .btn-run { background: #4f46e5; color: white; }
+        .btn-clear { background: #e5e7eb; color: #111827; }
+        .output { padding: 1.5rem; background: #111827; color: #f9fafb; font-family: monospace; min-height: 280px; overflow-y: auto; }
+        .line { margin: .35rem 0; }
+        .success { color: #22c55e; }
+        .error { color: #f87171; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Stage 3 Shape Pattern Unit Tests</h1>
+            <p>Independent UI-free verification of Stage 3 problem generation</p>
+        </div>
+        <div class="controls">
+            <button class="btn-run" id="runBtn">Run Tests</button>
+            <button class="btn-clear" id="clearBtn">Clear</button>
+        </div>
+        <div class="output" id="output">Ready.</div>
+    </div>
+    <script type="module">
+        import { runAllTests } from './stage3ShapePattern.test.js';
+
+        const output = document.getElementById('output');
+        const runBtn = document.getElementById('runBtn');
+        const clearBtn = document.getElementById('clearBtn');
+
+        function appendLine(text, cls = '') {
+            const div = document.createElement('div');
+            div.className = `line ${cls}`;
+            div.textContent = text;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function captureConsole() {
+            const origLog = console.log;
+            const origError = console.error;
+            console.log = (...args) => {
+                appendLine(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+                origLog(...args);
+            };
+            console.error = (...args) => {
+                appendLine(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '), 'error');
+                origError(...args);
+            };
+            return () => { console.log = origLog; console.error = origError; };
+        }
+
+        runBtn.addEventListener('click', async () => {
+            output.innerHTML = '';
+            const restore = captureConsole();
+            try {
+                await runAllTests();
+            } catch (e) {
+                appendLine(`Test run failed: ${e.message}`, 'error');
+            } finally {
+                restore();
+            }
+        });
+
+        clearBtn.addEventListener('click', () => { output.innerHTML = ''; appendLine('Ready.'); });
+    </script>
+</body>
+</html>

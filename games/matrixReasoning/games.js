@@ -4,6 +4,11 @@ import { calculateMetrics } from '../../js/analytics.js';
 import { evaluateNextLevel } from '../../js/adaptiveEngine.js';
 import { GAME_EVENTS } from '../../js/constants.js';
 import { generateStage1 } from './stages/stage1LinearNumbers.js';
+import { generateStage2 } from './stages/stage2NonLinearNumbers.js';
+import { generateStage4 } from './stages/stage4ColourShapes.js';
+import { generateStage5 } from './stages/stage5Matrix3x3.js';
+import { resolveForcedStageOverride } from './stages/forcedStageOverride.js';
+import { getOptionButtonClassList } from './stages/visualOptionStyles.js';
 
 // 1. Engine Core State Tracking
 let gameState = {
@@ -17,6 +22,8 @@ let gameState = {
     parentTimeLimit: 45,
     //For testing purposes, we can set this lower, but the default should be 10 as per the constants file
     trialsPerBlock: 5,
+    forcedStageOverride: 0,
+    isTestSession: false,
 
     session: null
 };
@@ -87,15 +94,20 @@ const STAGE_NAMES = ["", "Linear Numbers", "Non-Linear Numbers", "Pure Geometric
 
 window.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'INITIALIZE_GAME_RULES') {
-        gameState.session = new GameSession({
-    gameId: 'matrixReasoning',
-    startingLevel: 1,
-    maxLevel: gameState.parentCeiling
-            });
         const rules = event.data.payload || {};
         gameState.parentCeiling = rules.maxDifficultyCeiling || 5;
         gameState.parentTimeLimit = rules.timeLimitSeconds || 45;
         gameState.trialsPerBlock = rules.trialsPerBlock || 10;
+        gameState.forcedStageOverride = resolveForcedStageOverride(rules, event.data.isTestSession);
+        gameState.isTestSession = Boolean(event.data.isTestSession);
+        gameState.currentStage = gameState.forcedStageOverride || 1;
+
+        gameState.session = new GameSession({
+            gameId: 'matrixReasoning',
+            startingLevel: gameState.currentStage,
+            maxLevel: Math.max(gameState.parentCeiling, gameState.currentStage)
+        });
+
         resetBlock();
         generateProblem();
     }
@@ -125,21 +137,11 @@ if (panel) {
     rule = problem.rule;
     }
     else if (stage === 2) { 
-        const isSkip = Math.random() > 0.5;
-        if (isSkip) {
-            const step = Math.random() > 0.5 ? 2 : 5;
-            const start = Math.floor(Math.random() * 5) + 1;
-            cells = [start, start + step, start + (step * 2), '?'];
-            correctAnswer = start + (step * 3);
-            rule = { type: 'nonlinear', pattern: 'skip', step };
-        } else { 
-            const numA = Math.floor(Math.random() * 9) + 1;
-            const numB = Math.floor(Math.random() * 9) + 1;
-            cells = [numA, numA, numB, '?'];
-            correctAnswer = numB;
-            rule = { type: 'nonlinear', pattern: 'identity' };
-        }
-        options = generateNumericOptions(correctAnswer);
+        const problem = generateStage2(generateNumericOptions);
+        cells = problem.cells;
+        correctAnswer = problem.correctAnswer;
+        options = problem.options;
+        rule = problem.rule;
     }
     else if (stage === 3) { 
         const shapes = Object.keys(SHAPE_TEMPLATES);
@@ -152,37 +154,19 @@ if (panel) {
         options = shapes.map(s => ({ type: 'shape', value: s, color: 'black' }));
         rule = { type: 'visual', description: 'The top row features identical matching shapes. The bottom row follows that same pattern repetition rule.' };
     }
-    else if (stage === 4) { 
-        const shapes = Object.keys(SHAPE_TEMPLATES);
-        const colors = ['red', 'blue', 'green', 'yellow'];
-        const shapeA = shapes[Math.floor(Math.random() * shapes.length)];
-        const colorA = colors[Math.floor(Math.random() * colors.length)];
-        let colorB = colors[Math.floor(Math.random() * colors.length)];
-        while (colorA === colorB) colorB = colors[Math.floor(Math.random() * colors.length)];
-
-        cells = [{ shape: shapeA, color: colorA }, { shape: shapeA, color: colorA }, { shape: shapeA, color: colorB }, '?'];
-        correctAnswer = { shape: shapeA, color: colorB };
-        options = colors.map(c => ({ type: 'shape', value: shapeA, color: c }));
-        rule = { type: 'visual', description: 'The item shapes remain constant throughout, but colors stay perfectly uniform row by row.' };
+    else if (stage === 4) {
+        const problem = generateStage4();
+        cells = problem.cells;
+        correctAnswer = problem.correctAnswer;
+        options = problem.options;
+        rule = problem.rule;
     }
-    else if (stage === 5) { 
-        const shapes = ['circle', 'square', 'triangle'];
-        const colors = ['red', 'blue', 'green'];
-
-        cells = [
-            { shape: shapes[0], color: colors[0] }, { shape: shapes[1], color: colors[0] }, { shape: shapes[2], color: colors[0] },
-            { shape: shapes[0], color: colors[1] }, { shape: shapes[1], color: colors[1] }, { shape: shapes[2], color: colors[1] },
-            { shape: shapes[0], color: colors[2] }, { shape: shapes[1], color: colors[2] }, '?'
-        ];
-        correctAnswer = { shape: shapes[2], color: colors[2] };
-
-        options = [
-            { type: 'shape', value: shapes[0], color: colors[2] },
-            { type: 'shape', value: shapes[1], color: colors[0] },
-            { type: 'shape', value: shapes[2], color: colors[2] }, 
-            { type: 'shape', value: shapes[2], color: colors[1] }
-        ];
-        rule = { type: 'visual', description: 'Each horizontal row loops through changing shapes. Each vertical column shifts color sets uniformly.' };
+    else if (stage === 5) {
+        const problem = generateStage5();
+        cells = problem.cells;
+        correctAnswer = problem.correctAnswer;
+        options = problem.options;
+        rule = problem.rule;
     }
 
     gameState.currentProblem = { cells, correctAnswer, options, rule };
@@ -233,18 +217,28 @@ cellBox.className = `${cellSizeClass} border-2 border-black flex items-center ju
     });
 
     dockEl.innerHTML = '';
+    const isVisualStage = gameState.currentStage === 3 || gameState.currentStage === 4;
+
     problem.options.forEach(opt => {
         const button = document.createElement('button');
-        button.className = "h-14 bg-slate-900 border-2 border-slate-800 hover:border-indigo-500 active:bg-indigo-950 rounded-xl flex items-center justify-center text-base font-bold transition duration-150 text-slate-100 disabled:opacity-40 disabled:pointer-events-none";
-        
+        button.className = getOptionButtonClassList(isVisualStage);
+
         if (opt.type === 'shape') {
-           button.innerHTML = getShapeSvg(opt.value);
+            button.innerHTML = getShapeSvg(opt.value);
             button.className += ` ${COLOR_MAP[opt.color]}`;
         } else {
             button.innerText = opt.value;
         }
 
-        button.addEventListener('click', () => processUserSelection(opt));
+        button.addEventListener('click', () => {
+            if (isVisualStage) {
+                button.classList.add('ring-2', 'ring-indigo-500', 'bg-slate-200');
+            } else {
+                button.classList.add('ring-2', 'ring-indigo-500');
+            }
+            processUserSelection(opt);
+        });
+
         dockEl.appendChild(button);
     });
 
@@ -576,6 +570,31 @@ function evaluateAdaptiveBlockTransition() {
             reactionTimeMs: Math.round((t.time || 0) * 1000)
         }))
     );
+
+    if (gameState.isTestSession && gameState.forcedStageOverride) {
+        if (gameState.session) {
+            gameState.session.updateLevel(gameState.currentStage);
+        }
+
+        const sessionData = gameState.session
+            ? gameState.session.end()
+            : {
+                highestLevelReached: gameState.currentStage,
+                sessionLengthSeconds: 0
+            };
+
+        window.parent.postMessage({
+            type: GAME_EVENTS.COMPLETE,
+            payload: {
+                gameId: 'matrixReasoning',
+                trials: sessionData.trials,
+                highestLevelReached: sessionData.highestLevelReached,
+                sessionLengthSeconds: sessionData.sessionLengthSeconds
+            }
+        }, '*');
+
+        return;
+    }
 
     const transition = evaluateNextLevel({
         currentLevel: gameState.currentStage,
