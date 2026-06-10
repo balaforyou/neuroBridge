@@ -12,7 +12,8 @@ export const USER_ROLES = {
 };
 
 export const GAME_IDS = {
-    MATRIX_REASONING: 'matrixReasoning'
+    MATRIX_REASONING: 'matrixReasoning',
+    ATTRIBUTE_EXPLORER: 'attributeExplorer'
 };
 
 export const DEFAULT_GAME_CONFIG = {

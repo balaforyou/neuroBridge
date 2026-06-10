@@ -9,6 +9,13 @@ export const GAME_REGISTRY = [
         folder: 'matrixReasoning',
         enabled: true,
         maxLevel: 5
+    },
+    {
+        id: GAME_IDS.ATTRIBUTE_EXPLORER,
+        title: 'Attribute Explorer',
+        folder: 'attributeExplorer',
+        enabled: true,
+        maxLevel: 1
     }
 ];
 

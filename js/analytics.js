@@ -2,7 +2,7 @@
 
 export function calculateMetrics(trials = []) {
     const total = trials.length;
-    const correctTrials = trials.filter(t => t.correct);
+    const correctTrials = trials.filter(isCorrectTrial);
     const correctCount = correctTrials.length;
 
     const averageReactionTimeMs = total
@@ -21,12 +21,16 @@ export function calculateMetrics(trials = []) {
     };
 }
 
+function isCorrectTrial(trial) {
+    return trial.correct === true || trial.isCorrect === true;
+}
+
 function calculateLongestStreak(trials) {
     let best = 0;
     let current = 0;
 
     trials.forEach(trial => {
-        if (trial.correct) {
+        if (isCorrectTrial(trial)) {
             current++;
             best = Math.max(best, current);
         } else {

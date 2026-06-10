@@ -26,6 +26,12 @@ export async function renderParentControls() {
 
     for (const game of gamesList) {
         const config = await getGameConfiguration(game.id);
+        const forcedStageOptions = Array.from(
+            { length: game.maxLevel || 10 },
+            (_, index) => index + 1
+        ).map(level => `
+                        <option value="${level}" ${config.forcedStageOverride === level ? 'selected' : ''}>${level}</option>
+        `).join('');
 
         const controlCard = document.createElement('div');
         controlCard.className = 'p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-4';
@@ -87,11 +93,7 @@ export async function renderParentControls() {
                         data-setting="forcedStageOverride"
                         class="setting-input w-full p-2 bg-slate-900 border border-slate-700 rounded text-sm">
                         <option value="0" ${config.forcedStageOverride === 0 ? 'selected' : ''}>Auto</option>
-                        <option value="1" ${config.forcedStageOverride === 1 ? 'selected' : ''}>1</option>
-                        <option value="2" ${config.forcedStageOverride === 2 ? 'selected' : ''}>2</option>
-                        <option value="3" ${config.forcedStageOverride === 3 ? 'selected' : ''}>3</option>
-                        <option value="4" ${config.forcedStageOverride === 4 ? 'selected' : ''}>4</option>
-                        <option value="5" ${config.forcedStageOverride === 5 ? 'selected' : ''}>5</option>
+                        ${forcedStageOptions}
                     </select>
                 </div>
 
@@ -244,8 +246,8 @@ export async function renderParentProgressReport() {
         <tr class="border-t border-slate-800">
             <td class="p-2">${idx + 1}</td>
             <td class="p-2">${trial.stage || '--'}</td>
-            <td class="p-2 ${trial.correct ? 'text-emerald-400' : 'text-amber-400'}">
-                ${trial.correct ? '✓' : '✗'}
+            <td class="p-2 ${(trial.correct === true || trial.isCorrect === true) ? 'text-emerald-400' : 'text-amber-400'}">
+                ${(trial.correct === true || trial.isCorrect === true) ? '✓' : '✗'}
             </td>
             <td class="p-2">${trial.reactionTimeMs || '--'} ms</td>
         </tr>
