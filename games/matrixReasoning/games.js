@@ -3,10 +3,8 @@ import { GameSession } from '../../js/gameSession.js';
 import { calculateMetrics } from '../../js/analytics.js';
 import { evaluateNextLevel } from '../../js/adaptiveEngine.js';
 import { GAME_EVENTS } from '../../js/constants.js';
-import { generateStage1 } from './stages/stage1LinearNumbers.js';
-import { generateStage2 } from './stages/stage2NonLinearNumbers.js';
-import { generateStage4 } from './stages/stage4ColourShapes.js';
-import { generateStage5 } from './stages/stage5Matrix3x3.js';
+import { generateStageProblem } from './stages/stageFactory.js';
+import { getStageMetadata } from './stages/stageMetadata.js';
 import { resolveForcedStageOverride } from './stages/forcedStageOverride.js';
 import { getOptionButtonClassList } from './stages/visualOptionStyles.js';
 
@@ -90,8 +88,6 @@ const COLOR_MAP = {
     red: 'text-red-600', blue: 'text-blue-600', green: 'text-emerald-600', yellow: 'text-amber-500', black: 'text-black'
 };
 
-const STAGE_NAMES = ["", "Linear Numbers", "Non-Linear Numbers", "Pure Geometric Shapes", "Multi-Color Shapes", "Multi-Axis Advanced Matrix"];
-
 window.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'INITIALIZE_GAME_RULES') {
         const rules = event.data.payload || {};
@@ -120,7 +116,6 @@ function resetBlock() {
 
 function generateProblem() {
     const stage = gameState.currentStage;
-    let cells = [], correctAnswer = null, options = [], rule = {};
 
 const panel = document.getElementById('decoder-panel');
 if (panel) {
@@ -129,47 +124,13 @@ if (panel) {
         "w-96 shrink-0 bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col hidden min-h-[390px]";
 }
 
-    if (stage === 1) { 
-         const problem = generateStage1(generateNumericOptions);
-    cells = problem.cells;
-    correctAnswer = problem.correctAnswer;
-    options = problem.options;
-    rule = problem.rule;
-    }
-    else if (stage === 2) { 
-        const problem = generateStage2(generateNumericOptions);
-        cells = problem.cells;
-        correctAnswer = problem.correctAnswer;
-        options = problem.options;
-        rule = problem.rule;
-    }
-    else if (stage === 3) { 
-        const shapes = Object.keys(SHAPE_TEMPLATES);
-        const shapeA = shapes[Math.floor(Math.random() * shapes.length)];
-        let shapeB = shapes[Math.floor(Math.random() * shapes.length)];
-        while (shapeA === shapeB) shapeB = shapes[Math.floor(Math.random() * shapes.length)];
-
-        cells = [shapeA, shapeA, shapeB, '?']; 
-        correctAnswer = shapeB;
-        options = shapes.map(s => ({ type: 'shape', value: s, color: 'black' }));
-        rule = { type: 'visual', description: 'The top row features identical matching shapes. The bottom row follows that same pattern repetition rule.' };
-    }
-    else if (stage === 4) {
-        const problem = generateStage4();
-        cells = problem.cells;
-        correctAnswer = problem.correctAnswer;
-        options = problem.options;
-        rule = problem.rule;
-    }
-    else if (stage === 5) {
-        const problem = generateStage5();
-        cells = problem.cells;
-        correctAnswer = problem.correctAnswer;
-        options = problem.options;
-        rule = problem.rule;
+    const problem = generateStageProblem(stage, { generateNumericOptions });
+    if (!problem) {
+        console.warn(`Unable to generate Matrix Reasoning problem for stage ${stage}`);
+        return;
     }
 
-    gameState.currentProblem = { cells, correctAnswer, options, rule };
+    gameState.currentProblem = problem;
     renderMatrixUI();
     gameState.trialStartTime = Date.now();
 }
@@ -190,16 +151,17 @@ function renderMatrixUI() {
 
     if (!problem) return;
 
-    gridEl.className = gameState.currentStage === 5 
-        ? "grid grid-cols-3 gap-0 bg-white p-3 rounded-xl border-4 border-black shadow-2xl shrink-0 transition-transform duration-200"
-        : "grid grid-cols-2 gap-0 bg-white p-3 rounded-xl border-4 border-black shadow-2xl shrink-0 transition-transform duration-200";
+    const stageMetadata = getStageMetadata(gameState.currentStage);
+    const gridColumns = stageMetadata?.gridColumns || 2;
+    const cellSizeClass = stageMetadata?.cellSizeClass || 'w-20 h-20';
+
+    gridEl.className = `grid grid-cols-${gridColumns} gap-0 bg-white p-3 rounded-xl border-4 border-black shadow-2xl shrink-0 transition-transform duration-200`;
 
     gridEl.innerHTML = '';
     problem.cells.forEach(cell => {
          const cellBox = document.createElement('div');
-        const cellSizeClass = gameState.currentStage === 5 ? "w-14 h-14" : "w-20 h-20";
 
-cellBox.className = `${cellSizeClass} border-2 border-black flex items-center justify-center text-xl font-black text-black bg-white select-none`;
+cellBox.className = `${cellSizeClass} border-2 border-black flex items-center justify-center text-xl font-black bg-white select-none`;
         
         if (cell === '?') {
             cellBox.innerHTML = `<span class="text-indigo-600 font-extrabold text-2xl animate-pulse">?</span>`;
@@ -212,12 +174,13 @@ cellBox.className = `${cellSizeClass} border-2 border-black flex items-center ju
             cellBox.className += ` text-black`;
         } else { 
             cellBox.innerText = cell;
+            cellBox.className += ` text-black`;
         }
         gridEl.appendChild(cellBox);
     });
 
     dockEl.innerHTML = '';
-    const isVisualStage = gameState.currentStage === 3 || gameState.currentStage === 4;
+    const isVisualStage = Boolean(stageMetadata?.isVisual);
 
     problem.options.forEach(opt => {
         const button = document.createElement('button');
@@ -243,7 +206,7 @@ cellBox.className = `${cellSizeClass} border-2 border-black flex items-center ju
     });
 
     document.getElementById('ui-stage').innerText = gameState.currentStage;
-    document.getElementById('ui-stage-name').innerText = STAGE_NAMES[gameState.currentStage];
+    document.getElementById('ui-stage-name').innerText = stageMetadata?.displayName || '';
     document.getElementById('ui-trial').innerText = `${gameState.currentTrialIndex + 1}/${gameState.trialsPerBlock}`;
     document.getElementById('ui-streak').innerText = gameState.trialBlock.filter(t => t.correct).length;
 }
@@ -646,7 +609,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function getShapeSvg(shape) {
-    const sizeClass = gameState.currentStage === 5 ? "w-10 h-10" : "w-12 h-12";
+    const sizeClass = getStageMetadata(gameState.currentStage)?.gridColumns === 3 ? "w-10 h-10" : "w-12 h-12";
     return SHAPE_TEMPLATES[shape].replace("w-12 h-12", sizeClass);
 }
 
