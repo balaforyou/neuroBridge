@@ -1,0 +1,43 @@
+/* css/styles.css */
+
+/* Core Layout Enhancements */
+iframe {
+    color-scheme: dark; /* Prevents white flicker flashes during load cycles */
+}
+
+/* 3D Core Transforms */
+.perspective-1000 { perspective: 1000px; }
+.transform-style-3d { transform-style: preserve-3d; }
+.backface-hidden { backface-visibility: hidden; }
+.rotate-y-180 { transform: rotateY(180deg); }
+
+/* Juiced Cognitive Feedback Keyframes */
+@keyframes shakeError {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+.animate-wrong-feedback {
+    animation: shakeError 0.15s ease-in-out 2;
+}
+
+@keyframes flyToTarget {
+    from {
+        transform: translate(var(--fly-start-x, 0), var(--fly-start-y, 0)) scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: translate(var(--fly-end-x, 0), var(--fly-end-y, 0)) scale(0.85);
+        opacity: 0.9;
+    }
+}
+
+.animate-fly {
+    position: relative;
+    animation: flyToTarget 0.35s ease-out forwards;
+    transform-origin: center;
+    --fly-start-x: 0px;
+    --fly-start-y: 0px;
+    --fly-end-x: 0px;
+    --fly-end-y: 0px;
+}

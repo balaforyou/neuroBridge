@@ -1,0 +1,109 @@
+<!-- The main, static HTML shell and view containers -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognitive Training Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom animations file -->
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col">
+
+    <!-- Global App Header -->
+    <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center shadow-lg">
+        <h1 class="text-xl font-bold tracking-wide text-indigo-400">MindGym Console</h1>
+        <div id="auth-status" class="text-sm bg-slate-800 border border-slate-700 px-3 py-1 rounded-full text-slate-400">
+            Guest Mode
+        </div>
+    </header>
+
+    <!-- App View Containers -->
+    <main id="app-viewport" class="flex-1 container mx-auto p-6 max-w-6xl">
+        
+        <!-- View 1: Auth Screen -->
+        <section id="view-auth" class="view-section flex flex-col items-center justify-center py-12">
+            <h2 class="text-2xl font-semibold mb-6">Welcome to MindGym</h2>
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm text-center">
+                <p class="text-slate-400 mb-4">Please select your profile role:</p>
+                <!-- Buttons will get event bindings in auth.js -->
+                <button id="btn-login-student" class="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-medium mb-3 transition">Student Login</button>
+                <button id="btn-login-parent" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 py-3 rounded-xl font-medium transition">Parental Dashboard</button>
+            </div>
+        </section>
+
+        <!-- View 2: Student Dashboard -->
+        <section id="view-student" class="view-section hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-200">Student Dashboard</h2>
+                <button class="btn-logout text-sm text-slate-400 hover:text-red-400 underline">Switch User</button>
+            </div>
+            <!-- Game Grid slot -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="game-selection-list">
+                <!-- Example of item launcher -->
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-bold text-indigo-400">Matrix Reasoning</h3>
+                        <p class="text-sm text-slate-400">Test non-verbal abstract pattern deduction.</p>
+                    </div>
+                    <button data-game="matrixReasoning" class="btn-launch-game bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-semibold transition">Play</button>
+                </div>
+            </div>
+            <!-- Progress slot -->
+            <div class="mt-8 bg-slate-900 border border-slate-800 p-6 rounded-xl">
+                <h3 class="text-lg font-bold mb-4">Performance Metrics</h3>
+                <div id="student-metrics-chart" class="text-slate-500 text-sm italic">No data logged yet. Complete a game task.</div>
+            </div>
+        </section>
+
+        <!-- View 3: Parent Dashboard -->
+        <section id="view-parent" class="view-section hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-emerald-400">Parent Administration</h2>
+                <button class="btn-logout text-sm text-slate-400 hover:text-red-400 underline">Switch User</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-xl">
+                    <h3 class="text-lg font-bold mb-3">Overall Progress Report</h3>
+                    <div id="parent-report-view" class="text-slate-400 text-sm">Awaiting database entries...</div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl">
+                    <h3 class="text-lg font-bold mb-3 text-indigo-400">Granular Rule Controls</h3>
+<div id="parent-controls-form" class="space-y-4">
+    <!-- Controls logic injected here via dashboard.js -->
+    <p class="text-xs text-slate-500">Database hooks configured for individual game limits.</p>
+</div>
+
+<hr class="border-slate-800 my-4">
+
+<h4 class="text-sm font-bold text-amber-400">
+    Developer Tools
+</h4>
+
+<div id="developer-tools-panel" class="space-y-2 mt-3">
+</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- View 4: Game Sandbox View -->
+        <section id="view-game" class="view-section hidden flex flex-col h-[70vh]">
+            <div class="flex justify-between items-center mb-4">
+                <button id="btn-exit-game" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">
+                    ← Back to Dashboard
+                </button>
+                <span id="active-game-title" class="text-lg font-semibold tracking-wide text-indigo-400">Loading Game Module...</span>
+            </div>
+            <!-- The Isolated Stage Frame -->
+            <iframe id="game-frame" src="about:blank" class="flex-1 w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl"></iframe>
+        </section>
+
+    </main>
+
+    <!-- Master Application Controller -->
+    <script type="module" src="./js/app.js"></script>
+</body>
+</html>
