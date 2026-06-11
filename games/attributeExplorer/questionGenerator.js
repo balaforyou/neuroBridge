@@ -33,11 +33,7 @@ export function generateAttributeQuestion(questionType = null, options = {}) {
         size: randomItem(SIZES)
     };
 
-    const second = {
-        shape: randomItem(SHAPES),
-        color: randomItem(COLORS),
-        size: randomItem(SIZES)
-    };
+    const second = { ...first };
 
     if (relation === RELATIONS.SAME) {
         second[attribute] = first[attribute];

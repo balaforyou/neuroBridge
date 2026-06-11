@@ -8,7 +8,7 @@ import {
     createTrialId,
     createTrialResult
 } from '../../../js/trialResult.js';
-import { ATTRIBUTE_EXPLORER_GAME_ID, ATTRIBUTES, RELATIONS } from '../config.js';
+import { ATTRIBUTE_EXPLORER_GAME_ID, ATTRIBUTES, RELATIONS, shouldShowScaffoldLabels } from '../config.js';
 import { generateAttributeQuestion } from '../questionGenerator.js';
 
 function assert(condition, message) {
@@ -177,6 +177,26 @@ function testSizeDifficultyLevelIncludedInTrialMetadata() {
     console.log('Size difficulty trial metadata test passed');
 }
 
+function testScaffoldLabelsHiddenByDefault() {
+    assert(shouldShowScaffoldLabels(createDefaultScaffold()) === false, 'Scaffold labels should be hidden by default');
+
+    console.log('Scaffold labels hidden by default test passed');
+}
+
+function testScaffoldLabelsShownAfterHint() {
+    const hintScaffold = {
+        used: true,
+        level: 1,
+        type: 'attention-cue',
+        trigger: 'parent'
+    };
+
+    assert(shouldShowScaffoldLabels(hintScaffold) === true, 'Scaffold labels should show after hint');
+    assert(shouldShowScaffoldLabels({ used: false, level: 2 }) === true, 'Scaffold labels should show at scaffold level 2 or higher');
+
+    console.log('Scaffold labels shown after hint test passed');
+}
+
 function runAllTests() {
     console.log('=== Attribute Explorer Trial Result Unit Tests ===');
     testTrialResultObjectStructure();
@@ -186,6 +206,8 @@ function runAllTests() {
     testReactionTimeCaptured();
     testAttributeMetadataIncluded();
     testSizeDifficultyLevelIncludedInTrialMetadata();
+    testScaffoldLabelsHiddenByDefault();
+    testScaffoldLabelsShownAfterHint();
     console.log('=== All Attribute Explorer Trial Result Tests Passed ===');
 }
 

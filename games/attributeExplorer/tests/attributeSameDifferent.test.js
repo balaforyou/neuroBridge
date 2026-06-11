@@ -118,6 +118,50 @@ function testDifferentSizeGeneration() {
     console.log('Different size generation test passed');
 }
 
+function testColorQuestionsControlNonTargetAttributes() {
+    for (const relation of [RELATIONS.SAME, RELATIONS.DIFFERENT]) {
+        for (let i = 0; i < 50; i++) {
+            const problem = generateForced(ATTRIBUTES.COLOR, relation);
+            const [first, second] = problem.cells;
+
+            assert(first.shape === second.shape, 'Color questions must keep shape controlled');
+            assert(first.size === second.size, 'Color questions must keep size controlled');
+            assert(first.sizePx === undefined && second.sizePx === undefined, 'Color questions must not apply size adaptation');
+        }
+    }
+
+    console.log('Color non-target attribute control test passed');
+}
+
+function testShapeQuestionsControlNonTargetAttributes() {
+    for (const relation of [RELATIONS.SAME, RELATIONS.DIFFERENT]) {
+        for (let i = 0; i < 50; i++) {
+            const problem = generateForced(ATTRIBUTES.SHAPE, relation);
+            const [first, second] = problem.cells;
+
+            assert(first.color === second.color, 'Shape questions must keep color controlled');
+            assert(first.size === second.size, 'Shape questions must keep size controlled');
+            assert(first.sizePx === undefined && second.sizePx === undefined, 'Shape questions must not apply size adaptation');
+        }
+    }
+
+    console.log('Shape non-target attribute control test passed');
+}
+
+function testSizeQuestionsControlNonTargetAttributes() {
+    for (const relation of [RELATIONS.SAME, RELATIONS.DIFFERENT]) {
+        for (let i = 0; i < 50; i++) {
+            const problem = generateForced(ATTRIBUTES.SIZE, relation);
+            const [first, second] = problem.cells;
+
+            assert(first.color === second.color, 'Size questions must keep color controlled');
+            assert(first.shape === second.shape, 'Size questions must keep shape controlled');
+        }
+    }
+
+    console.log('Size non-target attribute control test passed');
+}
+
 function testSizeDifferentLevel1ProducesClearlyDifferentSizes() {
     for (let i = 0; i < 50; i++) {
         const problem = generateForced(ATTRIBUTES.SIZE, RELATIONS.DIFFERENT, { sizeDifficultyLevel: 1 });
@@ -190,6 +234,9 @@ function runAllTests() {
     testDifferentShapeGeneration();
     testSameSizeGeneration();
     testDifferentSizeGeneration();
+    testColorQuestionsControlNonTargetAttributes();
+    testShapeQuestionsControlNonTargetAttributes();
+    testSizeQuestionsControlNonTargetAttributes();
     testSizeDifferentLevel1ProducesClearlyDifferentSizes();
     testSameSizeProducesEqualRenderedSizes();
     testSizeDifficultyLevelIncludedInQuestionMetadata();

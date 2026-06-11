@@ -5,7 +5,8 @@ import {
     ATTRIBUTE_EXPLORER_GAME_ID,
     COLOR_CLASS_MAP,
     DEFAULT_UI_SUPPORT_LEVEL,
-    SIZE_CLASS_MAP
+    SIZE_CLASS_MAP,
+    shouldShowScaffoldLabels
 } from './config.js';
 import { generateAttributeQuestion } from './questionGenerator.js';
 import {
@@ -97,8 +98,8 @@ function renderProblem() {
     }
 
     if (feedbackEl) {
-        feedbackEl.innerText = shouldShowQuestionText() ? 'Same or Different?' : '';
-        feedbackEl.className = 'text-base sm:text-lg font-black text-sky-900 min-h-[24px]';
+        feedbackEl.innerText = '';
+        feedbackEl.className = 'text-base sm:text-lg font-black text-amber-700 min-h-[24px]';
     }
 
     if (celebrationEl) {
@@ -127,7 +128,7 @@ function renderItem(container, item, targetAttribute) {
     if (!container || !item) return;
 
     container.innerHTML = SHAPE_TEMPLATES[item.shape];
-    container.className = 'relative w-48 h-44 sm:w-56 sm:h-52 rounded-2xl bg-white border-4 border-sky-300 shadow-sm flex items-center justify-center';
+    container.className = 'relative w-48 h-44 sm:w-60 sm:h-52 rounded-2xl bg-white border-4 border-sky-300 shadow-sm flex items-center justify-center';
 
     const svg = container.querySelector('.attribute-shape');
     if (svg) {
@@ -140,7 +141,7 @@ function renderItem(container, item, targetAttribute) {
         svg.classList.add(COLOR_CLASS_MAP[item.color]);
     }
 
-    if (shouldShowCardLabels()) {
+    if (shouldShowCardLabels(targetAttribute)) {
         const label = document.createElement('span');
         label.className = 'absolute top-2 left-3 text-[11px] font-black text-sky-700 uppercase tracking-wide';
         label.innerText = item[targetAttribute];
@@ -174,9 +175,7 @@ function processSelection(choice) {
     }
 
     if (feedbackEl) {
-        feedbackEl.innerText = isCorrect
-            ? '✓ Yes!'
-            : `Good try. Look at ${problem.rule.attribute}: they are ${problem.correctAnswer}.`;
+        feedbackEl.innerText = isCorrect ? '✓ Yes!' : '';
         feedbackEl.className = isCorrect
             ? 'text-xl sm:text-2xl font-black text-emerald-700 min-h-[24px]'
             : 'text-base sm:text-lg font-black text-amber-700 min-h-[24px]';
@@ -251,6 +250,8 @@ function giveHint() {
         feedbackEl.innerText = `Look only at ${problem.rule.attribute}.`;
         feedbackEl.className = 'text-base sm:text-lg font-black text-amber-700 min-h-[24px]';
     }
+
+    renderCurrentItems();
 
     const hintButton = document.getElementById('hint-button');
     if (hintButton) {
@@ -340,14 +341,14 @@ function getAttributePrompt(attribute) {
 }
 
 function getAttributePromptClass(attribute) {
-    const base = 'inline-flex items-center justify-center rounded-xl px-5 py-2 text-xl sm:text-2xl font-black text-slate-950 shadow-sm border-4';
+    const base = 'inline-flex items-center justify-center rounded-xl px-6 py-2.5 text-2xl sm:text-3xl font-black text-slate-950 shadow-sm border-4';
 
     if (attribute === 'color') {
         return `${base} bg-yellow-300 border-yellow-500`;
     }
 
     if (attribute === 'shape') {
-        return `${base} bg-rose-300 border-rose-500`;
+        return `${base} bg-emerald-300 border-emerald-500`;
     }
 
     return `${base} bg-cyan-300 border-cyan-500`;
@@ -358,10 +359,14 @@ function normalizeSupportLevel(uiSupportLevel) {
     return level >= 1 && level <= 5 ? level : DEFAULT_UI_SUPPORT_LEVEL;
 }
 
-function shouldShowQuestionText() {
-    return gameState.uiSupportLevel <= 2;
+function shouldShowCardLabels(targetAttribute) {
+    return Boolean(targetAttribute) && shouldShowScaffoldLabels(gameState.currentScaffold);
 }
 
-function shouldShowCardLabels() {
-    return gameState.uiSupportLevel === 1;
+function renderCurrentItems() {
+    const problem = gameState.currentProblem;
+    if (!problem) return;
+
+    renderItem(document.getElementById('item-a'), problem.cells[0], problem.rule.attribute);
+    renderItem(document.getElementById('item-b'), problem.cells[1], problem.rule.attribute);
 }

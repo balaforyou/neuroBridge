@@ -32,12 +32,16 @@ export const SIZE_DIFFICULTY_LEVELS = {
 };
 
 export const UI_SUPPORT_LEVELS = {
-    1: { showQuestionText: true, showCardLabels: true },
+    1: { showQuestionText: true, showCardLabels: false },
     2: { showQuestionText: true, showCardLabels: false },
     3: { showQuestionText: false, showCardLabels: false },
     4: { showQuestionText: false, showCardLabels: false },
     5: { showQuestionText: false, showCardLabels: false }
 };
+
+export function shouldShowScaffoldLabels(scaffold = {}) {
+    return Boolean(scaffold.used || scaffold.level >= 2);
+}
 
 export const COLOR_CLASS_MAP = {
     red: 'text-red-500',
