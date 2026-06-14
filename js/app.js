@@ -3,6 +3,7 @@ import { initDB } from './database.js';
 import { initRouter } from './router.js';
 import { initAuth } from './auth.js';
 import { initDashboard } from './dashboard.js';
+import { initWelcomeExperience } from './welcomeExperience.js';
 
 // Global application reactive state tracking
 export const AppState = {
@@ -28,6 +29,7 @@ async function bootstrapApp() {
         initRouter();
         initAuth();
         initDashboard();
+        initWelcomeExperience();
         
         console.log("MindGym Modules successfully hooked. Operational state ready.");
     } catch (error) {

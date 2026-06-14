@@ -4,7 +4,8 @@
     import { AppState } from './app.js';
     import { switchView } from './router.js';
     import { verifyCredentials, ensureDefaultPins, seedCustomPins } from './database.js';
-    import { renderParentControls, renderStudentMetrics } from './dashboard.js';
+    import { renderParentControls } from './dashboard.js';
+    import { startLearnerWelcomeExperience } from './welcomeExperience.js';
 
     // Manual reset notes:
     // - To seed different demo PINs, call `seedCustomPins(parentPin, studentPin, studentName)`
@@ -116,8 +117,7 @@
 
     updateHeader(`Student: ${AppState.studentName}`);
 
-    renderStudentMetrics();
-    switchView('student');
+    startLearnerWelcomeExperience();
                 });
             });
         }

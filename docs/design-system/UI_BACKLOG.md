@@ -4,178 +4,210 @@ Purpose: Capture design-system and UI templating work for NeuroBridge after the 
 
 ## Foundation
 
-- Story ID:
+- Story ID: NB-100.1
 - Title: SIRAASH splash screen
-- Priority:
-- Status:
-- Notes:
+- Priority: High
+- Status: In Progress
+- Notes: First learner-facing design-system experience.
 
-- Story ID:
+- Story ID: NB-100.1
 - Title: Daily welcome message
-- Priority:
-- Status:
-- Notes:
+- Priority: High
+- Status: In Progress
+- Notes: First login of the day learner greeting.
 
-- Story ID:
+- Story ID: NB-100.1
 - Title: Welcome back message
-- Priority:
-- Status:
-- Notes:
+- Priority: High
+- Status: In Progress
+- Notes: Returning learner greeting.
 
 ## Activity Shell
 
 - Story ID:
 - Title: Shared activity shell template
-- Priority:
-- Status:
-- Notes:
+- Priority: High
+- Status: Backlog
+- Notes: Common layout for game, worksheet, story, and assessment activities.
 
 - Story ID:
-- Title: Responsive activity layout
-- Priority:
-- Status:
-- Notes:
+- Title: Mobile/tablet responsive layout
+- Priority: High
+- Status: Backlog
+- Notes: Mobile-first, tablet-primary, no hover dependency.
 
 - Story ID:
 - Title: Activity header component
-- Priority:
-- Status:
-- Notes:
+- Priority: Medium
+- Status: Backlog
+- Notes: Quiet learner header with minimal progress context.
 
 - Story ID:
 - Title: Answer area component
-- Priority:
-- Status:
-- Notes:
+- Priority: High
+- Status: Backlog
+- Notes: Large, touch-friendly answer controls.
 
 ## Help And Scaffolds
 
 - Story ID:
+- Title: Need Help area
+- Priority: High
+- Status: Backlog
+- Notes: Shared help entry and scaffold display area.
+
+- Story ID:
 - Title: Need Help button
-- Priority:
-- Status:
-- Notes:
+- Priority: High
+- Status: Backlog
+- Notes: Learner-safe scaffold entry point.
 
 - Story ID:
 - Title: Scaffold display area
-- Priority:
-- Status:
-- Notes:
+- Priority: High
+- Status: Backlog
+- Notes: Attention cue, attribute cue, choice reduction, and model answer support.
 
 - Story ID:
 - Title: Scaffold fading UI states
-- Priority:
-- Status:
-- Notes:
+- Priority: Medium
+- Status: Backlog
+- Notes: Support progression from explicit help to subtle cues.
 
 ## Activity Templates
 
 - Story ID:
 - Title: GRID activity template
-- Priority:
-- Status:
-- Notes:
+- Priority: High
+- Status: Backlog
+- Notes: Matrix, pattern grid, and visual search grid.
 
 - Story ID:
 - Title: SELECT activity template
-- Priority:
-- Status:
-- Notes:
+- Priority: High
+- Status: Backlog
+- Notes: Tap or choose one option.
 
 - Story ID:
 - Title: MATCH activity template
-- Priority:
-- Status:
-- Notes:
+- Priority: Medium
+- Status: Backlog
+- Notes: Pair related items.
 
 - Story ID:
 - Title: ORDER activity template
-- Priority:
-- Status:
-- Notes:
+- Priority: Medium
+- Status: Backlog
+- Notes: Sequence items or steps.
 
 - Story ID:
 - Title: MEASURE activity template
-- Priority:
-- Status:
-- Notes:
+- Priority: Medium
+- Status: Backlog
+- Notes: Compare size, quantity, distance, or other measurable attributes.
 
 - Story ID:
 - Title: WORD_PROBLEM activity template
-- Priority:
-- Status:
-- Notes:
+- Priority: Medium
+- Status: Backlog
+- Notes: Language and numeracy problem solving.
+
+- Story ID:
+- Title: CONSTRUCT activity template
+- Priority: Medium
+- Status: Backlog
+- Notes: Build, assemble, draw, arrange, or create a response.
 
 - Story ID:
 - Title: SOCIAL_STORY activity template
-- Priority:
-- Status:
-- Notes:
+- Priority: Medium
+- Status: Backlog
+- Notes: Guided social or daily living scenario.
 
 - Story ID:
 - Title: ASSESSMENT activity template
-- Priority:
-- Status:
-- Notes:
+- Priority: High
+- Status: Backlog
+- Notes: Baseline or structured assessment activity.
 
 ## Worksheets And Print
 
-- Story ID:
-- Title: Worksheet support
-- Priority:
-- Status:
-- Notes:
+- Story ID: NB-110
+- Title: Printable worksheet support
+- Priority: Medium
+- Status: Backlog
+- Notes: Matching, fill-in-the-blanks, measurement, ordering, and worksheet mode.
 
 - Story ID:
 - Title: Printable mode
-- Priority:
-- Status:
-- Notes:
+- Priority: Medium
+- Status: Backlog
+- Notes: Print-friendly rendering for selected activities.
 
 ## Localization
 
 - Story ID:
 - Title: Regional language readiness
-- Priority:
-- Status:
-- Notes:
+- Priority: Medium
+- Status: Backlog
+- Notes: Support Tamil, Hindi, and other regional languages later.
 
 - Story ID:
 - Title: Text expansion checks
-- Priority:
-- Status:
-- Notes:
+- Priority: Medium
+- Status: Backlog
+- Notes: Ensure translated labels do not overflow controls.
 
 ## Parent Experience
 
 - Story ID:
+- Title: Parent controls separation
+- Priority: High
+- Status: Backlog
+- Notes: Keep learner UI calm while parent controls remain available separately.
+
+- Story ID:
 - Title: Parent controls
-- Priority:
-- Status:
-- Notes:
+- Priority: Medium
+- Status: Backlog
+- Notes: Configuration, preview, scaffold settings, and session context.
 
 - Story ID:
 - Title: Parent preview of learner activity
-- Priority:
-- Status:
-- Notes:
+- Priority: Medium
+- Status: Backlog
+- Notes: Let parent inspect activities before assigning or testing.
 
 ## Accessibility And Touch
 
 - Story ID:
 - Title: Accessibility and touch standards
-- Priority:
-- Status:
-- Notes:
+- Priority: High
+- Status: Backlog
+- Notes: Minimum 44px touch targets, preferred 56px+, contrast, focus states.
 
 - Story ID:
 - Title: Focus and selected states
-- Priority:
-- Status:
-- Notes:
+- Priority: High
+- Status: Backlog
+- Notes: Clear selected, disabled, and keyboard focus states.
 
 - Story ID:
 - Title: Reduced visual noise mode
-- Priority:
-- Status:
-- Notes:
+- Priority: Medium
+- Status: Backlog
+- Notes: Calm learner view with minimal distractors.
+
+## Motion And Audio
+
+- Story ID: NB-100.9
+- Title: Motion/animation standards
+- Priority: Medium
+- Status: Backlog
+- Notes: Standardize glow, blink, fly-to-cart, transitions, and reduced-motion options.
+
+- Story ID: NB-100.10
+- Title: Optional audio environment
+- Priority: Medium
+- Status: Backlog
+- Notes: Parent-controlled rhythmic or calm background audio.

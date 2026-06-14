@@ -161,6 +161,7 @@ The shell should reserve support for these activity types:
 - `ORDER`: Sequence items or steps.
 - `MEASURE`: Compare size, quantity, time, distance, or other measurable attributes.
 - `WORD_PROBLEM`: Language and numeracy problem solving.
+- `CONSTRUCT`: Build, assemble, draw, arrange, or create a response.
 - `SOCIAL_STORY`: Guided social or daily living scenario.
 - `ASSESSMENT`: Structured assessment or baseline activity.
 

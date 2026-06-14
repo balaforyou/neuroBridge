@@ -4,7 +4,7 @@ Purpose: Capture architecture decisions, rationale, tradeoffs, and follow-up ite
 
 Use this file for decisions that shape NeuroBridge contracts, registries, metrics, game infrastructure, scaffold systems, parent configuration, and future extensibility.
 
-## Architecture Decision Record
+## Architecture Decision Record Template
 
 - ADR ID:
 - Date:
@@ -16,86 +16,52 @@ Use this file for decisions that shape NeuroBridge contracts, registries, metric
 - Impact:
 - Follow-up Items:
 
+## Architecture Decision Records
 
+### ADR-001: NeuroBridge Is Observation Driven
 
-# Architecture Decision Records (ADR)
+- ADR ID: ADR-001
+- Date: 2026-06-14
+- Decision: NeuroBridge is observation driven.
+- Context: Learning interventions originate from observed learner behavior.
+- Options Considered: Curriculum-first, therapist-model-first, observation-first.
+- Decision Taken: Treat observations as first-class project knowledge.
+- Rationale: Observations reveal bottlenecks and scaffold needs that metrics alone cannot explain.
+- Impact: Knowledge capture files now sit beside telemetry and analytics.
+- Follow-up Items: Link selected observations to future assessment summaries.
 
----
+### ADR-002: Local-First, Backend-Agnostic Architecture
 
-## ADR-001: NeuroBridge is Observation Driven
+- ADR ID: ADR-002
+- Date: 2026-06-14
+- Decision: NeuroBridge remains local-first and backend-agnostic.
+- Context: Core activities should work locally before persistence infrastructure is finalized.
+- Options Considered: Backend-first, local-only, local-first with future adapters.
+- Decision Taken: Keep backend pluggable and preserve local activity execution.
+- Rationale: Stable frontend contracts allow later storage without reshaping games.
+- Impact: Trial/session contracts become the future persistence surface.
+- Follow-up Items: Define backend adapter boundaries later.
 
-**Date:** 2026-06-14
+### ADR-003: NeuroBridge Core Architecture v1.1 Frozen
 
-### Decision
+- ADR ID: ADR-003
+- Date: 2026-06-14
+- Decision: Core Architecture v1.1 is frozen.
+- Context: Core contracts, registries, ontology, analytics, documentation, and knowledge capture are complete.
+- Options Considered: Continue architecture changes, freeze and move to UI templating.
+- Decision Taken: Freeze core architecture and move to learner-facing design system work.
+- Rationale: A stable foundation is needed before broad UI templating and new activities.
+- Impact: Future architecture changes require explicit justification.
+- Follow-up Items: Keep documentation updated as UI templates mature.
 
-NeuroBridge is an observation-driven learning platform.
+### ADR-004: Mobile-First and Touch-First
 
-Learning interventions, scaffolds, adaptive strategies, and future game designs originate from observed learner behavior rather than assumptions, fixed curricula, or pre-defined therapeutic models.
-
-### Context
-
-During development with Adarsh, many successful interventions emerged through direct observation of learner behavior.
-
-Examples include:
-
-* Left-right confusion leading to color-based scaffolds and the 3-2-1 strategy.
-* Pattern memory progression through adaptive difficulty.
-* Visual search refinements based on observed scanning behavior.
-* Hint systems evolving from actual learner bottlenecks.
-
-These improvements were discovered through observation rather than predetermined design.
-
-### Options Considered
-
-1. Curriculum-driven model
-2. Therapist-driven model
-3. Observation-driven model
-
-### Decision Taken
-
-Adopt an observation-driven model.
-
-Observations become first-class project artifacts and are treated as valuable data alongside game telemetry and analytics.
-
-### Implementation
-
-NeuroBridge maintains structured repositories for:
-
-* Observations
-* Scaffolds
-* Ideas
-* Backlog Items
-* Architecture Decisions
-
-These artifacts are stored in:
-
-* OBSERVATIONS.md
-* SCAFFOLDS.md
-* IDEAS.md
-* BACKLOG.md
-* ARCHITECTURE_NOTES.md
-
-### Rationale
-
-The most effective interventions emerged from observing learner behavior, identifying bottlenecks, introducing scaffolds, and measuring outcomes.
-
-Observation provides context that cannot be captured through scores and reaction times alone.
-
-### Impact
-
-This decision enables:
-
-* Better scaffold design
-* Improved adaptive learning systems
-* Richer analytics interpretation
-* Research traceability
-* Parent and teacher collaboration
-* Future AI-assisted recommendation systems
-
-### Follow-Up Items
-
-* Link observations to skills and domains.
-* Capture scaffold effectiveness over time.
-* Enable future analytics to incorporate observation data.
-* Explore observation-assisted adaptive learning recommendations.
-
+- ADR ID: ADR-004
+- Date: 2026-06-14
+- Decision: NeuroBridge design should be mobile-first and touch-first.
+- Context: Primary expected use is tablet/mobile, especially for learner activities.
+- Options Considered: Desktop-first, tablet-only, mobile-first responsive.
+- Decision Taken: Target tablet/mobile with large touch targets and responsive layouts.
+- Rationale: Learner activities need direct, low-friction touch interaction.
+- Impact: Design-system docs now prioritize touch, responsiveness, and no hover dependency.
+- Follow-up Items: Add automated visual checks once UI templates are implemented.
