@@ -1,0 +1,39 @@
+# Architecture Decisions
+
+Purpose: Central architecture decision record for NeuroBridge.
+
+This file mirrors the decision-capture intent of `docs/neurobridge-knowledge/ARCHITECTURE_NOTES.md` while keeping reviewed ADRs in one central reference.
+
+## ADR-001: NeuroBridge Is Observation Driven
+
+- Status: Accepted
+- Date:
+- Decision: NeuroBridge architecture will treat learner observations, scaffold attempts, and outcomes as first-class project knowledge.
+- Context: NeuroBridge is built for neurodivergent learners, where parent, teacher, therapist, and clinician observations often explain what trial metrics alone cannot.
+- Options Considered:
+  - Store only game metrics and analytics.
+  - Capture observations informally outside the project.
+  - Add lightweight project knowledge templates alongside code and metrics.
+- Decision Taken: Add a knowledge capture framework for observations, ideas, backlog items, scaffolds, and architecture notes.
+- Rationale: The platform needs to preserve parent and research knowledge without forcing premature database or UI work.
+- Impact: Project knowledge can be reviewed by humans and AI assistants later while runtime contracts remain stable.
+- Follow-up Items:
+  - Connect selected observations to future assessment summaries.
+  - Consider structured storage after the documentation workflow stabilizes.
+
+## ADR-002: Local-First, Backend-Agnostic Architecture
+
+- Status: Draft
+- Date:
+- Decision: NeuroBridge should remain local-first and backend-agnostic during the current architecture and UI templating phase.
+- Context: The project needs fast iteration on games, scaffolds, metrics, and parent workflows before committing to database tables or backend services.
+- Options Considered:
+  - Build backend persistence immediately.
+  - Keep all state only in browser runtime.
+  - Define stable frontend contracts first, then add persistence behind those contracts later.
+- Decision Taken: Draft pending final review.
+- Rationale: Stable contracts allow future backend integration without reshaping game code or analytics semantics.
+- Impact: Documentation, trial results, session results, and registries become the stable integration surface for later storage.
+- Follow-up Items:
+  - Define persistence adapter boundaries.
+  - Decide when session results should be stored beyond the current browser flow.
