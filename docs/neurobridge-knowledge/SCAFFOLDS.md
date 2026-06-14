@@ -96,3 +96,139 @@ Use this file to document scaffold types, when they help, when they should fade,
 - When To Fade: Gradually reduce observation time as accuracy stabilizes.
 - Risks: Too much time may reduce challenge.
 - Notes: Should be parent-configurable.
+
+## Scaffold Entry
+
+* Scaffold ID: S-007
+* Name: Central Target Anchor
+* Type: Attention Cue
+* Level: 2
+* Used In:
+
+  * Schulte Table
+  * Visual Search Activities
+  * Grid Vision Activities
+* Learner Response:
+
+  * Reduces the need to remember the next target.
+  * Allows the learner to focus on scanning and locating the target.
+  * May reduce frustration and improve search accuracy during early learning stages.
+* When To Use:
+
+  * When the learner frequently loses track of the next target.
+  * When visual search performance is limited by target retention rather than scanning ability.
+  * During initial Schulte Table training and visual search skill acquisition.
+* When To Fade:
+
+  * When the learner consistently identifies targets without hesitation.
+  * When search accuracy remains high across multiple sessions.
+  * Gradually reduce support:
+
+    * Always visible
+    * Visible for 2 seconds
+    * Visible for 1 second
+    * Hidden completely
+* Risks:
+
+  * Learner may become dependent on the center anchor if not faded gradually.
+  * May reduce working memory demands more than intended if retained too long.
+  * Could shift focus away from developing independent target retention.
+* Notes:
+
+  * The center cell displays the next target number while the learner searches for it.
+  * This scaffold supports visual scanning by removing the working-memory burden of remembering the target.
+  * Intended to train peripheral vision, visual search strategy, and attention allocation rather than target memorization.
+  * Related Domain: Attention
+  * Related Skills: Visual Search, Sustained Attention
+  * Related Cognitive Targets: Selective Attention, Peripheral Awareness, Target Retention
+
+## Scaffold Entry
+
+* Scaffold ID: S-008
+* Name: Near-Fact Bridge Scaffold
+* Type: Attribute Cue
+* Level: 2 → 4 (Graduated)
+* Used In:
+
+  * Neural Bonds
+  * Addition Facts
+  * Kumon-Style Arithmetic Activities
+  * Mental Math Training
+* Learner Response:
+
+  * Encourages use of known facts to solve unknown facts.
+  * Builds number sense and arithmetic reasoning.
+  * Reduces reliance on memorization alone.
+* When To Use:
+
+  * Learner hesitates on a basic addition fact.
+  * Learner knows nearby facts but cannot derive the target fact.
+  * Learner requires support transitioning from counting to mental arithmetic.
+* When To Fade:
+
+  * Learner begins independently using nearby facts.
+  * Learner consistently answers target facts without prompts.
+  * Learner demonstrates mental decomposition strategies.
+* Risks:
+
+  * Excessive use may delay direct fact recall.
+  * Learner may wait for the bridge instead of attempting independently.
+  * Scaffold should be faded once fact families become familiar.
+* Notes:
+
+  Example Target:
+
+  7 + 5 = ?
+
+  Scaffold Progression:
+
+  Level 0 (Independent)
+
+  * Show: 7 + 5 = ?
+
+  Level 2 (Near-Fact Prompt)
+
+  * Show: Think about 7 + 4
+
+  Level 3 (Near-Fact Reveal)
+
+  * Show: 7 + 4 = 11
+  * Prompt: Then 7 + 5 = ?
+
+  Level 4 (Concrete Representation)
+
+  * Show visual support:
+
+    * Number line
+    * Ruler
+    * Counters
+    * Beads
+  * Demonstrate:
+    7 + 4 = 11
+    One more = 12
+
+  Learning Goal:
+
+  * Teach arithmetic relationships.
+  * Develop flexible number thinking.
+  * Build bridges between known and unknown facts.
+
+  Related Domain:
+
+  * Numeracy
+
+  Related Skills:
+
+  * Number Bonds
+  * Arithmetic Fluency
+  * Fact Families
+
+  Related Cognitive Targets:
+
+  * Quantity Relations
+  * Working Memory
+  * Rapid Retrieval
+  * Mathematical Reasoning
+
+
+
