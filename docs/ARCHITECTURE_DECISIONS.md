@@ -37,3 +37,28 @@ This file mirrors the decision-capture intent of `docs/neurobridge-knowledge/ARC
 - Follow-up Items:
   - Define persistence adapter boundaries.
   - Decide when session results should be stored beyond the current browser flow.
+
+ADR-003
+
+Decision:
+NeuroBridge Core Architecture v1.1 Frozen
+
+Date:
+2026-06-14
+
+Context:
+Core contracts, registries, ontology, analytics, documentation,
+and knowledge capture framework have been completed.
+
+Decision:
+Future work will focus on:
+- UI templating
+- learner experience
+- new games
+- adaptive learning
+- analytics insights
+
+Architecture changes require explicit justification.
+
+Impact:
+Provides a stable platform foundation for product validation.  
