@@ -121,7 +121,7 @@ export async function renderStudentMetrics() {
     if (!logs.length) {
         container.innerHTML = `
             <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-400">
-                No student game records yet.
+                No student activity records yet.
             </div>
         `;
         return;
@@ -143,7 +143,7 @@ export async function renderStudentMetrics() {
             <table class="w-full text-left text-sm text-slate-400">
                 <thead class="bg-slate-950 text-slate-300 text-xs uppercase tracking-wider">
                     <tr>
-                        <th class="p-3">Game Task</th>
+                        <th class="p-3">Activity</th>
                         <th class="p-3">Score</th>
                         <th class="p-3">Accuracy</th>
                         <th class="p-3">Reaction Time</th>

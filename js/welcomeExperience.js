@@ -3,6 +3,9 @@ import { switchView } from './router.js';
 import { renderStudentMetrics } from './dashboard.js';
 
 const LAST_WELCOME_DATE_KEY = 'neurobridge:lastLearnerWelcomeDate';
+const SPLASH_DURATION_MS = 2400;
+
+let splashTimer = null;
 
 export function initWelcomeExperience() {
     document.getElementById('btn-siraash-start')?.addEventListener('click', showWelcomeView);
@@ -10,8 +13,10 @@ export function initWelcomeExperience() {
 }
 
 export function startLearnerWelcomeExperience() {
+    clearSplashTimer();
     renderSplashName();
     switchView('splash');
+    splashTimer = setTimeout(showWelcomeView, SPLASH_DURATION_MS);
 }
 
 function renderSplashName() {
@@ -22,6 +27,8 @@ function renderSplashName() {
 }
 
 function showWelcomeView() {
+    clearSplashTimer();
+
     const learnerName = AppState.studentName || 'Learner';
     const isFirstWelcomeToday = isFirstLearnerWelcomeToday();
     const titleEl = document.getElementById('welcome-title');
@@ -54,6 +61,12 @@ function isFirstLearnerWelcomeToday() {
 
 function saveLearnerWelcomeDate() {
     localStorage.setItem(LAST_WELCOME_DATE_KEY, getTodayKey());
+}
+
+function clearSplashTimer() {
+    if (!splashTimer) return;
+    clearTimeout(splashTimer);
+    splashTimer = null;
 }
 
 function getTodayKey() {
