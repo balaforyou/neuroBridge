@@ -1,4 +1,5 @@
 import { getGameById } from './gameRegistry.js';
+import { getCognitiveTargetsForSkill } from './cognitiveOntology.js';
 
 const EMPTY_ANALYTICS = {
     gameMetrics: [],
@@ -32,10 +33,9 @@ export function aggregateAnalytics(sessionResults = []) {
 
         for (const skillId of game.skills || []) {
             addToBucket(skillBuckets, skillId, sessionStats);
-        }
-
-        for (const targetId of game.cognitiveTargets || []) {
-            addToBucket(cognitiveTargetBuckets, targetId, sessionStats);
+            for (const targetId of getCognitiveTargetsForSkill(skillId)) {
+                addToBucket(cognitiveTargetBuckets, targetId, sessionStats);
+            }
         }
     }
 

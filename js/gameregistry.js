@@ -2,6 +2,7 @@
 
 import { GAME_IDS } from './constants.js';
 import { isValidDomain } from './domainRegistry.js';
+import { isValidSkill } from './skillRegistry.js';
 
 export const GAME_REGISTRY = [
     {
@@ -14,16 +15,9 @@ export const GAME_REGISTRY = [
         domain: 'reasoning',
         description: 'Non-verbal pattern reasoning through visual and numeric matrix problems.',
         skills: [
-            'pattern-completion',
+            'pattern-recognition',
             'rule-discovery',
-            'visual-reasoning',
-            'matrix-reasoning'
-        ],
-        cognitiveTargets: [
-            'abstract-reasoning',
-            'visual-discrimination',
-            'working-memory',
-            'cognitive-flexibility'
+            'visual-reasoning'
         ],
         maxStage: 5,
         maxLevel: 5,
@@ -44,15 +38,7 @@ export const GAME_REGISTRY = [
         skills: [
             'same-different',
             'attribute-comparison',
-            'color-discrimination',
-            'shape-discrimination',
-            'size-discrimination'
-        ],
-        cognitiveTargets: [
-            'concept-formation',
-            'visual-discrimination',
-            'selective-attention',
-            'categorization'
+            'visual-attention'
         ],
         maxStage: 1,
         maxLevel: 1,
@@ -97,8 +83,19 @@ export function validateGameRegistry(registry = GAME_REGISTRY) {
             return false;
         }
 
-        if (!Array.isArray(game.skills) || !Array.isArray(game.cognitiveTargets)) {
+        if (!Array.isArray(game.skills)) {
             return false;
+        }
+
+        const skillIds = new Set(game.skills);
+        if (skillIds.size !== game.skills.length) {
+            return false;
+        }
+
+        for (const skillId of game.skills) {
+            if (!isValidSkill(skillId)) {
+                return false;
+            }
         }
     }
 

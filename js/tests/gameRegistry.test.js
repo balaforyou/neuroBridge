@@ -11,6 +11,8 @@ import {
     validateGameRegistry
 } from '../gameRegistry.js';
 import { isValidDomain } from '../domainRegistry.js';
+import { isValidSkill } from '../skillRegistry.js';
+import { getCognitiveTargetsForSkill } from '../cognitiveOntology.js';
 
 function assert(condition, message) {
     if (!condition) {
@@ -34,13 +36,35 @@ function testValidDomainMapping() {
     for (const game of GAME_REGISTRY) {
         assert(isValidDomain(game.domain), `Game ${game.gameId} should map to a valid domain`);
         assert(Array.isArray(game.skills), `Game ${game.gameId} skills should be an array`);
-        assert(Array.isArray(game.cognitiveTargets), `Game ${game.gameId} cognitiveTargets should be an array`);
     }
 
     assert(getGameById('matrixReasoning').domain === 'reasoning', 'Matrix Reasoning should map to reasoning');
     assert(getGameById('attributeExplorer').domain === 'concept-formation', 'Attribute Explorer should map to concept-formation');
 
     console.log('Valid domain mapping test passed');
+}
+
+function testAllGameSkillsExistInSkillRegistry() {
+    for (const game of GAME_REGISTRY) {
+        for (const skillId of game.skills) {
+            assert(isValidSkill(skillId), `Game ${game.gameId} skill ${skillId} should exist in Skill Registry`);
+        }
+    }
+
+    console.log('All game skills exist in Skill Registry test passed');
+}
+
+function testEveryGameSkillHasOntologyMapping() {
+    for (const game of GAME_REGISTRY) {
+        for (const skillId of game.skills) {
+            assert(
+                getCognitiveTargetsForSkill(skillId).length > 0,
+                `Game ${game.gameId} skill ${skillId} should have ontology targets`
+            );
+        }
+    }
+
+    console.log('Every game skill has ontology mapping test passed');
 }
 
 function testGetGameById() {
@@ -87,6 +111,44 @@ function testUniqueness() {
     console.log('Game id uniqueness test passed');
 }
 
+function testUnknownSkillValidation() {
+    const invalidRegistry = [
+        {
+            ...GAME_REGISTRY[0],
+            skills: ['missing-skill']
+        }
+    ];
+
+    assert(validateGameRegistry(invalidRegistry) === false, 'validateGameRegistry should fail unknown skills');
+
+    console.log('Unknown skill validation test passed');
+}
+
+function testDuplicateSkillValidation() {
+    const invalidRegistry = [
+        {
+            ...GAME_REGISTRY[0],
+            skills: ['pattern-recognition', 'pattern-recognition']
+        }
+    ];
+
+    assert(validateGameRegistry(invalidRegistry) === false, 'validateGameRegistry should fail duplicate skills per game');
+
+    console.log('Duplicate skill validation test passed');
+}
+
+function testCognitiveTargetsNotRequired() {
+    const registryWithoutTargets = GAME_REGISTRY.map(game => {
+        const { cognitiveTargets, ...gameWithoutTargets } = game;
+        return gameWithoutTargets;
+    });
+
+    assert(validateGameRegistry(registryWithoutTargets) === true, 'validateGameRegistry should not require cognitiveTargets');
+    assert(GAME_REGISTRY.every(game => game.cognitiveTargets === undefined), 'Game Registry should not store direct cognitiveTargets');
+
+    console.log('cognitiveTargets not required test passed');
+}
+
 function testInvalidLookupHandling() {
     assert(getGameById('missing-game') === null, 'Unknown game lookup should return null');
     assert(isValidGame('matrixReasoning') === true, 'isValidGame should return true for valid games');
@@ -99,10 +161,15 @@ function runAllTests() {
     console.log('=== Game Registry Unit Tests ===');
     testGamesExist();
     testValidDomainMapping();
+    testAllGameSkillsExistInSkillRegistry();
+    testEveryGameSkillHasOntologyMapping();
     testGetGameById();
     testGetGamesByDomain();
     testGetAllGames();
     testUniqueness();
+    testUnknownSkillValidation();
+    testDuplicateSkillValidation();
+    testCognitiveTargetsNotRequired();
     testInvalidLookupHandling();
     console.log('=== All Game Registry Tests Passed ===');
 }

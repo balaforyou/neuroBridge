@@ -143,11 +143,13 @@ function testSkillAggregation() {
     ]);
 
     const sameDifferentMetric = getSkillMetrics('same-different');
-    const colorMetric = getSkillMetrics('color-discrimination');
+    const attributeMetric = getSkillMetrics('attribute-comparison');
+    const visualAttentionMetric = getSkillMetrics('visual-attention');
 
     assert(sameDifferentMetric.sessions === 1, 'Same/different skill should include Attribute Explorer session');
     assert(sameDifferentMetric.trials === 2, 'Same/different skill should count trials');
-    assert(colorMetric.sessions === 1, 'Color discrimination skill should include same session');
+    assert(attributeMetric.sessions === 1, 'Attribute comparison skill should include same session');
+    assert(visualAttentionMetric.sessions === 1, 'Visual attention skill should include same session');
     assert(getSkillMetrics('missing-skill') === null, 'Missing skill should return null');
 
     console.log('Skill aggregation test passed');
@@ -169,16 +171,36 @@ function testCognitiveTargetAggregation() {
         })
     ]);
 
-    const visualDiscriminationMetric = getCognitiveTargetMetrics('visual-discrimination');
-    const abstractReasoningMetric = getCognitiveTargetMetrics('abstract-reasoning');
-    const conceptFormationMetric = getCognitiveTargetMetrics('concept-formation');
+    const featureDiscriminationMetric = getCognitiveTargetMetrics('feature-discrimination');
+    const comparativeAnalysisMetric = getCognitiveTargetMetrics('comparative-analysis');
+    const mentalTransformationMetric = getCognitiveTargetMetrics('mental-transformation');
+    const visualInhibitionMetric = getCognitiveTargetMetrics('visual-inhibition');
 
-    assert(visualDiscriminationMetric.sessions === 2, 'Shared cognitive target should aggregate both games');
-    assert(visualDiscriminationMetric.trials === 2, 'Shared cognitive target should count both games trials');
-    assert(abstractReasoningMetric.sessions === 1, 'Matrix cognitive target should aggregate Matrix only');
-    assert(conceptFormationMetric.sessions === 1, 'Attribute cognitive target should aggregate Attribute only');
+    assert(featureDiscriminationMetric.sessions === 1, 'Same/different target should aggregate Attribute Explorer');
+    assert(comparativeAnalysisMetric.sessions === 1, 'Attribute comparison target should aggregate Attribute Explorer');
+    assert(mentalTransformationMetric.sessions === 1, 'Visual reasoning target should aggregate Matrix');
+    assert(visualInhibitionMetric.sessions === 1, 'Pattern recognition target should aggregate Matrix');
+    assert(getCognitiveTargetMetrics('visual-discrimination') === null, 'Old direct game target should not be used');
 
     console.log('Cognitive target aggregation test passed');
+}
+
+function testCognitiveTargetsDerivedThroughOntology() {
+    aggregateAnalytics([
+        createSession({
+            gameId: 'attributeExplorer',
+            trialResults: [
+                createTrial({ resultStatus: 'independent', reactionTimeMs: 500 })
+            ]
+        })
+    ]);
+
+    assert(getCognitiveTargetMetrics('feature-discrimination').trials === 1, 'same-different ontology target should receive trials');
+    assert(getCognitiveTargetMetrics('comparative-analysis').trials === 1, 'attribute-comparison ontology target should receive trials');
+    assert(getCognitiveTargetMetrics('sustained-attention').trials === 1, 'visual-attention ontology target should receive trials');
+    assert(getCognitiveTargetMetrics('categorization') === null, 'Deprecated direct game target should not receive trials');
+
+    console.log('Ontology-derived cognitive target test passed');
 }
 
 function testAccuracyCalculation() {
@@ -232,6 +254,7 @@ function runAllTests() {
     testDomainAggregation();
     testSkillAggregation();
     testCognitiveTargetAggregation();
+    testCognitiveTargetsDerivedThroughOntology();
     testAccuracyCalculation();
     testReactionTimeCalculation();
     console.log('=== All Analytics Aggregator Tests Passed ===');
