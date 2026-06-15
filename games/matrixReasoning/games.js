@@ -8,6 +8,8 @@ import { getStageMetadata } from './stages/stageMetadata.js';
 import { resolveForcedStageOverride } from './stages/forcedStageOverride.js';
 import { getOptionButtonClassList } from './stages/visualOptionStyles.js';
 
+const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
+
 // 1. Engine Core State Tracking
 let gameState = {
     currentStage: 1,
@@ -77,6 +79,13 @@ function playErrorTone() {
     osc.stop(now + 0.35);
 }
 
+function navigateHome() {
+    window.parent.postMessage({
+        type: ACTIVITY_HOME_EVENT,
+        payload: { gameId: 'matrixReasoning' }
+    }, '*');
+}
+
 const SHAPE_TEMPLATES = {
     circle: `<svg viewBox="0 0 100 100" class="w-12 h-12 inline-block"><circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" fill="none"/></svg>`,
     square: `<svg viewBox="0 0 100 100" class="w-12 h-12 inline-block"><rect x="15" y="15" width="70" height="70" stroke="currentColor" stroke-width="8" fill="none"/></svg>`,
@@ -121,7 +130,7 @@ const panel = document.getElementById('decoder-panel');
 if (panel) {
     panel.innerHTML = '';
     panel.className =
-        "w-96 shrink-0 bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col hidden min-h-[390px]";
+        "w-full lg:w-96 lg:shrink-0 bg-slate-950 border border-slate-800 rounded-2xl p-3 sm:p-4 flex flex-col hidden min-h-0 max-h-full overflow-hidden";
 }
 
     const problem = generateStageProblem(stage, { generateNumericOptions });
@@ -232,9 +241,9 @@ function showLinearDecoder(isCorrect, completedProblem) {
     };
 
     panel.className =
-    "w-96 shrink-0 bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col min-h-[390px] animate-fadeIn";
+    "w-full lg:w-96 lg:shrink-0 bg-slate-950 border border-slate-800 rounded-2xl p-3 sm:p-4 flex flex-col min-h-0 max-h-full overflow-hidden animate-fadeIn";
     let explanationHTML = `
-        <div class="flex flex-col text-center space-y-2">
+        <div class="flex-1 min-h-0 overflow-y-auto pr-1 flex flex-col text-center space-y-2">
 
             <div class="text-3xl">${tone.emoji}</div>
             <div>
@@ -387,7 +396,7 @@ function showLinearDecoder(isCorrect, completedProblem) {
 
         <button 
             id="next-trial-btn" 
-            class="mt-2 w-full py-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-xl text-xs font-extrabold transition shadow-lg shrink-0 tracking-wide">
+            class="mt-3 min-h-[44px] w-full py-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-xl text-xs font-extrabold transition shadow-lg shrink-0 tracking-wide">
             Next Puzzle ➔
         </button>
     `;
@@ -602,6 +611,8 @@ console.log('PAYLOAD SENT', {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById('home-button')?.addEventListener('click', navigateHome);
+
     const gridEl = document.getElementById('matrix-grid');
     if (gridEl && !gameState.currentProblem) {
         gridEl.innerHTML = `<div class="text-slate-400 text-xs p-4 animate-pulse">Waiting for Master Module Configuration...</div>`;

@@ -8,40 +8,78 @@
     <style>
         /* Shared platform global layouts to prevent viewport scroll jumping */
         body { touch-action: none; -webkit-tap-highlight-color: transparent; }
+        .siraash-letter:nth-child(1) { color: #047857; }
+        .siraash-letter:nth-child(2) { color: #0f766e; }
+        .siraash-letter:nth-child(3) { color: #0369a1; }
+        .siraash-letter:nth-child(4) { color: #b7791f; }
+        .siraash-letter:nth-child(5) { color: #059669; }
+        .siraash-letter:nth-child(6) { color: #115e59; }
+        .siraash-letter:nth-child(7) { color: #075985; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 p-4 h-screen w-screen overflow-hidden select-none flex flex-col items-center justify-between">
+<body class="bg-[#edf8f3] text-slate-950 h-screen w-screen overflow-hidden select-none">
 
-    <!-- Top Block Header Indicators -->
-    <header class="w-full max-w-5xl bg-slate-950 px-4 py-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs text-slate-400 shrink-0">
-        <div>Stage: <span id="ui-stage" class="text-indigo-400 font-bold">1</span> (<span id="ui-stage-name">Linear Numbers</span>)</div>
-        <div>Trial: <span id="ui-trial" class="text-slate-200">1/5</span></div>
-        <div>Streak: <span id="ui-streak" class="text-emerald-400 font-bold">0</span></div>
-    </header>
+    <main class="h-full w-full flex flex-col p-2 sm:p-3 gap-2 sm:gap-3">
+        <header class="shrink-0 rounded-2xl bg-gradient-to-r from-[#fff7df] via-[#e2f6ee] to-[#dff1fb] border-2 border-emerald-200 px-3 py-2 sm:px-5 sm:py-3 shadow-sm">
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0 flex items-center gap-2 sm:gap-3">
+                    <button id="home-button" class="shrink-0 min-h-[44px] rounded-full bg-white/80 border-2 border-emerald-200 px-3 py-2 text-sm sm:text-base font-black text-emerald-900 shadow-sm transition hover:bg-emerald-50 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-emerald-300/70">
+                        <span aria-hidden="true">&#127968;</span>
+                        <span class="hidden sm:inline">Home</span>
+                    </button>
 
-    <!-- Unified Split Screen Dashboard Workspace -->
-    <main class="w-full max-w-5xl flex-1 flex flex-row items-stretch justify-center my-4 gap-4 min-h-0 min-w-0 overflow-hidden">
-        
-        <!-- LEFT WING: Permanent Game Engine Canvas & Dock Operations Hub -->
-        <section class="flex-1 bg-slate-950/40 rounded-2xl border border-slate-800/60 p-4 flex flex-col items-center justify-between min-h-0 min-w-0">
-            <!-- Center Aligned Matrix Presentation Display -->
-            <div class="flex-1 flex items-center justify-center min-h-0 w-full">
-                <div id="matrix-grid" class="grid grid-cols-2 gap-0 bg-white p-3 rounded-xl border-4 border-black shadow-2xl shrink-0 transition-transform duration-200">
-                    <!-- Injected dynamically -->
+                    <div class="shrink-0 inline-flex items-center rounded-full bg-emerald-100/90 border-2 border-emerald-300 px-3 py-1.5 shadow-sm">
+                        <span class="text-xl sm:text-2xl mr-2" aria-hidden="true">&#127793;</span>
+                        <span class="text-lg sm:text-2xl font-black tracking-[0.12em]" aria-label="SIRAASH">
+                            <span class="siraash-letter">S</span><span class="siraash-letter">I</span><span class="siraash-letter">R</span><span class="siraash-letter">A</span><span class="siraash-letter">A</span><span class="siraash-letter">S</span><span class="siraash-letter">H</span>
+                        </span>
+                    </div>
+
+                    <div class="min-w-0">
+                        <div class="text-xs sm:text-sm font-black uppercase tracking-[0.12em] text-emerald-800">Activity</div>
+                        <h1 class="truncate text-lg sm:text-2xl font-black text-slate-950">Matrix Reasoning</h1>
+                    </div>
+                </div>
+
+                <div class="shrink-0 flex flex-wrap items-center justify-end gap-2 sm:gap-3 text-xs sm:text-sm text-slate-800">
+                    <div class="rounded-full bg-white/75 border border-sky-200 px-3 py-1.5">
+                        Stage <span id="ui-stage" class="font-black text-slate-950">1</span>
+                        <span class="hidden sm:inline">(<span id="ui-stage-name">Linear Numbers</span>)</span>
+                    </div>
+                    <div class="rounded-full bg-white/75 border border-emerald-200 px-3 py-1.5">
+                        Trial <span id="ui-trial" class="font-black text-slate-950">1/5</span>
+                    </div>
+                    <div class="rounded-full bg-white/75 border border-amber-200 px-3 py-1.5">
+                        Stars <span id="ui-streak" class="font-black text-emerald-700">0</span>
+                    </div>
                 </div>
             </div>
+        </header>
 
-            <!-- Selection Options Grid Dock -->
-            <div id="options-dock" class="w-full grid grid-cols-4 gap-3 bg-slate-950 p-3 rounded-xl border border-slate-800 shrink-0 mt-2">
-                <!-- Option buttons managed via script loops -->
+        <section class="relative flex-1 min-h-0 bg-[#fffaf0] rounded-3xl border-4 border-emerald-200 shadow-xl p-3 sm:p-4 overflow-y-auto">
+            <!-- Unified Matrix Workspace -->
+            <div class="h-full w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-stretch justify-center gap-3 sm:gap-4 min-h-0 min-w-0 overflow-hidden">
+                
+                <!-- Matrix puzzle content area. Rendering logic remains in games.js. -->
+                <section class="flex-1 bg-slate-950/90 rounded-2xl border border-slate-800/60 p-3 sm:p-4 flex flex-col items-center justify-between min-h-[260px] min-w-0">
+                    <div class="flex-1 flex items-center justify-center min-h-0 w-full">
+                        <div id="matrix-grid" class="grid grid-cols-2 gap-0 bg-white p-3 rounded-xl border-4 border-black shadow-2xl shrink-0 transition-transform duration-200">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <div id="options-dock" class="w-full grid grid-cols-4 gap-3 bg-slate-950 p-3 rounded-xl border border-slate-800 shrink-0 mt-2">
+                        <!-- Option buttons managed via script loops -->
+                    </div>
+                </section>
+
+                <!-- Existing decoder / explanation panel. Behavior remains in games.js. -->
+                <section id="decoder-panel" class="w-full lg:w-80 lg:shrink-0 bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col hidden min-h-0 max-h-full overflow-hidden">
+                    <!-- Injected dynamically via review triggers -->
+                </section>
+
             </div>
         </section>
-
-        <!-- RIGHT WING: Universal Split Context Panel (Reviews, Metrics & Explanations) -->
-        <section id="decoder-panel" class="w-80 shrink-0 bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between hidden min-h-0">
-            <!-- Injected dynamically via review triggers -->
-        </section>
-
     </main>
 
    <script type="module" src="./games.js"></script>
