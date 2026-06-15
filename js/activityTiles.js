@@ -2,17 +2,15 @@ const ACTIVITY_TILE_GROUPS = [
     {
         category: 'Recommended',
         title: 'Start here',
-        description: 'SIRAASH will suggest a gentle path here later.',
-        accentClass: 'from-emerald-100 via-cyan-50 to-sky-100 border-emerald-300',
-        labelClass: 'text-emerald-800',
+        description: 'Choose an activity to explore today.',
+        labelClass: 'text-emerald-300',
         tiles: []
     },
     {
         category: 'Thinking',
         title: 'Reasoning',
-        description: 'Patterns, rules, and visual thinking.',
-        accentClass: 'from-indigo-100 via-sky-50 to-emerald-50 border-indigo-300',
-        labelClass: 'text-indigo-800',
+        description: 'Patterns and clues.',
+        labelClass: 'text-indigo-300',
         tiles: [
             {
                 activityId: 'matrixReasoning',
@@ -21,6 +19,9 @@ const ACTIVITY_TILE_GROUPS = [
                 icon: '🧩',
                 description: 'Find patterns and solve visual puzzles.',
                 status: 'available',
+                identityClass: 'from-indigo-100 via-sky-50 to-emerald-50 border-indigo-300',
+                iconClass: 'from-indigo-300 via-sky-200 to-emerald-200',
+                actionClass: 'bg-indigo-600 group-hover:bg-indigo-500',
                 domain: 'reasoning',
                 skills: ['pattern-recognition', 'rule-discovery', 'visual-reasoning']
             }
@@ -29,9 +30,8 @@ const ACTIVITY_TILE_GROUPS = [
     {
         category: 'Attention',
         title: 'Look and notice',
-        description: 'Visual attention and careful comparison.',
-        accentClass: 'from-cyan-100 via-emerald-50 to-lime-50 border-cyan-300',
-        labelClass: 'text-cyan-800',
+        description: 'Compare and search.',
+        labelClass: 'text-cyan-300',
         tiles: [
             {
                 activityId: 'attributeExplorer',
@@ -40,6 +40,9 @@ const ACTIVITY_TILE_GROUPS = [
                 icon: '👀',
                 description: 'Compare colors, shapes and sizes.',
                 status: 'available',
+                identityClass: 'from-cyan-100 via-emerald-50 to-lime-50 border-cyan-300',
+                iconClass: 'from-cyan-300 via-emerald-200 to-lime-200',
+                actionClass: 'bg-cyan-600 group-hover:bg-cyan-500',
                 domain: 'concept-formation',
                 skills: ['same-different', 'attribute-comparison', 'visual-attention']
             },
@@ -50,6 +53,8 @@ const ACTIVITY_TILE_GROUPS = [
                 icon: '🎯',
                 description: 'Train your eyes to find things faster.',
                 status: 'coming-soon',
+                identityClass: 'from-sky-50 via-cyan-50 to-emerald-50 border-cyan-200',
+                iconClass: 'from-sky-200 via-cyan-100 to-emerald-100',
                 domain: 'visual-search',
                 skills: ['visual-search', 'visual-attention']
             }
@@ -58,9 +63,8 @@ const ACTIVITY_TILE_GROUPS = [
     {
         category: 'Numbers',
         title: 'Number confidence',
-        description: 'Gentle number activities for later.',
-        accentClass: 'from-amber-100 via-yellow-50 to-emerald-50 border-amber-300',
-        labelClass: 'text-amber-800',
+        description: 'Numbers and steps.',
+        labelClass: 'text-amber-300',
         tiles: [
             {
                 activityId: 'numberBridges',
@@ -69,6 +73,8 @@ const ACTIVITY_TILE_GROUPS = [
                 icon: '🔢',
                 description: 'Build number confidence one step at a time.',
                 status: 'coming-soon',
+                identityClass: 'from-amber-50 via-yellow-50 to-emerald-50 border-amber-200',
+                iconClass: 'from-amber-200 via-yellow-100 to-emerald-100',
                 domain: 'numeracy',
                 skills: ['number-bonds']
             }
@@ -78,16 +84,14 @@ const ACTIVITY_TILE_GROUPS = [
         category: 'Language',
         title: 'Words and stories',
         description: 'Language activities will grow here.',
-        accentClass: 'from-pink-100 via-rose-50 to-sky-50 border-pink-300',
-        labelClass: 'text-pink-800',
+        labelClass: 'text-pink-300',
         tiles: []
     },
     {
         category: 'Life Skills',
         title: 'People and situations',
         description: 'Practice everyday understanding.',
-        accentClass: 'from-emerald-100 via-teal-50 to-cyan-50 border-emerald-300',
-        labelClass: 'text-emerald-800',
+        labelClass: 'text-emerald-300',
         tiles: [
             {
                 activityId: 'socialDetective',
@@ -96,6 +100,8 @@ const ACTIVITY_TILE_GROUPS = [
                 icon: '🤝',
                 description: 'Practice understanding people and situations.',
                 status: 'coming-soon',
+                identityClass: 'from-emerald-50 via-teal-50 to-cyan-50 border-emerald-200',
+                iconClass: 'from-emerald-200 via-teal-100 to-cyan-100',
                 domain: 'daily-living',
                 skills: ['direction-following']
             }
@@ -125,16 +131,18 @@ export function renderActivityTiles(learnerName = 'Learner') {
 function renderTileGroup(group, index) {
     const columnClass = index === 0 ? 'xl:col-span-3' : '';
     const tileGridClass = index === 0
-        ? 'grid grid-cols-1 md:grid-cols-2 gap-4 w-full'
-        : 'grid grid-cols-1 gap-4 w-full';
+        ? 'grid grid-cols-1 md:grid-cols-2 gap-3 w-full'
+        : 'grid grid-cols-1 gap-3 w-full';
 
     return `
-        <section class="${columnClass} rounded-lg bg-gradient-to-br ${group.accentClass} border-2 p-3 sm:p-4 text-slate-950 shadow-sm">
-            <div class="flex flex-col gap-3">
-                <div>
-                    <p class="text-xs font-black uppercase tracking-[0.16em] ${group.labelClass}">${group.category}</p>
-                    <h3 class="mt-1 text-xl sm:text-2xl font-black text-slate-950">${group.title}</h3>
-                    <p class="mt-1 text-sm font-semibold text-slate-700">${group.description}</p>
+        <section class="${columnClass} rounded-lg border border-slate-800/70 bg-slate-900/55 p-2.5 sm:p-3 text-slate-100">
+            <div class="flex flex-col gap-2.5">
+                <div class="flex items-end justify-between gap-3 px-1">
+                    <div>
+                        <p class="text-[11px] font-black uppercase tracking-[0.16em] ${group.labelClass}">${group.category}</p>
+                        <h3 class="mt-0.5 text-base sm:text-lg font-black text-slate-100">${group.title}</h3>
+                    </div>
+                    <p class="hidden sm:block text-xs font-semibold text-slate-400">${group.description}</p>
                 </div>
                 ${group.tiles.length
                     ? `<div class="${tileGridClass}">${group.tiles.map(renderActivityTile).join('')}</div>`
@@ -150,7 +158,7 @@ function renderReservedPanel(group) {
         : 'More activities will grow here.';
 
     return `
-        <div class="rounded-lg border-2 border-dashed border-emerald-300 bg-white/60 px-4 py-4 text-sm font-bold text-emerald-900">
+        <div class="rounded-lg border border-dashed border-emerald-500/60 bg-emerald-950/45 px-4 py-3 text-sm font-bold text-emerald-100">
             ${message}
         </div>
     `;
@@ -168,12 +176,16 @@ function renderAvailableTile(tile) {
             type="button"
             data-game="${tile.activityId}"
             aria-label="Start ${tile.learnerName}"
-            class="btn-launch-game group min-h-[150px] w-full rounded-lg border-2 border-white/80 bg-white/90 px-4 py-4 text-left shadow-md transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-emerald-300/80">
-            <span class="flex h-full flex-col items-start">
-                <span class="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-lg bg-gradient-to-br from-yellow-200 via-emerald-100 to-sky-200 text-5xl shadow-inner" aria-hidden="true">${tile.icon}</span>
-                <span class="text-xl sm:text-2xl font-black leading-tight text-slate-950">${tile.learnerName}</span>
-                <span class="mt-2 min-h-[36px] text-sm sm:text-base font-bold leading-snug text-slate-700">${tile.description}</span>
-                <span class="mt-3 inline-flex min-h-[48px] w-full items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-base sm:text-lg font-black text-white shadow-sm transition group-hover:bg-emerald-500">
+            class="btn-launch-game group min-h-[148px] w-full rounded-lg border-2 ${tile.identityClass} bg-gradient-to-br px-4 py-3.5 text-left shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-emerald-300/80">
+            <span class="flex h-full flex-col">
+                <span class="flex items-start gap-4">
+                    <span class="inline-flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${tile.iconClass} text-6xl shadow-inner ring-2 ring-white/70" aria-hidden="true">${tile.icon}</span>
+                    <span class="min-w-0 pt-1">
+                        <span class="block text-2xl sm:text-3xl font-black leading-tight text-slate-950">${tile.learnerName}</span>
+                        <span class="mt-2 block text-sm sm:text-base font-bold leading-snug text-slate-700">${tile.description}</span>
+                    </span>
+                </span>
+                <span class="mt-3 inline-flex min-h-[46px] w-full items-center justify-center rounded-lg ${tile.actionClass} px-4 py-2 text-base sm:text-lg font-black text-white shadow-sm transition">
                     Start Activity
                 </span>
             </span>
@@ -186,12 +198,16 @@ function renderComingSoonTile(tile) {
         <div
             role="group"
             aria-label="${tile.learnerName} coming soon"
-            class="min-h-[150px] w-full rounded-lg border-2 border-slate-200 bg-white/70 px-4 py-4 text-left shadow-sm">
-            <span class="flex h-full flex-col items-start">
-                <span class="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-lg bg-gradient-to-br from-slate-100 via-sky-100 to-emerald-100 text-5xl opacity-90 shadow-inner" aria-hidden="true">${tile.icon}</span>
-                <span class="text-xl sm:text-2xl font-black leading-tight text-slate-700">${tile.learnerName}</span>
-                <span class="mt-2 min-h-[36px] text-sm sm:text-base font-bold leading-snug text-slate-600">${tile.description}</span>
-                <span class="mt-3 inline-flex min-h-[48px] w-full items-center justify-center rounded-lg border-2 border-slate-300 bg-slate-100 px-4 py-2 text-base sm:text-lg font-black text-slate-500">
+            class="min-h-[148px] w-full rounded-lg border-2 ${tile.identityClass} bg-gradient-to-br px-4 py-3.5 text-left shadow-sm opacity-90">
+            <span class="flex h-full flex-col">
+                <span class="flex items-start gap-4">
+                    <span class="inline-flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${tile.iconClass} text-6xl shadow-inner ring-2 ring-white/60" aria-hidden="true">${tile.icon}</span>
+                    <span class="min-w-0 pt-1">
+                        <span class="block text-2xl sm:text-3xl font-black leading-tight text-slate-700">${tile.learnerName}</span>
+                        <span class="mt-2 block text-sm sm:text-base font-bold leading-snug text-slate-600">${tile.description}</span>
+                    </span>
+                </span>
+                <span class="mt-3 inline-flex min-h-[46px] w-full items-center justify-center rounded-lg border-2 border-slate-300 bg-white/70 px-4 py-2 text-base sm:text-lg font-black text-slate-500">
                     Coming Soon
                 </span>
             </span>

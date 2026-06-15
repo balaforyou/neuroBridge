@@ -99,6 +99,8 @@ Rules:
 - Keep clear spacing from task content.
 - Prevent overlap with object cards or worksheets.
 - Keep controls large and equal where possible.
+- Primary answer actions must remain visible without scrolling.
+- The learner should never need to scroll to locate the primary answer action.
 
 ### Need Help Area
 
@@ -109,6 +111,7 @@ Rules:
 - Do not place help between instruction and answer choices.
 - Keep help accessible.
 - Keep scaffold content calm and brief.
+- Place optional help after the primary answer action when vertical space is constrained.
 
 ### Feedback Area
 
@@ -154,6 +157,47 @@ Rules:
 - Use stable content regions.
 - Keep learner task and answer controls visible.
 - Give the activity content region the maximum available space after header, answer, help, and feedback needs are met.
+
+### Primary Answer Visibility Standard
+
+Definition:
+
+Primary learner actions must remain visible without scrolling.
+
+Applies to:
+
+- Attribute Explorer.
+- Matrix Reasoning.
+- Worksheet activities.
+- Matching activities.
+- Ordering activities.
+- Number activities.
+- Future activity templates.
+
+Preferred activity order:
+
+```text
+Question / Activity Content
+  |
+  v
+Primary Answer Actions
+  |
+  v
+Optional Help
+  |
+  v
+Optional Feedback
+  |
+  v
+Secondary Controls
+```
+
+Rationale:
+
+- Reduces cognitive load.
+- Improves task initiation.
+- Keeps learner attention on attempting before asking for help.
+- Prevents scrolling from hiding the main action.
 
 ### No Hover Dependency
 

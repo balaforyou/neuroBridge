@@ -85,6 +85,8 @@ Behavior:
 - Should not sit between instruction and answer controls.
 - May become disabled after use in a trial.
 - Uses learner-friendly wording such as `Need Help?`.
+- Should not visually compete with primary answer actions.
+- Should appear after answer actions when space is tight.
 
 Accessibility Notes:
 
@@ -104,6 +106,8 @@ Behavior:
 - Shows selected state.
 - Shows disabled state after answer submission.
 - May contain text, image, icon, object, or mixed content.
+- Receives higher visual priority than help controls.
+- Must remain visible without scrolling in learner activity layouts.
 
 Accessibility Notes:
 
@@ -257,6 +261,59 @@ Guidelines:
 - No technical terminology.
 - Clear `Start Activity` action for available activities.
 - Clear disabled state for coming-soon activities.
+
+### Activity Identity Principles
+
+An activity should be recognizable before the learner reads the full description.
+
+Primary identity cues:
+
+- Learner-facing name.
+- Icon.
+- Color family.
+- Future artwork or illustration.
+
+Rules:
+
+- Learner names remain the primary label.
+- Technical names stay out of the learner tile.
+- Category labels are secondary navigation aids and should not visually compete with activity tiles.
+- Category containers should stay light, compact, and quiet.
+- Activity tiles should carry the stronger visual identity.
+- Descriptions should stay short and support recognition rather than explain the full task.
+
+Visual tone:
+
+- Warm.
+- Friendly.
+- Calm.
+- Exploratory.
+
+Avoid:
+
+- Dashboard or admin card styling.
+- Generic cards that only differ by text.
+- Excessive visual noise.
+- Dense category descriptions.
+
+### Future Artwork Slots
+
+Activity Tile v1.0 remains icon-based. Future stories may replace or supplement icons with lightweight illustrations.
+
+Reserved identity directions:
+
+- `Pattern Detective`: puzzle, pattern trail, or clue path artwork.
+- `Look Closely`: eye, magnifier, color/shape inspection artwork.
+- `Grid Vision`: target grid, scanning path, or visual search artwork.
+- `Number Bridges`: bridge, number blocks, or stepping-stone artwork.
+- `Social Detective`: people, conversation clue, or situation card artwork.
+
+Artwork guidance:
+
+- Artwork should reinforce the activity identity.
+- Artwork should scale across mobile and tablet.
+- Artwork should remain low-stimulation.
+- Artwork should not replace the learner-facing name.
 
 ## Card
 

@@ -136,6 +136,23 @@ Used for:
 
 Disabled states must remain readable and should not look like errors.
 
+### Activity Identity
+
+Distinct but calm color family used to help an activity become recognizable in the Activity Hub.
+
+Used for:
+
+- Activity tile background.
+- Activity icon badge.
+- Future activity artwork.
+
+Rules:
+
+- Each activity may have a recognizable color family.
+- The color family should support identity without overpowering SIRAASH branding.
+- Category colors should remain quieter than activity tile colors.
+- Do not rely on color alone; pair color with learner name and icon/artwork.
+
 ## Spacing Tokens
 
 ### XS

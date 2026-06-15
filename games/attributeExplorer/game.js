@@ -129,7 +129,7 @@ function renderProblem() {
 
     const companionHelpEl = document.getElementById('companion-help-text');
     if (companionHelpEl) {
-        companionHelpEl.innerText = `SIRAASH is here if you need help, ${getLearnerName()}.`;
+        companionHelpEl.innerText = `Need a clue, ${getLearnerName()}? 🌱`;
     }
 
     renderItem(itemA, problem.cells[0], problem.rule.attribute);
