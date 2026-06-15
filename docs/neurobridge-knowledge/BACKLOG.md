@@ -23,32 +23,12 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 - Priority: High
 - Status: Backlog
 - Notes: Responsive UI, touch standards, automated UI tests, performance, security, privacy, accessibility, and backend adapter readiness.
+- Add noscript fallback
+- Document iframe/postMessage contract
 - Add view manager for hidden/flex state
 - Replace Tailwind CDN before public deployment
 - Add Playwright smoke tests before beta
 - Add IndexedDB persistence before parent dashboard maturity
-
-- Story ID: NB-060.14
-- Title: Shell-to-Activity Message Contract
-- Epic: Platform Readiness
-- Priority: Medium
-- Status: Backlog
-- Problem: Activities run inside isolated activity containers/frames and communicate with the parent shell. The communication contract is implemented but not formally documented.
-- Objective: Define and document the standard communication contract between the SIRAASH shell and activities.
-- Scope: Activity Launch, Activity Ready, Session Start, Trial Result, Session Complete, Home Navigation, Parent Configuration, Forced Activity/Stage Override.
-- Outcome: Future activities can integrate consistently without inventing their own messaging protocol.
-- Notes: Documentation-only initially. Implementation remains unchanged.
-
-- Story ID: NB-060.15
-- Title: NoScript and Graceful Failure Experience
-- Epic: Platform Readiness
-- Priority: Low
-- Status: Backlog
-- Problem: The platform currently assumes JavaScript is available.
-- Objective: Provide a learner-friendly fallback when scripts fail to load or are disabled.
-- Scope: noscript message, friendly recovery guidance, parent troubleshooting hint.
-- Outcome: Users receive understandable guidance instead of a blank or broken page.
-- Notes: Required before public deployment. Not required for local-first MVP usage.
 
 ## UI / UX Backlog
 
@@ -224,3 +204,126 @@ Sprint Recommendation
 
 Future Readiness → Expression & Logic Track
 Target after stabilization of current visual pattern and narration scaffolds.
+
+Backlog ID:
+NB-060.14
+
+Title:
+Shell-to-Activity Message Contract
+
+Epic:
+Platform Readiness
+
+Priority:
+Medium
+
+Status:
+Backlog
+
+Problem:
+Activities run inside isolated activity containers/frames and
+communicate with the parent shell. The message contract is
+currently implemented but not formally documented.
+
+Objective:
+Define and document the standard communication contract between
+the SIRAASH shell and activities.
+
+Scope:
+- Activity Launch
+- Activity Ready
+- Session Start
+- Trial Result
+- Session Complete
+- Home Navigation
+- Parent Configuration
+- Forced Activity/Stage Override
+
+Outcome:
+Future activities can integrate consistently without inventing
+their own messaging protocol.
+
+Notes:
+Documentation-only initially. Implementation remains unchanged.
+
+Backlog ID:
+NB-060.15
+
+Title:
+NoScript and Graceful Failure Experience
+
+Epic:
+Platform Readiness
+
+Priority:
+Low
+
+Status:
+Backlog
+
+Problem:
+The platform currently assumes JavaScript is available.
+
+Objective:
+Provide a learner-friendly fallback when scripts fail to load
+or are disabled.
+
+Scope:
+- noscript message
+- friendly recovery guidance
+- parent troubleshooting hint
+
+Notes:
+Required before public deployment, not required for local-first
+MVP usage.
+
+
+Backlog ID:
+NB-110.1
+
+Title:
+Learner Profile Expansion
+
+Epic:
+Learner Personalization
+
+Priority:
+Medium
+
+Status:
+Backlog
+
+Problem:
+Current learner profile supports only a display name.
+
+Objective:
+Expand learner profile structure to support future personalization and multi-learner scenarios.
+
+Current Structure:
+
+{
+  displayName: "Adarsh"
+}
+
+Future Structure:
+
+{
+  learnerId: "adarsh-001",
+  displayName: "Adarsh",
+  preferredName: "Adi",
+  preferredLanguage: "en",
+  avatar: "seedling",
+  age: 12,
+  activeLearningPath: "foundation",
+  personalizationEnabled: true
+}
+
+Scope:
+- Profile model
+- Profile persistence
+- Personalization support
+- Future multi-learner support
+
+Notes:
+No implementation required in current MVP.
+Current displayName-based personalization remains sufficient.

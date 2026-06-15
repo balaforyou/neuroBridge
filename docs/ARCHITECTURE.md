@@ -174,3 +174,37 @@ Files:
 - `BACKLOG.md`: future work before formal Jira entry.
 - `SCAFFOLDS.md`: reusable scaffold patterns.
 - `ARCHITECTURE_NOTES.md`: architecture decisions and rationale.
+
+Learner Identity
+
+SIRAASH learner personalization is driven from the student profile stored in IndexedDB.
+
+Authoritative Source:
+js/database.js
+
+Profile Structure:
+
+{
+  role: "student",
+  password: "2580",
+  displayName: "Adarsh",
+  isAdmin: false
+}
+
+The displayName field is used for:
+- Welcome Screen
+- Activity Hub
+- Personalized Help Messages
+- Personalized Success Messages
+- Future Learning Paths
+
+Development Example:
+
+import("./js/database.js").then(db =>
+  db.seedCustomPins("4321", "2580", "Adarsh")
+);
+
+This seeds:
+Parent PIN: 4321
+Student PIN: 2580
+Learner Name: Adarsh
