@@ -7,6 +7,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { touch-action: none; -webkit-tap-highlight-color: transparent; }
+        .siraash-letter:nth-child(1) { color: #047857; }
+        .siraash-letter:nth-child(2) { color: #0f766e; }
+        .siraash-letter:nth-child(3) { color: #0369a1; }
+        .siraash-letter:nth-child(4) { color: #b7791f; }
+        .siraash-letter:nth-child(5) { color: #059669; }
+        .siraash-letter:nth-child(6) { color: #115e59; }
+        .siraash-letter:nth-child(7) { color: #075985; }
         @keyframes ae-celebrate-pop {
             0% { opacity: 0; transform: translateY(8px) scale(0.86); }
             35% { opacity: 1; transform: translateY(0) scale(1.05); }
@@ -15,28 +22,43 @@
         .celebrate-pop { animation: ae-celebrate-pop 800ms ease-out both; }
     </style>
 </head>
-<body class="bg-sky-50 text-slate-950 h-screen w-screen overflow-hidden select-none">
-    <main class="h-full w-full flex flex-col p-2 gap-2">
-        <header class="shrink-0 bg-white border-2 border-sky-300 rounded-xl px-4 py-1.5 flex items-center justify-between text-xs text-sky-900 shadow-sm">
-            <div class="font-black">Attribute Explorer</div>
-            <div class="flex items-center gap-4">
-                <div>Trial <span id="ui-trial" class="font-black text-sky-950">1/5</span></div>
-                <div>Stars <span id="ui-streak" class="font-black text-emerald-700">0</span></div>
-                <button id="hint-button" class="px-3 py-1.5 rounded-full bg-amber-200 hover:bg-amber-300 active:bg-amber-400 text-amber-950 text-xs font-black border-2 border-amber-500 transition focus:outline-none focus:ring-4 focus:ring-amber-400/60">
-                    Give Hint
-                </button>
+<body class="bg-[#edf8f3] text-slate-950 h-screen w-screen overflow-hidden select-none">
+    <main class="h-full w-full flex flex-col p-2 sm:p-3 gap-2 sm:gap-3">
+        <header class="shrink-0 rounded-2xl bg-gradient-to-r from-[#fff7df] via-[#e2f6ee] to-[#dff1fb] border-2 border-emerald-200 px-3 py-2 sm:px-5 sm:py-3 shadow-sm">
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0 flex items-center gap-3">
+                    <div data-growth-state-slot="future" class="shrink-0 inline-flex items-center rounded-full bg-emerald-100/90 border-2 border-emerald-300 px-3 py-1.5 shadow-sm">
+                        <span class="text-xl sm:text-2xl mr-2" aria-hidden="true">&#127793;</span>
+                        <span class="text-lg sm:text-2xl font-black tracking-[0.12em]" aria-label="SIRAASH">
+                            <span class="siraash-letter">S</span><span class="siraash-letter">I</span><span class="siraash-letter">R</span><span class="siraash-letter">A</span><span class="siraash-letter">A</span><span class="siraash-letter">S</span><span class="siraash-letter">H</span>
+                        </span>
+                    </div>
+
+                    <div class="min-w-0">
+                        <div class="text-xs sm:text-sm font-black uppercase tracking-[0.12em] text-emerald-800">Activity</div>
+                        <h1 class="truncate text-lg sm:text-2xl font-black text-slate-950">Attribute Explorer</h1>
+                    </div>
+                </div>
+
+                <div class="shrink-0 flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-slate-800">
+                    <div class="rounded-full bg-white/75 border border-emerald-200 px-3 py-1.5">
+                        Trial <span id="ui-trial" class="font-black text-slate-950">1/5</span>
+                    </div>
+                    <div class="rounded-full bg-white/75 border border-amber-200 px-3 py-1.5">
+                        Stars <span id="ui-streak" class="font-black text-emerald-700">0</span>
+                    </div>
+                </div>
             </div>
         </header>
 
-        <section class="relative flex-1 min-h-0 bg-white rounded-2xl border-4 border-sky-300 shadow-xl p-3 overflow-hidden">
-            <div id="celebration-burst" class="pointer-events-none absolute top-14 left-1/2 -translate-x-1/2 text-4xl opacity-0">✓</div>
+        <section class="relative flex-1 min-h-0 bg-[#fffaf0] rounded-3xl border-4 border-emerald-200 shadow-xl p-3 sm:p-4 overflow-hidden">
+            <div id="celebration-burst" class="pointer-events-none absolute top-16 left-1/2 -translate-x-1/2 text-4xl opacity-0">&#10003;</div>
 
-            <div class="h-full max-w-4xl mx-auto grid grid-rows-[auto_minmax(190px,1fr)_64px] gap-3 overflow-hidden">
-                <div class="text-center space-y-1">
+            <div class="h-full max-w-4xl mx-auto grid grid-rows-[auto_minmax(180px,1fr)_auto_auto] gap-2 sm:gap-3 overflow-hidden">
+                <div class="activity-content-area text-center space-y-1">
                     <div id="attribute-prompt" class="inline-flex items-center justify-center rounded-xl bg-yellow-300 border-4 border-yellow-500 px-6 py-2.5 text-2xl sm:text-3xl font-black text-slate-950 shadow-sm">
-                        🎨 LOOK AT COLOR
+                        LOOK AT COLOR
                     </div>
-                    <div id="feedback-text" class="text-base sm:text-lg font-black text-amber-700 min-h-[24px]"></div>
                 </div>
 
                 <div id="item-stage" class="min-h-0 w-full flex items-center justify-center gap-6 sm:gap-12 overflow-hidden">
@@ -44,13 +66,26 @@
                     <div id="item-b" class="relative w-48 h-44 sm:w-60 sm:h-52 rounded-2xl bg-white border-4 border-sky-300 shadow-sm flex items-center justify-center"></div>
                 </div>
 
-                <div id="answer-dock" class="w-full max-w-xl mx-auto grid grid-cols-2 gap-3 self-end">
-                    <button data-choice="same" class="answer-button h-12 sm:h-14 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-emerald-950 text-xl sm:text-2xl font-black shadow-md border-4 border-emerald-700 transition transform hover:scale-[1.02] focus:outline-none focus:ring-8 focus:ring-emerald-300">
-                        Same
+                <div class="need-help-area flex flex-col items-center justify-center gap-1">
+                    <div id="companion-help-text" class="text-xs sm:text-sm font-black text-emerald-800 min-h-[18px]">
+                        SIRAASH is here if you need help.
+                    </div>
+                    <button id="hint-button" class="min-h-[44px] px-5 py-2 rounded-full bg-amber-200 hover:bg-amber-300 active:bg-amber-400 text-amber-950 text-sm sm:text-base font-black border-2 border-amber-500 transition focus:outline-none focus:ring-4 focus:ring-amber-400/60">
+                        Need Help?
                     </button>
-                    <button data-choice="different" class="answer-button h-12 sm:h-14 rounded-xl bg-fuchsia-500 hover:bg-fuchsia-400 active:bg-fuchsia-600 text-fuchsia-950 text-xl sm:text-2xl font-black shadow-md border-4 border-fuchsia-800 transition transform hover:scale-[1.02] focus:outline-none focus:ring-8 focus:ring-fuchsia-300">
-                        Different
-                    </button>
+                </div>
+
+                <div class="space-y-2">
+                    <div id="answer-dock" class="w-full max-w-xl mx-auto grid grid-cols-2 gap-3 self-end">
+                        <button data-choice="same" class="answer-button h-12 sm:h-14 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-emerald-950 text-xl sm:text-2xl font-black shadow-md border-4 border-emerald-700 transition transform hover:scale-[1.02] focus:outline-none focus:ring-8 focus:ring-emerald-300">
+                            Same
+                        </button>
+                        <button data-choice="different" class="answer-button h-12 sm:h-14 rounded-xl bg-fuchsia-500 hover:bg-fuchsia-400 active:bg-fuchsia-600 text-fuchsia-950 text-xl sm:text-2xl font-black shadow-md border-4 border-fuchsia-800 transition transform hover:scale-[1.02] focus:outline-none focus:ring-8 focus:ring-fuchsia-300">
+                            Different
+                        </button>
+                    </div>
+
+                    <div id="feedback-text" class="feedback-area text-center text-base sm:text-lg font-black text-amber-700 min-h-[24px]"></div>
                 </div>
             </div>
         </section>

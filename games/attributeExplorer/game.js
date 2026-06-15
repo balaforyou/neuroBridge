@@ -99,7 +99,7 @@ function renderProblem() {
 
     if (feedbackEl) {
         feedbackEl.innerText = '';
-        feedbackEl.className = 'text-base sm:text-lg font-black text-amber-700 min-h-[24px]';
+        feedbackEl.className = 'feedback-area text-center text-base sm:text-lg font-black text-amber-700 min-h-[24px]';
     }
 
     if (celebrationEl) {
@@ -111,6 +111,11 @@ function renderProblem() {
     if (hintButton) {
         hintButton.disabled = false;
         hintButton.classList.remove('opacity-60');
+    }
+
+    const companionHelpEl = document.getElementById('companion-help-text');
+    if (companionHelpEl) {
+        companionHelpEl.innerText = 'SIRAASH is here if you need help.';
     }
 
     renderItem(itemA, problem.cells[0], problem.rule.attribute);
@@ -175,10 +180,10 @@ function processSelection(choice) {
     }
 
     if (feedbackEl) {
-        feedbackEl.innerText = isCorrect ? '✓ Yes!' : '';
+        feedbackEl.innerText = isCorrect ? 'Nice work 😊' : "Let's look again together 🌱";
         feedbackEl.className = isCorrect
-            ? 'text-xl sm:text-2xl font-black text-emerald-700 min-h-[24px]'
-            : 'text-base sm:text-lg font-black text-amber-700 min-h-[24px]';
+            ? 'feedback-area text-center text-xl sm:text-2xl font-black text-emerald-700 min-h-[24px]'
+            : 'feedback-area text-center text-base sm:text-lg font-black text-amber-700 min-h-[24px]';
     }
 
     if (isCorrect && celebrationEl) {
@@ -247,8 +252,13 @@ function giveHint() {
 
     const feedbackEl = document.getElementById('feedback-text');
     if (feedbackEl) {
-        feedbackEl.innerText = `Look only at ${problem.rule.attribute}.`;
-        feedbackEl.className = 'text-base sm:text-lg font-black text-amber-700 min-h-[24px]';
+        feedbackEl.innerText = `SIRAASH has a clue for you 🌱 Look only at ${problem.rule.attribute}.`;
+        feedbackEl.className = 'feedback-area text-center text-base sm:text-lg font-black text-amber-700 min-h-[24px]';
+    }
+
+    const companionHelpEl = document.getElementById('companion-help-text');
+    if (companionHelpEl) {
+        companionHelpEl.innerText = 'SIRAASH has a clue for you 🌱';
     }
 
     renderCurrentItems();
