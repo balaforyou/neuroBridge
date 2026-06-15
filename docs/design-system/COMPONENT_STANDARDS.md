@@ -310,3 +310,5 @@ Accessibility Notes:
 - Do not rely on sound alone.
 - Keep motion small and avoid repeated flashing.
 - Use text or icon support alongside color.
+- May use `{learnerName}` for short micro-praise when the name comes from the current session/profile.
+- Must fall back to `Learner` and must not hardcode a specific learner name.

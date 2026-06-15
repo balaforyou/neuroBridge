@@ -89,3 +89,16 @@ Use this file for decisions that shape NeuroBridge contracts, registries, metric
 - Rationale: Children learn skills before terminology. Adults learn terminology. SIRAASH should invite the learner into a clear activity, while NeuroBridge should preserve precise activity metadata.
 - Impact: Future Activity Hub and Activity Tile work should provide both `parentName` and `learnerName`.
 - Follow-up Items: Implement Activity Tile Framework v1.0 in NB-101.1 and align game registry metadata later if needed.
+
+### ADR-007: SIRAASH Is Learner-Aware
+
+- ADR ID: ADR-007
+- Date: 2026-06-15
+- Decision: SIRAASH may personalize learner-facing messages using the learner's name.
+- Context: Learner-facing screens now include welcome, Activity Hub, activity shell, help, feedback, and completion messages. These moments can support connection when they acknowledge the learner directly.
+- Options Considered: Generic SIRAASH messages only, hardcoded learner names, dynamic learner-name personalization.
+- Decision Taken: Support dynamic learner-name insertion in SIRAASH learner-facing messages.
+- Rationale: Personal acknowledgement supports engagement, belonging, and micro-praise. For learners like Adarsh, direct name-based praise can improve emotional connection and willingness to continue.
+- Impact: Learner-facing welcome, Activity Hub, help, feedback, and completion messages should support dynamic learner-name insertion.
+- Constraint: Do not hardcode a specific learner name. Always use the session/profile learner name with a safe `Learner` fallback.
+- Follow-up Items: Extend learner-aware messaging to future activity templates and completion screens.

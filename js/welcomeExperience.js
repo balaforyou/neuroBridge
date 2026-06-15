@@ -1,6 +1,7 @@
 import { AppState } from './app.js';
 import { switchView } from './router.js';
 import { renderStudentMetrics } from './dashboard.js';
+import { renderActivityTiles } from './activityTiles.js';
 
 const LAST_WELCOME_DATE_KEY = 'neurobridge:lastLearnerWelcomeDate';
 
@@ -35,6 +36,7 @@ function showWelcomeView() {
 }
 
 function enterActivitySelection() {
+    renderActivityTiles(AppState.studentName || 'Learner');
     renderStudentMetrics();
     switchView('student');
 }

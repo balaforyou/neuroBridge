@@ -107,8 +107,14 @@ export function initActivityTiles() {
     renderActivityTiles();
 }
 
-function renderActivityTiles() {
+export function renderActivityTiles(learnerName = 'Learner') {
     const container = document.getElementById('game-selection-list');
+    const messageEl = document.getElementById('activity-hub-message');
+
+    if (messageEl) {
+        messageEl.innerText = `${learnerName || 'Learner'}, let's learn together 🌱`;
+    }
+
     if (!container) return;
 
     container.innerHTML = ACTIVITY_TILE_GROUPS
@@ -123,12 +129,12 @@ function renderTileGroup(group, index) {
         : 'grid grid-cols-1 gap-4 w-full';
 
     return `
-        <section class="${columnClass} rounded-lg bg-gradient-to-br ${group.accentClass} border-2 p-4 sm:p-5 text-slate-950 shadow-sm">
-            <div class="flex flex-col gap-4">
+        <section class="${columnClass} rounded-lg bg-gradient-to-br ${group.accentClass} border-2 p-3 sm:p-4 text-slate-950 shadow-sm">
+            <div class="flex flex-col gap-3">
                 <div>
                     <p class="text-xs font-black uppercase tracking-[0.16em] ${group.labelClass}">${group.category}</p>
-                    <h3 class="mt-1 text-2xl font-black text-slate-950">${group.title}</h3>
-                    <p class="mt-2 text-sm sm:text-base font-semibold text-slate-700">${group.description}</p>
+                    <h3 class="mt-1 text-xl sm:text-2xl font-black text-slate-950">${group.title}</h3>
+                    <p class="mt-1 text-sm font-semibold text-slate-700">${group.description}</p>
                 </div>
                 ${group.tiles.length
                     ? `<div class="${tileGridClass}">${group.tiles.map(renderActivityTile).join('')}</div>`
@@ -140,11 +146,11 @@ function renderTileGroup(group, index) {
 
 function renderReservedPanel(group) {
     const message = group.category === 'Recommended'
-        ? 'Choose any activity below for now.'
+        ? 'Start with any activity today. SIRAASH will guide your path soon.'
         : 'More activities will grow here.';
 
     return `
-        <div class="rounded-lg border-2 border-dashed border-emerald-300 bg-white/60 px-5 py-5 text-sm font-bold text-emerald-900">
+        <div class="rounded-lg border-2 border-dashed border-emerald-300 bg-white/60 px-4 py-4 text-sm font-bold text-emerald-900">
             ${message}
         </div>
     `;
@@ -162,12 +168,12 @@ function renderAvailableTile(tile) {
             type="button"
             data-game="${tile.activityId}"
             aria-label="Start ${tile.learnerName}"
-            class="btn-launch-game group min-h-[220px] w-full rounded-lg border-2 border-white/80 bg-white/90 px-5 py-5 text-left shadow-md transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-emerald-300/80">
+            class="btn-launch-game group min-h-[150px] w-full rounded-lg border-2 border-white/80 bg-white/90 px-4 py-4 text-left shadow-md transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-emerald-300/80">
             <span class="flex h-full flex-col items-start">
-                <span class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-lg bg-emerald-100 text-4xl shadow-inner" aria-hidden="true">${tile.icon}</span>
-                <span class="text-2xl font-black leading-tight text-slate-950">${tile.learnerName}</span>
-                <span class="mt-3 min-h-[44px] text-base font-bold leading-snug text-slate-700">${tile.description}</span>
-                <span class="mt-auto inline-flex min-h-[56px] w-full items-center justify-center rounded-lg bg-emerald-600 px-4 py-3 text-lg font-black text-white shadow-sm transition group-hover:bg-emerald-500">
+                <span class="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-lg bg-gradient-to-br from-yellow-200 via-emerald-100 to-sky-200 text-5xl shadow-inner" aria-hidden="true">${tile.icon}</span>
+                <span class="text-xl sm:text-2xl font-black leading-tight text-slate-950">${tile.learnerName}</span>
+                <span class="mt-2 min-h-[36px] text-sm sm:text-base font-bold leading-snug text-slate-700">${tile.description}</span>
+                <span class="mt-3 inline-flex min-h-[48px] w-full items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-base sm:text-lg font-black text-white shadow-sm transition group-hover:bg-emerald-500">
                     Start Activity
                 </span>
             </span>
@@ -180,12 +186,12 @@ function renderComingSoonTile(tile) {
         <div
             role="group"
             aria-label="${tile.learnerName} coming soon"
-            class="min-h-[220px] w-full rounded-lg border-2 border-slate-200 bg-white/65 px-5 py-5 text-left shadow-sm">
+            class="min-h-[150px] w-full rounded-lg border-2 border-slate-200 bg-white/70 px-4 py-4 text-left shadow-sm">
             <span class="flex h-full flex-col items-start">
-                <span class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-lg bg-slate-100 text-4xl grayscale" aria-hidden="true">${tile.icon}</span>
-                <span class="text-2xl font-black leading-tight text-slate-700">${tile.learnerName}</span>
-                <span class="mt-3 min-h-[44px] text-base font-bold leading-snug text-slate-600">${tile.description}</span>
-                <span class="mt-auto inline-flex min-h-[56px] w-full items-center justify-center rounded-lg border-2 border-slate-300 bg-slate-100 px-4 py-3 text-lg font-black text-slate-500">
+                <span class="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-lg bg-gradient-to-br from-slate-100 via-sky-100 to-emerald-100 text-5xl opacity-90 shadow-inner" aria-hidden="true">${tile.icon}</span>
+                <span class="text-xl sm:text-2xl font-black leading-tight text-slate-700">${tile.learnerName}</span>
+                <span class="mt-2 min-h-[36px] text-sm sm:text-base font-bold leading-snug text-slate-600">${tile.description}</span>
+                <span class="mt-3 inline-flex min-h-[48px] w-full items-center justify-center rounded-lg border-2 border-slate-300 bg-slate-100 px-4 py-2 text-base sm:text-lg font-black text-slate-500">
                     Coming Soon
                 </span>
             </span>

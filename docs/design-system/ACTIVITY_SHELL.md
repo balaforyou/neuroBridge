@@ -232,6 +232,18 @@ Approved learner-facing phrases:
 - `Let's look again together 🌱`
 - `Great effort 🌱`
 
+Learner-name token support:
+
+- SIRAASH messages may include the learner name when it improves warmth or micro-praise.
+- Use the session/profile learner name.
+- Fall back to `Learner` when no name is available.
+- Never hardcode a specific learner name.
+
+Examples:
+
+- `Nice work, {learnerName} 😊`
+- `SIRAASH has a clue for you, {learnerName} 🌱`
+
 Tone:
 
 - Calm.

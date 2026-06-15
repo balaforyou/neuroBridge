@@ -197,7 +197,20 @@ export function verifyCredentials(role, inputPassword) {
     });
 }
 
-export function seedCustomPins(parentPin, studentPin, studentName = 'Adarsh') {
+export function getUserProfile(role) {
+    return ensureDB().then((db) => {
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORES.USERS, 'readonly');
+            const store = tx.objectStore(STORES.USERS);
+            const req = store.get(role);
+
+            req.onsuccess = (event) => resolve(event.target.result || null);
+            req.onerror = (e) => reject(e.target.error);
+        });
+    });
+}
+
+export function seedCustomPins(parentPin, studentPin, studentName = 'Learner') {
     return Promise.all([
         savePassword('parent', parentPin, {
             displayName: 'Parent',
@@ -246,7 +259,7 @@ if (typeof window !== 'undefined') {
         const flag = localStorage.getItem('mg_demo_pins_seeded');
 
         if (!flag) {
-            seedCustomPins('4321', '2580', 'Adarsh')
+            seedCustomPins('4321', '2580', 'Learner')
                 .then(() => {
                     localStorage.setItem('mg_demo_pins_seeded', '1');
                 })

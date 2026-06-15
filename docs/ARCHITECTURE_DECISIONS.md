@@ -79,3 +79,20 @@ Provides a stable platform foundation for product validation.
 - Follow-up Items:
   - Apply SIRAASH branding to future learner activity templates.
   - Preserve NeuroBridge branding in parent and analytics areas.
+
+## ADR-007: SIRAASH Is Learner-Aware
+
+- Status: Accepted
+- Date: 2026-06-15
+- Decision: SIRAASH may personalize learner-facing messages using the learner's name.
+- Context: Learner-facing welcome, Activity Hub, help, feedback, and completion messages can support connection when they acknowledge the learner directly.
+- Options Considered:
+  - Generic SIRAASH messages only.
+  - Hardcoded learner names.
+  - Dynamic learner-name personalization.
+- Decision Taken: Use session/profile learner name for SIRAASH learner-facing personalization.
+- Rationale: Personal acknowledgement supports engagement, belonging, and micro-praise.
+- Impact: Learner-facing messages should support learner-name insertion where it remains short and calm.
+- Constraint: Never hardcode a specific learner name. Use the session/profile learner name with a safe `Learner` fallback.
+- Follow-up Items:
+  - Extend learner-aware messaging to future activity templates and completion screens.

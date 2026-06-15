@@ -40,6 +40,7 @@ const gameState = {
     trialStartTime: 0,
     uiSupportLevel: DEFAULT_UI_SUPPORT_LEVEL,
     isTestSession: false,
+    learnerName: 'Learner',
     session: null
 };
 
@@ -50,6 +51,7 @@ window.addEventListener('message', event => {
     gameState.trialsPerBlock = rules.trialsPerBlock || 5;
     gameState.uiSupportLevel = normalizeSupportLevel(rules.uiSupportLevel);
     gameState.isTestSession = Boolean(event.data.isTestSession);
+    gameState.learnerName = normalizeLearnerName(event.data.learnerName);
     gameState.sessionId = createSessionId(ATTRIBUTE_EXPLORER_GAME_ID);
     gameState.currentTrialIndex = 0;
     gameState.trialBlock = [];
@@ -127,7 +129,7 @@ function renderProblem() {
 
     const companionHelpEl = document.getElementById('companion-help-text');
     if (companionHelpEl) {
-        companionHelpEl.innerText = 'SIRAASH is here if you need help.';
+        companionHelpEl.innerText = `SIRAASH is here if you need help, ${getLearnerName()}.`;
     }
 
     renderItem(itemA, problem.cells[0], problem.rule.attribute);
@@ -192,7 +194,9 @@ function processSelection(choice) {
     }
 
     if (feedbackEl) {
-        feedbackEl.innerText = isCorrect ? 'Nice work 😊' : "Let's look again together 🌱";
+        feedbackEl.innerText = isCorrect
+            ? `Nice work, ${getLearnerName()} 😊`
+            : `Let's look again together, ${getLearnerName()} 🌱`;
         feedbackEl.className = isCorrect
             ? 'feedback-area text-center text-xl sm:text-2xl font-black text-emerald-700 min-h-[24px]'
             : 'feedback-area text-center text-base sm:text-lg font-black text-amber-700 min-h-[24px]';
@@ -264,13 +268,13 @@ function giveHint() {
 
     const feedbackEl = document.getElementById('feedback-text');
     if (feedbackEl) {
-        feedbackEl.innerText = `SIRAASH has a clue for you 🌱 Look only at ${problem.rule.attribute}.`;
+        feedbackEl.innerText = `SIRAASH has a clue for you, ${getLearnerName()} 🌱 Look only at ${problem.rule.attribute}.`;
         feedbackEl.className = 'feedback-area text-center text-base sm:text-lg font-black text-amber-700 min-h-[24px]';
     }
 
     const companionHelpEl = document.getElementById('companion-help-text');
     if (companionHelpEl) {
-        companionHelpEl.innerText = 'SIRAASH has a clue for you 🌱';
+        companionHelpEl.innerText = `SIRAASH has a clue for you, ${getLearnerName()} 🌱`;
     }
 
     renderCurrentItems();
@@ -379,6 +383,15 @@ function getAttributePromptClass(attribute) {
 function normalizeSupportLevel(uiSupportLevel) {
     const level = Number(uiSupportLevel || DEFAULT_UI_SUPPORT_LEVEL);
     return level >= 1 && level <= 5 ? level : DEFAULT_UI_SUPPORT_LEVEL;
+}
+
+function normalizeLearnerName(learnerName) {
+    const normalized = String(learnerName || '').trim();
+    return normalized || 'Learner';
+}
+
+function getLearnerName() {
+    return gameState.learnerName || 'Learner';
 }
 
 function shouldShowCardLabels(targetAttribute) {

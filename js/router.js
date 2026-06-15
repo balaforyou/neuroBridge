@@ -76,6 +76,7 @@ async function launchGameModule(gameId) {
             frame.contentWindow.postMessage({
                 type: GAME_EVENTS.INIT,
                 payload: settings,
+                learnerName: AppState.studentName || 'Learner',
                 isTestSession: AppState.user === USER_ROLES.PARENT
             }, '*');
         };

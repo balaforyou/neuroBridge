@@ -24,6 +24,7 @@ let gameState = {
     trialsPerBlock: 5,
     forcedStageOverride: 0,
     isTestSession: false,
+    learnerName: 'Learner',
 
     session: null
 };
@@ -105,6 +106,7 @@ window.addEventListener('message', (event) => {
         gameState.trialsPerBlock = rules.trialsPerBlock || 10;
         gameState.forcedStageOverride = resolveForcedStageOverride(rules, event.data.isTestSession);
         gameState.isTestSession = Boolean(event.data.isTestSession);
+        gameState.learnerName = normalizeLearnerName(event.data.learnerName);
         gameState.currentStage = gameState.forcedStageOverride || 1;
 
         gameState.session = new GameSession({
@@ -228,14 +230,14 @@ function showLinearDecoder(isCorrect, completedProblem) {
 
     const tone = isCorrect ? {
         emoji: '🌟',
-        title: 'Great Thinking!',
+        title: `Great thinking, ${getLearnerName()}!`,
         subtitle: 'You found the pattern.',
         badgeClass: 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30',
         cardClass: 'bg-emerald-950/20 border-emerald-500/25'
     } : {
         emoji: '🧩',
-        title: 'Good Try!',
-        subtitle: 'Let’s learn the clue together.',
+        title: 'Good try!',
+        subtitle: `Let's look again together, ${getLearnerName()}.`,
         badgeClass: 'bg-amber-500/10 text-amber-300 border border-amber-500/30',
         cardClass: 'bg-amber-950/20 border-amber-500/25'
     };
@@ -622,6 +624,15 @@ document.addEventListener("DOMContentLoaded", () => {
 function getShapeSvg(shape) {
     const sizeClass = getStageMetadata(gameState.currentStage)?.gridColumns === 3 ? "w-10 h-10" : "w-12 h-12";
     return SHAPE_TEMPLATES[shape].replace("w-12 h-12", sizeClass);
+}
+
+function normalizeLearnerName(learnerName) {
+    const normalized = String(learnerName || '').trim();
+    return normalized || 'Learner';
+}
+
+function getLearnerName() {
+    return gameState.learnerName || 'Learner';
 }
 
 window.testMatrixStage = (stage) => {

@@ -3,16 +3,16 @@
     // js/auth.js
     import { AppState } from './app.js';
     import { switchView } from './router.js';
-    import { verifyCredentials, ensureDefaultPins, seedCustomPins } from './database.js';
+    import { verifyCredentials, ensureDefaultPins, seedCustomPins, getUserProfile } from './database.js';
     import { renderParentControls } from './dashboard.js';
     import { startLearnerWelcomeExperience } from './welcomeExperience.js';
 
     // Manual reset notes:
     // - To seed different demo PINs, call `seedCustomPins(parentPin, studentPin, studentName)`
-    //   Example: import('./js/database.js').then(db => db.seedCustomPins('9999','1111','Adarsh'))
+    //   Example: import('./js/database.js').then(db => db.seedCustomPins('9999','1111','Learner'))
     // - Or use `savePassword(role, pin)` to set a single role's PIN.
     //Parent (admin): 4321
-    //Adarsh (student): 2580
+    //Learner (student): 2580
 
     export function initAuth() {
         // Ensure simple default PINs exist (only for local/dev usage)
@@ -141,12 +141,12 @@
         const studentBtn = document.getElementById('btn-login-student');
         if (studentBtn) {
             studentBtn.addEventListener('click', () => {
-                showPINPrompt('student', () => {
+                showPINPrompt('student', async () => {
                       AppState.user = 'student';
 
-    // Temporary single-student implementation
-    AppState.studentId = 'adarsh';
-    AppState.studentName = 'Adarsh';
+    const profile = await getUserProfile('student').catch(() => null);
+    AppState.studentId = profile?.id || 'learner';
+    AppState.studentName = normalizeLearnerName(profile?.displayName);
 
     updateHeader('learner', `Learning with ${AppState.studentName} 🌱`);
 
@@ -164,4 +164,9 @@
                 switchView('auth');
             });
         });
+    }
+
+    function normalizeLearnerName(name) {
+        const normalized = String(name || '').trim();
+        return normalized || 'Learner';
     }
