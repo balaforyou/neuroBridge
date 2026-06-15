@@ -15,7 +15,7 @@
 
     <!-- Global App Header -->
     <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center shadow-lg">
-        <h1 class="text-xl font-bold tracking-wide text-indigo-400">NeuroBridge</h1>
+        <h1 id="app-brand" class="text-xl font-bold tracking-wide text-indigo-400">NeuroBridge</h1>
         <div id="auth-status" class="text-sm bg-slate-800 border border-slate-700 px-3 py-1 rounded-full text-slate-400">
             Guest Mode
         </div>
@@ -26,12 +26,12 @@
         
         <!-- View 1: Auth Screen -->
         <section id="view-auth" class="view-section flex flex-col items-center justify-center py-12">
-            <h2 class="text-2xl font-semibold mb-6">Welcome to NeuroBridge</h2>
+            <h2 class="text-2xl font-semibold mb-6">Choose a Profile</h2>
             <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm text-center">
                 <p class="text-slate-400 mb-4">Please select your profile role:</p>
                 <!-- Buttons will get event bindings in auth.js -->
-                <button id="btn-login-student" class="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-medium mb-3 transition">Student Login</button>
-                <button id="btn-login-parent" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 py-3 rounded-xl font-medium transition">Parental Dashboard</button>
+                <button id="btn-login-student" class="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-medium mb-3 transition">Learner Login</button>
+                <button id="btn-login-parent" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 py-3 rounded-xl font-medium transition">Parent Area</button>
             </div>
         </section>
 
@@ -76,10 +76,10 @@
         <section id="view-student" class="view-section hidden">
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                 <div>
-                    <p class="text-sm font-black uppercase tracking-[0.16em] text-emerald-300">Activity Hub</p>
+                    <p class="text-sm font-black uppercase tracking-[0.16em] text-emerald-300">SIRAASH Activity Hub</p>
                     <h2 class="text-3xl sm:text-4xl font-black text-slate-100">Choose an Activity</h2>
                 </div>
-                <button class="btn-logout min-h-[44px] px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-slate-300 hover:text-white hover:bg-slate-800 transition">Switch User</button>
+                <button class="btn-logout min-h-[44px] px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sm text-slate-300 hover:text-white hover:bg-slate-800 transition">Parent Area</button>
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-3 gap-5" id="game-selection-list">
@@ -189,7 +189,7 @@
 
         <!-- View 4: Game Sandbox View -->
         <section id="view-game" class="view-section hidden flex flex-col h-[70vh]">
-            <div class="flex justify-between items-center mb-4">
+            <div id="game-nav-row" class="flex justify-between items-center mb-4">
                 <button id="btn-exit-game" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">
                     ← Back to Dashboard
                 </button>

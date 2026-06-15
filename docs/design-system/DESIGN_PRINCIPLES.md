@@ -58,6 +58,11 @@ Scaffolds should support independence and reduce prompt dependence.
 
 Learner screens should be calm, simple, and task-focused.
 
+Brand identity should also follow audience separation:
+
+- SIRAASH is the learner-facing companion identity.
+- NeuroBridge is the parent, admin, analytics, and research platform identity.
+
 Parent screens may contain:
 
 - Configuration controls.
@@ -67,6 +72,8 @@ Parent screens may contain:
 - Debug or sandbox controls.
 
 Learner screens should not expose unnecessary parent controls, analytics details, or configuration noise.
+
+Learner screens should avoid admin-oriented terms such as Active Session, Student, User, Admin, and Configuration when a softer learner-facing phrase is available.
 
 ## 6. Multi-Language Ready
 

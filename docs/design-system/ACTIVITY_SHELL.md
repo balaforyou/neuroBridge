@@ -1,155 +1,273 @@
-# Activity Shell
+# SIRAASH Activity Shell v1.0
 
-Purpose: Define the shared NeuroBridge activity layout before implementing reusable UI templates.
+Status: Frozen for first-generation learner activities.
 
-The activity shell is a common structure for games, worksheets, social stories, and assessments. It should support learner focus, scaffolds, parent separation, and future localization.
+Purpose: Define the shared learner activity layout before applying the shell to Matrix Reasoning and future NeuroBridge activities.
 
-## Common Layout Flow
+Reference implementation:
+
+- `games/attributeExplorer/index.html`
+- `games/attributeExplorer/game.js`
+
+Activity Shell v1.0 is documentation-only. It standardizes the current SIRAASH learner shell without changing game logic, analytics contracts, scaffold behavior, or activity behavior.
+
+## Canonical Learner Flow
 
 ```text
-SIRAASH Splash
+SIRAASH learner entry
   |
   v
-Daily Welcome / Welcome Back
+Activity Hub
   |
   v
-Activity Header
+Activity Shell
   |
   v
-Activity Content Area
+Activity Content
   |
   v
-Answer Area
+Need Help / Feedback
   |
   v
-Need Help Area
-  |
-  v
-Feedback Area
-  |
-  v
-Session Complete
+Home / Completion
 ```
 
-## SIRAASH Splash
+## Reference Review: Attribute Explorer
 
-Entry screen for the learner experience.
+Attribute Explorer is the v1.0 reference implementation for the SIRAASH Activity Shell.
 
-Purpose:
+Findings:
 
-- Establish the SIRAASH identity.
-- Provide a calm transition into learning.
-- Avoid overwhelming setup controls.
+- SIRAASH branding is visible in the activity header and uses the same muted multi-color learner identity as the welcome screen.
+- The activity title appears as secondary context under the SIRAASH identity.
+- Home navigation is placed inside the activity header, which removes the need for a dedicated back-navigation row.
+- Trial and stars are compact progress pills that do not dominate the learner task.
+- The content area is centered and receives the largest available region.
+- Same and Different controls are large, equal, touch-friendly, and below the object cards.
+- Need Help is available in a consistent region and does not sit between the task and answer controls.
+- Feedback has reserved space, reducing layout jumping after a response.
+- The shell avoids duplicate learner-facing activity labels and unnecessary outer rows.
+- The current layout is strongest on tablet landscape and remains usable on mobile with stacked, touch-first regions.
 
-Future support:
+## Required Shell Regions
 
-- Offline-ready splash assets.
-- Optional parent skip.
-- Regional language greeting.
+### A. Activity Header
 
-## Daily Welcome / Welcome Back
+Purpose: Provide stable learner context without consuming excessive vertical space.
 
-Short learner-friendly greeting before activities begin.
+Required elements:
 
-Examples:
+- SIRAASH learner identity or inherited SIRAASH context.
+- Home navigation.
+- Activity title.
+- Progress summary.
 
-- Daily welcome for first activity of the day.
-- Welcome back for resumed sessions.
-- Optional parent-selected message.
+Rules:
 
-This area should stay brief and should not become a dashboard.
+- SIRAASH is the companion identity.
+- Activity name is context, not the primary brand.
+- Home should return to the Activity Hub.
+- Avoid separate navigation rows when Home can live inside the shell header.
+- Keep progress compact and readable.
 
-## Activity Header
+### B. Activity Content Area
 
-Small, stable header for the current activity.
-
-May include:
-
-- Activity name.
-- Trial or step count.
-- Minimal progress indicator.
-- Parent-only sandbox indicator when needed.
-
-Should avoid:
-
-- Large score displays during solving.
-- Dense analytics.
-- Distracting reward counters.
-
-## Activity Content Area
-
-Primary learner task area.
+Purpose: Hold the main learner task.
 
 Examples:
 
-- Matrix grid.
-- Attribute comparison objects.
+- Visual comparison objects.
+- Matrix grids.
 - Matching cards.
-- Sequence items.
-- Worksheet prompt.
-- Social story panel.
+- Ordering sequences.
+- Measurement displays.
+- Worksheet prompts.
+- Social story panels.
 
-The content area should be visually dominant and centered where possible.
+Rules:
 
-## Answer Area
+- This region should receive the maximum available space.
+- The main task should be visually dominant.
+- Navigation, labels, counters, and duplicate headers should not crowd this area.
+- Avoid fixed-size content that breaks on phones.
 
-Primary response controls.
+### C. Answer Area
 
-Examples:
+Purpose: Hold learner response controls.
 
-- Same / Different buttons.
-- Multiple-choice options.
-- Drag or tap targets.
-- Ordered item slots.
-- Measurement choices.
+Rules:
 
-Answer controls should be large, touch-friendly, and clearly separated from content.
+- Controls should be large, touch-friendly, and clearly separated from content.
+- Minimum touch target: 44px x 44px.
+- Preferred touch target: 56px or larger.
+- Equal-sized answer controls are preferred when choices have equal weight.
+- Avoid overlap between answers and content cards.
+- No essential action may depend on hover.
 
-## Need Help Area
+### D. Need Help Area
 
-Reserved area for scaffold entry and scaffold display.
+Purpose: Provide scaffold access and scaffold display.
 
-The default entry point should be a clear `Need Help` or equivalent button. Help should be available without sitting inside the main answer path.
+Rules:
 
-Possible scaffold display:
+- Use learner-friendly wording: `Need Help?`.
+- The action may trigger an activity-specific scaffold.
+- Help should be easy to find without sitting in the primary answer path.
+- Scaffold text should be short, calm, and activity-specific.
 
-- Attention cue.
-- Attribute cue.
-- Choice reduction.
-- Parent prompt.
-- Model answer.
+Approved examples:
 
-## Feedback Area
+- `Need Help?`
+- `SIRAASH has a clue for you 🌱`
 
-Immediate learner feedback after a response.
+### E. Feedback Area
 
-Feedback should be:
+Purpose: Give immediate learner feedback after a response.
 
-- Clear.
-- Supportive.
+Rules:
+
+- Reserve space to avoid layout jumping.
+- Use encouraging, non-judgmental language.
+- Keep text brief.
+- Support color with text or icon when possible.
+- Do not rely on sound alone.
+
+Approved examples:
+
+- `Nice work 😊`
+- `Let's look again together 🌱`
+- `Great effort 🌱`
+
+Avoid learner-facing language:
+
+- `Wrong`
+- `Failed`
+- `Invalid`
+- `Error`
+
+### F. Completion Area
+
+Purpose: Provide a future reserved end-of-activity state.
+
+Rules:
+
+- Should support SIRAASH companion tone.
+- Should avoid achievements, streaks, or leaderboards unless a future story explicitly adds them.
+- May include a parent handoff or Home return path.
+
+Example tone:
+
+- `Great work today 🌱`
+
+## Activity Shell Contract
+
+Every future activity should be able to provide these shell-facing fields or regions:
+
+- `activityId`
+- `activityName`
+- `activityType`
+- `domain`
+- `skills`
+- `progressState`
+- `contentRegion`
+- `answerRegion`
+- `helpRegion`
+- `feedbackRegion`
+- `completionRegion`
+
+This contract is a design and documentation standard only for v1.0. It does not require a shared code component yet.
+
+## Branding Standard
+
+See ADR-005: NeuroBridge and SIRAASH Audience Separation.
+
+Learner-facing identity:
+
+- SIRAASH
+
+Parent, admin, analytics, and research identity:
+
+- NeuroBridge
+
+Rules:
+
+- Learner screens should not show NeuroBridge branding unless explicitly entering parent, admin, analytics, or research mode.
+- Activity screens should feel like SIRAASH-guided activities.
+- The activity name provides context; SIRAASH provides companion identity.
+- Avoid adult or system language in learner mode when a softer phrase is available.
+
+Avoid learner-facing terms:
+
+- `Dashboard`
+- `Session`
+- `Student`
+- `User`
+- `Admin`
+- `Configuration`
+
+## Navigation Standard
+
+Preferred learner navigation:
+
+- `Home` with a house icon where supported.
+
+Deprecated learner wording:
+
+- `Back to Dashboard`
+
+Rules:
+
+- Home should return to the Activity Hub.
+- Home should be placed inside the activity shell header when possible.
+- Avoid extra navigation rows that consume learning space.
+- Parent-only or sandbox controls may remain in parent/admin surfaces.
+
+## Companion Language Standard
+
+Approved learner-facing phrases:
+
+- `Need Help?`
+- `SIRAASH has a clue for you 🌱`
+- `Nice work 😊`
+- `Let's look again together 🌱`
+- `Great effort 🌱`
+
+Tone:
+
+- Calm.
 - Brief.
-- Visually consistent.
-- Not dependent on harsh error states.
+- Encouraging.
+- Non-judgmental.
+- Predictable.
 
-Examples:
+Avoid:
 
-- Green check.
-- Short success message.
-- Gentle retry cue.
-- Small celebration animation.
+- Harsh failure labels.
+- Dense instructions.
+- Adult-facing system terms.
+- Excessive celebration during problem solving.
 
-## Session Complete
+## Responsive Guidance
 
-End-of-session state.
+Primary target:
 
-May include:
+- Tablet landscape.
 
-- Positive completion message.
-- Parent summary handoff.
-- Next activity suggestion.
-- Return to dashboard.
+Also supported:
 
-Learner completion should feel calm and successful.
+- Mobile portrait.
+- Tablet portrait.
+- Laptop.
+
+Rules:
+
+- Activity content should get maximum available space.
+- Avoid duplicate headers.
+- Avoid fixed-size content that breaks on mobile.
+- Preserve large touch targets.
+- Do not require hover.
+- Keep answer controls reachable.
+- Keep Need Help visible but outside the primary answer path.
 
 ## Reserved Activity Types
 
@@ -165,11 +283,15 @@ The shell should reserve support for these activity types:
 - `SOCIAL_STORY`: Guided social or daily living scenario.
 - `ASSESSMENT`: Structured assessment or baseline activity.
 
-## Template Notes
+## Future Notes
 
-The shell should support both:
+Activity Shell v1.0 deliberately avoids a generic engine or shared framework component.
 
-- Interactive game-like activities.
-- Printable or worksheet-style activities.
+Future work may add:
 
-The same activity model should eventually support learner UI, parent preview, printable mode, and analytics capture.
+- Reusable shell helper functions or components.
+- Activity tiles and learning paths.
+- Printable worksheet variants.
+- Regional language variants.
+- Parent preview mode.
+- Completion templates.

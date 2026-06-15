@@ -12,9 +12,10 @@ Placement: Top of the activity shell.
 
 Behavior:
 
-- Shows activity name and minimal session context.
+- Shows SIRAASH learner identity, Home navigation, activity name, and minimal progress context.
 - May show sandbox or parent mode indicator.
 - Should remain visually quiet during learner solving.
+- Should not be duplicated by an extra learner navigation row.
 
 Accessibility Notes:
 
@@ -83,6 +84,7 @@ Behavior:
 - Opens or displays the next appropriate scaffold.
 - Should not sit between instruction and answer controls.
 - May become disabled after use in a trial.
+- Uses learner-friendly wording such as `Need Help?`.
 
 Accessibility Notes:
 

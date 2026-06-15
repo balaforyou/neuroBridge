@@ -62,3 +62,20 @@ Architecture changes require explicit justification.
 
 Impact:
 Provides a stable platform foundation for product validation.  
+
+## ADR-005: NeuroBridge and SIRAASH Audience Separation
+
+- Status: Accepted
+- Date: 2026-06-15
+- Decision: SIRAASH is the learner-facing companion identity. NeuroBridge is the parent/admin/analytics/research platform identity.
+- Context: Learner screens should feel calm, familiar, and companion-led. Parent and research areas need platform, configuration, analytics, and reporting terminology.
+- Options Considered:
+  - Use NeuroBridge everywhere.
+  - Use SIRAASH everywhere.
+  - Separate identity by audience.
+- Decision Taken: Use SIRAASH for learner entry, Activity Hub, activity shells, and learner feedback. Use NeuroBridge for parent controls, reports, analytics, research, and architecture documentation.
+- Rationale: Audience separation reduces cognitive load for learners while preserving a clear platform identity for adults and research workflows.
+- Impact: Learner-facing screens should avoid terms like Active Session, Student, User, Admin, and Configuration where possible.
+- Follow-up Items:
+  - Apply SIRAASH branding to future learner activity templates.
+  - Preserve NeuroBridge branding in parent and analytics areas.

@@ -48,11 +48,20 @@ Contains stable activity context.
 
 May include:
 
+- SIRAASH learner identity.
+- Home navigation.
 - Activity name.
 - Parent or sandbox mode marker.
 - Minimal navigation.
+- Compact progress.
 
 Should not dominate the learner screen.
+
+Rules:
+
+- Avoid duplicate activity labels.
+- Avoid a separate learner navigation row when navigation can live in the activity shell header.
+- Keep learner-facing navigation wording simple, such as `Home`.
 
 ### Progress Area
 
@@ -144,6 +153,7 @@ Rules:
 - Avoid fixed widths that break on phones.
 - Use stable content regions.
 - Keep learner task and answer controls visible.
+- Give the activity content region the maximum available space after header, answer, help, and feedback needs are met.
 
 ### No Hover Dependency
 

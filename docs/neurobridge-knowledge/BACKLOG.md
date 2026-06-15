@@ -47,6 +47,13 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 - Status: Backlog
 - Notes: Optional background sound support controlled by parent.
 
+- Story ID: NB-140
+- Title: Activity Tile & Learning Path Framework
+- Epic: Learner Experience
+- Priority: Medium
+- Status: Backlog
+- Notes: Replace simple Activity Hub lists with visual activity tiles, icons, recommended paths, and assessment-driven activity assignment. Future phases may include static tiles, category tiles, assessment-driven recommendations, adaptive learning paths, parent-assigned activities, and therapist-assigned activities.
+
 ## Analytics Backlog
 
 - Story ID: NB-030

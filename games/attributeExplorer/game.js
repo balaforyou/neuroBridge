@@ -16,6 +16,8 @@ import {
     createTrialResult
 } from '../../js/trialResult.js';
 
+const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
+
 const SHAPE_TEMPLATES = {
     circle: `<svg viewBox="0 0 100 100" class="attribute-shape"><circle cx="50" cy="50" r="38" stroke="currentColor" stroke-width="10" fill="currentColor" fill-opacity="0.18"/></svg>`,
     square: `<svg viewBox="0 0 100 100" class="attribute-shape"><rect x="16" y="16" width="68" height="68" rx="8" stroke="currentColor" stroke-width="10" fill="currentColor" fill-opacity="0.18"/></svg>`,
@@ -67,11 +69,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('hint-button')?.addEventListener('click', giveHint);
+    document.getElementById('home-button')?.addEventListener('click', navigateHome);
 
     if (!gameState.currentProblem) {
         generateProblem();
     }
 });
+
+function navigateHome() {
+    window.parent.postMessage({
+        type: ACTIVITY_HOME_EVENT,
+        payload: {
+            gameId: ATTRIBUTE_EXPLORER_GAME_ID
+        }
+    }, '*');
+}
 
 function generateProblem() {
     gameState.currentProblem = generateAttributeQuestion();

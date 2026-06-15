@@ -18,9 +18,42 @@
         // Ensure simple default PINs exist (only for local/dev usage)
         ensureDefaultPins().catch(() => {});
 
-        const updateHeader = (roleText) => {
-            const el = document.getElementById('auth-status');
-            if (el) el.innerText = `Active Session: ${roleText}`;
+        const siraashBrandMarkup = `
+            <span class="inline-flex items-center gap-2">
+                <span aria-hidden="true">🌱</span>
+                <span aria-label="SIRAASH">
+                    <span class="text-emerald-400">S</span><span class="text-teal-300">I</span><span class="text-sky-300">R</span><span class="text-amber-300">A</span><span class="text-emerald-300">A</span><span class="text-teal-400">S</span><span class="text-sky-400">H</span>
+                </span>
+            </span>
+        `;
+
+        const updateHeader = (mode, labelText) => {
+            const statusEl = document.getElementById('auth-status');
+            const brandEl = document.getElementById('app-brand');
+
+            if (mode === 'learner') {
+                if (brandEl) {
+                    brandEl.innerHTML = siraashBrandMarkup;
+                    brandEl.className = 'text-xl font-black tracking-[0.12em]';
+                }
+
+                if (statusEl) {
+                    statusEl.innerText = labelText;
+                    statusEl.className = 'text-sm bg-emerald-950/70 border border-emerald-700 px-3 py-1 rounded-full text-emerald-100';
+                }
+
+                return;
+            }
+
+            if (brandEl) {
+                brandEl.innerText = 'NeuroBridge';
+                brandEl.className = 'text-xl font-bold tracking-wide text-indigo-400';
+            }
+
+            if (statusEl) {
+                statusEl.innerText = labelText;
+                statusEl.className = 'text-sm bg-slate-800 border border-slate-700 px-3 py-1 rounded-full text-slate-400';
+            }
         };
 
         function showPINPrompt(role, onSuccess) {
@@ -34,7 +67,7 @@
 
             const title = document.createElement('h3');
             title.className = 'text-lg font-semibold';
-            title.innerText = role === 'parent' ? 'Parent PIN' : 'Student PIN';
+            title.innerText = role === 'parent' ? 'Parent PIN' : 'Learner PIN';
 
             const input = document.createElement('input');
             input.type = 'password';
@@ -98,7 +131,7 @@
             parentBtn.addEventListener('click', () => {
                 showPINPrompt('parent', () => {
                     AppState.user = 'parent';
-                    updateHeader('Parent Console');
+                    updateHeader('parent', 'Parent Console');
                     renderParentControls();
                     switchView('parent');
                 });
@@ -115,7 +148,7 @@
     AppState.studentId = 'adarsh';
     AppState.studentName = 'Adarsh';
 
-    updateHeader(`Student: ${AppState.studentName}`);
+    updateHeader('learner', `Learning with ${AppState.studentName} 🌱`);
 
     startLearnerWelcomeExperience();
                 });
@@ -127,7 +160,7 @@
                 AppState.user = null;
                 AppState.studentId = null;
                 AppState.studentName = null;
-                updateHeader('Guest Mode');
+                updateHeader('guest', 'Guest Mode');
                 switchView('auth');
             });
         });

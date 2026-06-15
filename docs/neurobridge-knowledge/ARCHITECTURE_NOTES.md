@@ -65,3 +65,15 @@ Use this file for decisions that shape NeuroBridge contracts, registries, metric
 - Rationale: Learner activities need direct, low-friction touch interaction.
 - Impact: Design-system docs now prioritize touch, responsiveness, and no hover dependency.
 - Follow-up Items: Add automated visual checks once UI templates are implemented.
+
+### ADR-005: NeuroBridge and SIRAASH Audience Separation
+
+- ADR ID: ADR-005
+- Date: 2026-06-15
+- Decision: SIRAASH is the learner-facing companion identity. NeuroBridge is the parent, admin, analytics, and research platform identity.
+- Context: Learner screens need a calm, familiar companion presence, while parent and research areas need platform-level terminology.
+- Options Considered: Single NeuroBridge brand everywhere, single SIRAASH brand everywhere, audience-specific brand separation.
+- Decision Taken: Use SIRAASH for learner entry, activity hub, activity shell, and companion language. Use NeuroBridge for parent, configuration, analytics, reports, and research contexts.
+- Rationale: Brand separation reduces learner-facing admin language and helps SIRAASH become a familiar learning companion.
+- Impact: Learner screens should avoid NeuroBridge, Active Session, Student, Admin, and Configuration terminology where possible.
+- Follow-up Items: Apply SIRAASH learner branding to future activity templates and Matrix migration.

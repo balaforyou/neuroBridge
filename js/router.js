@@ -4,6 +4,8 @@ import { AppState } from './app.js';
 import { getGameConfiguration, commitScoreLog } from './database.js';
 import { GAME_EVENTS, USER_ROLES } from './constants.js';
 
+const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
+
 export function initRouter() {
     document.addEventListener('click', (e) => {
         const launchButton = e.target.closest('.btn-launch-game');
@@ -44,6 +46,7 @@ export function switchView(targetView, optionalPayload = null) {
 async function launchGameModule(gameId) {
     const frame = document.getElementById('game-frame');
     const titleEl = document.getElementById('active-game-title');
+    const navRow = document.getElementById('game-nav-row');
 
     if (!frame) {
         console.error('Game iframe not found.');
@@ -54,7 +57,11 @@ async function launchGameModule(gameId) {
         titleEl.innerText =
             AppState.user === USER_ROLES.PARENT
                 ? `Sandbox Testing: ${gameId}`
-                : `Active Task: ${gameId}`;
+                : `Activity: ${formatActivityName(gameId)}`;
+    }
+
+    if (navRow) {
+        navRow.classList.toggle('hidden', gameId === 'attributeExplorer');
     }
 
     try {
@@ -75,7 +82,14 @@ async function launchGameModule(gameId) {
 }
 
 async function handleGameMessage(event) {
-    if (!event.data || event.data.type !== GAME_EVENTS.COMPLETE) return;
+    if (!event.data) return;
+
+    if (event.data.type === ACTIVITY_HOME_EVENT) {
+        switchView(AppState.user === USER_ROLES.PARENT ? 'parent' : 'student');
+        return;
+    }
+
+    if (event.data.type !== GAME_EVENTS.COMPLETE) return;
 
     const payload = event.data.payload;
    console.log('Metrics payload caught from frame:', payload);
@@ -99,4 +113,13 @@ console.log('Trials received:', payload.trials);
     }
 
     switchView('student');
+}
+
+function formatActivityName(gameId) {
+    if (gameId === 'attributeExplorer') return 'Attribute Explorer';
+    if (gameId === 'matrixReasoning') return 'Matrix Reasoning';
+
+    return gameId
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, char => char.toUpperCase());
 }
