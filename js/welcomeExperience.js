@@ -20,8 +20,8 @@ function showWelcomeView() {
 
     if (titleEl) {
         titleEl.innerText = isFirstWelcomeToday
-            ? `Good Morning, ${learnerName}`
-            : `Welcome Back, ${learnerName}`;
+            ? `Good Morning, ${learnerName} \uD83C\uDF1E`
+            : `Welcome Back, ${learnerName} \uD83D\uDE0A`;
     }
 
     if (subtitleEl) {
