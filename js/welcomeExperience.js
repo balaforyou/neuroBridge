@@ -3,32 +3,16 @@ import { switchView } from './router.js';
 import { renderStudentMetrics } from './dashboard.js';
 
 const LAST_WELCOME_DATE_KEY = 'neurobridge:lastLearnerWelcomeDate';
-const SPLASH_DURATION_MS = 2400;
-
-let splashTimer = null;
 
 export function initWelcomeExperience() {
-    document.getElementById('btn-siraash-start')?.addEventListener('click', showWelcomeView);
     document.getElementById('btn-welcome-continue')?.addEventListener('click', enterActivitySelection);
 }
 
 export function startLearnerWelcomeExperience() {
-    clearSplashTimer();
-    renderSplashName();
-    switchView('splash');
-    splashTimer = setTimeout(showWelcomeView, SPLASH_DURATION_MS);
-}
-
-function renderSplashName() {
-    const learnerNameEl = document.getElementById('siraash-learner-name');
-    if (!learnerNameEl) return;
-
-    learnerNameEl.innerText = AppState.studentName || 'Learner';
+    showWelcomeView();
 }
 
 function showWelcomeView() {
-    clearSplashTimer();
-
     const learnerName = AppState.studentName || 'Learner';
     const isFirstWelcomeToday = isFirstLearnerWelcomeToday();
     const titleEl = document.getElementById('welcome-title');
@@ -36,8 +20,8 @@ function showWelcomeView() {
 
     if (titleEl) {
         titleEl.innerText = isFirstWelcomeToday
-            ? `Good Morning ${learnerName} \uD83C\uDF31`
-            : `Welcome Back ${learnerName} \uD83C\uDF31`;
+            ? `Good Morning, ${learnerName}`
+            : `Welcome Back, ${learnerName}`;
     }
 
     if (subtitleEl) {
@@ -61,12 +45,6 @@ function isFirstLearnerWelcomeToday() {
 
 function saveLearnerWelcomeDate() {
     localStorage.setItem(LAST_WELCOME_DATE_KEY, getTodayKey());
-}
-
-function clearSplashTimer() {
-    if (!splashTimer) return;
-    clearTimeout(splashTimer);
-    splashTimer = null;
 }
 
 function getTodayKey() {
