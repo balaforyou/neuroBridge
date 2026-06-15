@@ -290,7 +290,7 @@ Activity Shell v1.0 deliberately avoids a generic engine or shared framework com
 Future work may add:
 
 - Reusable shell helper functions or components.
-- Activity tiles and learning paths.
+- Activity tiles and learning paths using Activity Tile Framework v1.0 from `COMPONENT_STANDARDS.md`.
 - Printable worksheet variants.
 - Regional language variants.
 - Parent preview mode.

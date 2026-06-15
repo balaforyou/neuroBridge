@@ -77,3 +77,15 @@ Use this file for decisions that shape NeuroBridge contracts, registries, metric
 - Rationale: Brand separation reduces learner-facing admin language and helps SIRAASH become a familiar learning companion.
 - Impact: Learner screens should avoid NeuroBridge, Active Session, Student, Admin, and Configuration terminology where possible.
 - Follow-up Items: Apply SIRAASH learner branding to future activity templates and Matrix migration.
+
+### ADR-006: Learner-Friendly Activity Naming
+
+- ADR ID: ADR-006
+- Date: 2026-06-15
+- Decision: SIRAASH activity tiles use learner-friendly names, while NeuroBridge parent, analytics, configuration, and research surfaces use technical activity names.
+- Context: Learners benefit from skill-focused, memorable activity identities. Adults need precise activity names for configuration, reporting, analytics, and research discussion.
+- Options Considered: Use technical names everywhere, use playful names everywhere, separate naming by audience.
+- Decision Taken: Separate learner-facing names from parent-facing names through the Activity Tile Contract.
+- Rationale: Children learn skills before terminology. Adults learn terminology. SIRAASH should invite the learner into a clear activity, while NeuroBridge should preserve precise activity metadata.
+- Impact: Future Activity Hub and Activity Tile work should provide both `parentName` and `learnerName`.
+- Follow-up Items: Implement Activity Tile Framework v1.0 in NB-101.1 and align game registry metadata later if needed.

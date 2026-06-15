@@ -111,6 +111,153 @@ Accessibility Notes:
 - Do not rely only on color for selected state.
 - Keep text readable and avoid clipping in translated labels.
 
+## Activity Tile Framework v1.0
+
+Purpose: Provide a reusable learner-facing representation of an activity in the SIRAASH Activity Hub and future learning paths.
+
+Principles:
+
+- Child-friendly.
+- Skill-focused.
+- Touch-friendly.
+- Consistent across all activities.
+- Assessment-ready.
+- Recommendation-ready.
+
+An Activity Tile communicates:
+
+- What is this?
+- Why should I do it?
+- Can I start?
+
+### Activity Tile Contract
+
+Required fields:
+
+- `activityId`
+- `parentName`
+- `learnerName`
+- `icon`
+- `description`
+- `status`
+- `domain`
+- `skills`
+
+Definitions:
+
+- `activityId`: Internal system identifier.
+- `parentName`: Parent, therapist, analytics, and research-facing activity name.
+- `learnerName`: Child-facing SIRAASH activity name.
+- `icon`: Primary visual identifier.
+- `description`: Short learner-friendly explanation.
+- `status`: Current activity availability.
+- `domain`: Associated NeuroBridge domain.
+- `skills`: Associated NeuroBridge skills.
+
+Example:
+
+```json
+{
+  "activityId": "matrix-reasoning",
+  "parentName": "Matrix Reasoning",
+  "learnerName": "Pattern Detective",
+  "icon": "🧩",
+  "description": "Find patterns and solve visual puzzles.",
+  "status": "available",
+  "domain": "cognitive-tuning",
+  "skills": [
+    "pattern-recognition",
+    "rule-discovery",
+    "visual-reasoning"
+  ]
+}
+```
+
+### Learner Naming Standard
+
+Principle: Children learn skills before terminology.
+
+Design principle:
+
+- Children learn skills.
+- Adults learn terminology.
+
+Implication:
+
+- SIRAASH surfaces learner-friendly activity identities.
+- NeuroBridge surfaces technical activity identities.
+
+Parent-facing names are used in:
+
+- Dashboards.
+- Analytics.
+- Reports.
+- Configuration.
+- Research.
+
+Learner-facing names are used in:
+
+- Activity Hub.
+- Activity Tiles.
+- SIRAASH experiences.
+
+Naming examples:
+
+| Parent-facing name | Learner-facing name |
+| --- | --- |
+| Matrix Reasoning | 🧩 Pattern Detective |
+| Attribute Explorer | 👀 Look Closely |
+| Schulte Table | 🎯 Grid Vision |
+| Number Bonds | 🔢 Number Bridges |
+| Matching Activity | 🔗 Match & Find |
+| Sequencing Activity | 🪜 Story Steps |
+| Social Stories | 🤝 Social Detective |
+| Picture Description | 📸 Tell Me More |
+| Fill in the Blanks | ✍️ Word Builder |
+| Measurement Activity | 📏 Measure & Compare |
+
+### Tile Status Values
+
+Supported now:
+
+- `available`
+- `coming-soon`
+
+Reserved for future:
+
+- `recommended`
+- `assigned`
+- `locked`
+
+Future status values should not be implemented until the Activity Hub supports the corresponding behavior.
+
+### Tile Layout Standard
+
+Conceptual layout:
+
+```text
+┌─────────────────────────────┐
+│            Icon             │
+│                             │
+│ Learner Name                │
+│                             │
+│ Description                 │
+│                             │
+│ Start Activity              │
+└─────────────────────────────┘
+```
+
+Guidelines:
+
+- Touch-friendly.
+- Tablet-first.
+- Responsive.
+- Consistent height.
+- Minimal text.
+- No technical terminology.
+- Clear `Start Activity` action for available activities.
+- Clear disabled state for coming-soon activities.
+
 ## Card
 
 Purpose: Hold activity content, visual objects, options, or summary information.

@@ -195,3 +195,19 @@ and content-rich activities without activity-specific redesign.
 Impact:
 Future activities should inherit the shell rather than creating
 custom navigation and layout structures.
+
+### O-010: Activity Shell Supports Simple and Complex Activities
+
+- Observation ID: O-010
+- Date: 2026-06
+- Learner: N/A - Platform Observation
+- Source: Product Review
+- Domain: UI Architecture
+- Skill: Activity Framework Reusability
+- Game / Context: Attribute Explorer and Matrix Reasoning Activity Shell Migration
+- Observation: Applying the Activity Shell to both Attribute Explorer and Matrix Reasoning showed that a shared SIRAASH shell can support both simple and complex activities. During migration, navigation duplication, fixed-height assumptions, and decoder panel scrolling issues were identified and resolved.
+- Hypothesis: Future activities should inherit Activity Shell v1.0 rather than creating activity-specific navigation and layout structures.
+- Scaffold Tried: Shared Activity Shell v1.0 with iterative review and hardening.
+- Outcome: Activity Shell v1.0 now supports simple activities such as Attribute Explorer and complex activities such as Matrix Reasoning while preserving a consistent SIRAASH learner experience.
+- Next Action: Use Activity Shell v1.0 as the mandatory foundation for future activities including Matching, Ordering, Measurement, Worksheets, and Social Stories.
+- Tags: UI, Architecture, Activity Shell, Reusability, SIRAASH

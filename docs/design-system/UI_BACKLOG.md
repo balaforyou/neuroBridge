@@ -48,6 +48,14 @@ Purpose: Capture design-system and UI templating work for NeuroBridge after the 
 - Status: Backlog
 - Notes: Large, touch-friendly answer controls.
 
+## Activity Tiles
+
+- Story ID: NB-101.1
+- Title: Activity Tile Framework Implementation
+- Priority: High
+- Status: Ready
+- Notes: Implement the frozen Activity Tile Contract, Learner Naming Standard, Tile Status values, and Tile Layout Standard in the SIRAASH Activity Hub.
+
 ## Help And Scaffolds
 
 - Story ID:
