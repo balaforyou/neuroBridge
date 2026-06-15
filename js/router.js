@@ -62,7 +62,9 @@ async function launchGameModule(gameId) {
     }
 
     if (navRow) {
-        navRow.classList.toggle('hidden', SHELL_MANAGED_ACTIVITIES.has(gameId));
+        const shellManagesNavigation = SHELL_MANAGED_ACTIVITIES.has(gameId);
+        navRow.classList.toggle('hidden', shellManagesNavigation);
+        navRow.style.display = shellManagesNavigation ? 'none' : '';
     }
 
     try {

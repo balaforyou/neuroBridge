@@ -130,7 +130,7 @@ const panel = document.getElementById('decoder-panel');
 if (panel) {
     panel.innerHTML = '';
     panel.className =
-        "w-full lg:w-96 lg:shrink-0 bg-slate-950 border border-slate-800 rounded-2xl p-3 sm:p-4 flex flex-col hidden min-h-0 max-h-full overflow-hidden";
+        "w-full lg:w-96 lg:shrink-0 bg-slate-950 border border-slate-800 rounded-2xl p-3 sm:p-4 flex flex-col hidden min-h-0 max-h-full overflow-y-auto";
 }
 
     const problem = generateStageProblem(stage, { generateNumericOptions });
@@ -241,9 +241,9 @@ function showLinearDecoder(isCorrect, completedProblem) {
     };
 
     panel.className =
-    "w-full lg:w-96 lg:shrink-0 bg-slate-950 border border-slate-800 rounded-2xl p-3 sm:p-4 flex flex-col min-h-0 max-h-full overflow-hidden animate-fadeIn";
+    "w-full lg:w-96 lg:shrink-0 bg-slate-950 border border-slate-800 rounded-2xl p-3 sm:p-4 flex flex-col min-h-0 max-h-full overflow-y-auto animate-fadeIn";
     let explanationHTML = `
-        <div class="flex-1 min-h-0 overflow-y-auto pr-1 flex flex-col text-center space-y-2">
+        <div class="flex flex-col text-center space-y-2">
 
             <div class="text-3xl">${tone.emoji}</div>
             <div>

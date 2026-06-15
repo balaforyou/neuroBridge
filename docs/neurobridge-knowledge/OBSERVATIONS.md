@@ -133,3 +133,65 @@ Use this file for observed learner behavior, scaffold attempts, outcomes noticed
 - Outcome: Better task design and learner fit.
 - Next Action: Keep observations as first-class knowledge artifacts.
 - Tags: observation-driven, parent-data
+
+
+Observation Entry
+Observation ID: OBS-AUD-20260615-001
+Date: 15-Jun-2026
+Learner: Adarsh
+Source: Parent
+Domain: Expression & Logic
+Skill: Auditory Memory Retrieval & Sequential Verbal Recall
+Game / Context: Informal walking conversation using familiar devotional song (Ekadantaya Vakratundaya)
+Observation: Parent sang a random line from the song and paused. Adarsh independently continued the subsequent lyrics. When prompted to continue further, he sustained the sequence without requiring the original audio track. Previously, Adarsh typically sang only selected portions while listening to the song.
+Hypothesis: Familiar rhythmic structures reduce retrieval load and act as a scaffold for language recall. Once encoded, Adarsh can retrieve long auditory-verbal sequences with minimal cueing.
+Scaffold Tried: Parent provided a single-line auditory cue and paused, allowing Adarsh to complete the sequence.
+Outcome: Successful continuation of multiple lines with minimal prompting. Evidence of stable storage and retrieval of a familiar auditory sequence.
+Next Action: Introduce "fill-in-the-blank" auditory recall activities using songs, rhymes, counting sequences, days of the week, and familiar scripts. Observe retrieval latency and continuation length.
+Tags: #auditory-memory #song-recall #language #sequencing #minimal-prompt #retrieval #epic6 #neurobridge
+
+And for the color board activity:
+
+Observation Entry
+Observation ID: OBS-COG-20260615-002
+Date: 15-Jun-2026
+Learner: Adarsh
+Source: Parent
+Domain: Executive Function & Cognitive Shifting
+Skill: Pattern Recognition, Visual Scanning, Independent Task Continuation
+Game / Context: Color Pattern Board
+Observation: Parent instructed Adarsh to begin with the first column and identify the color sequence. After this initial prompt, Adarsh independently completed the remaining columns without additional guidance.
+Hypothesis: Once Adarsh understands the governing rule of an activity, he is increasingly able to generalize and apply it across subsequent task elements without continuous adult support.
+Scaffold Tried: Single initiation prompt focused on the first column only.
+Outcome: Completed remaining columns independently. Reduced prompt dependency and improved task persistence.
+Next Action: Progress to memory-based pattern reconstruction by briefly exposing one column, then multiple columns, before requiring recall and recreation.
+Tags: #pattern-recognition #executive-function #visual-scanning #independence #minimal-prompt #working-memory #epic1 #neurobridge
+
+O-008
+
+Applying Activity Shell to a second activity exposed layout
+assumptions that were not visible in Attribute Explorer.
+Content-heavy activities require scroll-safe containers and
+persistent access to primary actions.
+
+O-009
+
+Date:
+2026-06
+
+Domain:
+UI Architecture
+
+Observation:
+Applying the same Activity Shell to both a simple activity
+(Attribute Explorer) and a complex activity (Matrix Reasoning)
+revealed layout assumptions around navigation duplication,
+fixed-height content, and decoder scrolling.
+
+Outcome:
+The Activity Shell was hardened to support both lightweight
+and content-rich activities without activity-specific redesign.
+
+Impact:
+Future activities should inherit the shell rather than creating
+custom navigation and layout structures.
