@@ -143,12 +143,12 @@ Use this file for observed learner behavior, scaffold attempts, outcomes noticed
 - Source: Parent
 - Domain: Expression & Logic
 - Skill: Auditory Memory Retrieval & Sequential Verbal Recall
-- Game / Context: Informal walking conversation using familiar devotional song
+- Game / Context: Informal walking conversation using familiar devotional song (*Ekadantaya Vakratundaya*)
 - Observation: Parent sang a random line from "Ekadantaya Vakratundaya" and paused. Adarsh independently continued the subsequent lyrics and sustained recall across multiple additional lines without requiring the original audio recording.
-- Hypothesis: Rhythmic and highly structured auditory sequences act as memory scaffolds and reduce retrieval load.
-- Scaffold Tried: Single-line auditory cue.
-- Outcome: Successful continuation with minimal prompting.
-- Next Action: Trial fill-in-the-blank auditory recall using songs, rhymes, counting sequences, and familiar scripts.
+- Hypothesis: Familiar rhythmic structures reduce retrieval load and act as memory scaffolds for language recall.
+- Scaffold Tried: Single-line auditory cue followed by pause.
+- Outcome: Successful continuation with minimal prompting and sustained recall.
+- Next Action: Introduce fill-in-the-blank auditory recall activities using songs, rhymes, counting sequences, days of the week, and familiar scripts.
 - Tags: #auditory-memory #retrieval #sequencing #minimal-prompt #selfContinuation #epic6
 
 ### OBS-COG-20260615-002: Single Initiation Prompt Supports Pattern Board Continuation
@@ -162,9 +162,9 @@ Use this file for observed learner behavior, scaffold attempts, outcomes noticed
 - Game / Context: Color Pattern Board
 - Observation: After a single prompt to identify the first column sequence, Adarsh independently completed the remaining columns without additional guidance.
 - Hypothesis: Once the governing rule is understood, Adarsh can generalize the process and continue independently.
-- Scaffold Tried: Single initiation prompt.
-- Outcome: Reduced prompt dependency and successful completion.
-- Next Action: Progress to memory-based reconstruction: 1 column -> 2 columns -> 3 columns -> split recall.
+- Scaffold Tried: Single initiation prompt focused on the first column.
+- Outcome: Reduced prompt dependency and successful completion of remaining columns.
+- Next Action: Progress to memory-based reconstruction: 1 column recall -> 2 column recall -> 3 column recall -> split-column recall.
 - Tags: #pattern-recognition #working-memory #independence #minimal-prompt #selfContinuation #epic1
 
 O-008

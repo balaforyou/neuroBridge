@@ -135,15 +135,17 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 
 - Story ID: NB-AUD-001
 - Title: Audio Chain Completer
+- Domain: Expression & Logic
 - Epic: EPIC 6 - Narrative Expression & Memory Externalization
 - Priority: P1
 - Status: Backlog
-- Problem: Adarsh demonstrates stronger language retrieval when language is embedded within rhythmic and predictable auditory structures.
-- User Story: As a learner, I want to hear part of a familiar auditory sequence and complete the missing portion so that I can strengthen memory retrieval and verbal sequencing.
-- Acceptance Criteria: Play partial audio cue; pause at configurable breakpoint; child completes sequence; record retrieval latency; record completion accuracy; support cue fading; parent can mark sequence mastered.
+- Problem Statement: Adarsh demonstrates stronger language retrieval when language is embedded within rhythmic and predictable auditory structures.
+- User Story: As a learner, I want to hear part of a familiar auditory sequence and complete the missing portion so that I can strengthen memory retrieval, verbal sequencing, and language production with gradually reduced support.
+- Acceptance Criteria: Play configurable audio cue; pause at configurable breakpoint; child completes next word, phrase, or sequence; support visual-response mode; support parent-confirmed response mode; capture retrieval latency; capture completion accuracy; support automatic cue fading after repeated success; parent can mark sequence as mastered.
 - Scaffold Levels: L1 Full audio participation; L2 Complete final word; L3 Complete final phrase; L4 Continue from random cue; L5 Visual cue only; L6 Functional conversational use.
 - Telemetry: retrievalLatencyMs, completionAccuracy, cueLengthMs, promptLevel, continuationLength.
-- Notes: Triggered by OBS-AUD-20260615-001. For bottom-up learners, rhythmic auditory chains may function as memory scaffolds for song recall, narration, sequencing, classroom routines, conversational scripts, and functional language retrieval.
+- Origin Observation: OBS-AUD-20260615-001
+- Notes: Emerging NeuroBridge insight: Self Continuation has now been observed in both cognitive-pattern tasks and auditory-language recall tasks. Future observations should explicitly track whether a learner can independently continue an activity after a minimal initiating cue.
 
 ## Future Ideas
 

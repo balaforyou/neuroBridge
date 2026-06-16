@@ -7,19 +7,24 @@ Purpose: Capture durable product and learner signals that should inform future a
 ### Self Continuation
 
 Definition:
-Ability to continue a learned sequence, activity, pattern, narration, or memory chain after a minimal initiating cue.
+Ability to continue a learned sequence, activity, memory chain, narration, or task after a minimal initiating cue.
 
 Observed Domains:
 - Auditory Recall
 - Pattern Activities
 
+Observed Examples:
+- Auditory Recall: Parent provides a single line from a familiar song; learner continues the remaining sequence independently. Reference: OBS-AUD-20260615-001.
+- Pattern Activities: Parent explains only the first column; learner completes remaining columns independently. Reference: OBS-COG-20260615-002.
+
 Potential Future Domains:
 - Narration
-- Mathematics
+- Mathematics procedures
 - Social Scripts
 - Classroom Routines
+- Functional Life Skills
 
-Tag:
+Recommended Tag:
 #selfContinuation
 
 Current Evidence:
@@ -28,3 +33,6 @@ Current Evidence:
 
 Product Implication:
 NeuroBridge should treat minimal-cue continuation as a first-class learner signal. Activities should measure when a learner can continue independently after an initiating scaffold, then fade cues while tracking latency, accuracy, and continuation length.
+
+Emerging NeuroBridge insight:
+Self Continuation has now been observed in both cognitive-pattern tasks and auditory-language recall tasks. Future observations should explicitly track whether a learner can independently continue an activity after a minimal initiating cue.
