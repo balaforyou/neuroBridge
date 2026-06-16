@@ -62,27 +62,77 @@ function testCorrectAnswerAdvances() {
     const game = createKumonQuizGame({ questionCount: 5 });
     const question = game.getCurrentQuestion();
 
-    const outcome = game.submitAnswer(question.expectedAnswer, { reactionTimeMs: 120, timestamp: '2026-06-16T00:00:00.000Z' });
+    const outcome = game.validateAnswer(question.expectedAnswer, {
+        reactionTimeMs: 120,
+        timestamp: '2026-06-16T00:00:00.000Z',
+        validationSource: 'enter'
+    });
     assert(outcome.result === 'success', 'Correct answer should produce success');
+    assert(outcome.trial.autoAdvanced === true, 'Correct answer should preserve auto-advanced analytics');
+    assert(game.getState().lastResult === 'success', 'Correct answer should expose local success marker state');
     assert(game.getState().currentQuestionIndex === 0, 'Correct answer should wait for smooth advance');
 
     const advance = game.advanceAfterCorrect();
     assert(advance.result === 'advanced', 'Smooth advance should move to next question');
     assert(game.getState().currentQuestionIndex === 1, 'Question index should advance after correct answer');
+    assert(game.getState().lastResult === null, 'Advance should clear per-question success state');
     console.log('Correct answer advance test passed');
+}
+
+function testBlurValidationAcceptsCorrectAnswer() {
+    const game = createKumonQuizGame({ questionCount: 5 });
+    const question = game.getCurrentQuestion();
+
+    const outcome = game.validateAnswer(String(question.expectedAnswer), {
+        reactionTimeMs: 130,
+        timestamp: '2026-06-16T00:00:00.000Z',
+        validationSource: 'blur'
+    });
+
+    assert(outcome.result === 'success', 'Blur validation should accept correct answer');
+    assert(game.getState().trials.length === 1, 'Blur validation should record one meaningful attempt');
+    console.log('Blur validation test passed');
 }
 
 function testWrongAnswerDoesNotAdvanceAndShowsHint() {
     const game = createKumonQuizGame({ questionCount: 5, hintsEnabled: true });
     const question = game.getCurrentQuestion();
 
-    const outcome = game.submitAnswer(question.expectedAnswer + 1, { reactionTimeMs: 150, timestamp: '2026-06-16T00:00:00.000Z' });
+    const outcome = game.validateAnswer(question.expectedAnswer + 1, {
+        reactionTimeMs: 150,
+        timestamp: '2026-06-16T00:00:00.000Z',
+        validationSource: 'blur'
+    });
     const state = game.getState();
 
     assert(outcome.result === 'mistake', 'Wrong answer should produce mistake');
+    assert(outcome.trial.autoAdvanced === false, 'Wrong answer should preserve no-auto-advance analytics');
     assert(state.currentQuestionIndex === 0, 'Wrong answer should stay on same question');
     assert(state.supportState?.hintLevel === 1, 'Wrong answer should reveal first hint when enabled');
     console.log('Wrong answer scaffold test passed');
+}
+
+function testDuplicateEnterBlurDoesNotDoubleRecordAttempt() {
+    const game = createKumonQuizGame({ questionCount: 5 });
+    const question = game.getCurrentQuestion();
+
+    const enterOutcome = game.validateAnswer(question.expectedAnswer, {
+        reactionTimeMs: 120,
+        timestamp: '2026-06-16T00:00:00.000Z',
+        validationSource: 'enter'
+    });
+    const blurOutcome = game.validateAnswer(String(question.expectedAnswer), {
+        reactionTimeMs: 125,
+        timestamp: '2026-06-16T00:00:00.100Z',
+        validationSource: 'blur'
+    });
+    const state = game.getState();
+
+    assert(enterOutcome.result === 'success', 'Enter should validate the correct answer');
+    assert(blurOutcome.result === 'duplicate', 'Blur with unchanged answer should be ignored as duplicate');
+    assert(state.trials.length === 1, 'Duplicate Enter plus blur should not double-record analytics');
+    assert(state.attemptNumberByQuestion[question.questionId] === 1, 'Duplicate validation should not increment attempts');
+    console.log('Duplicate validation guard test passed');
 }
 
 function testHintDisabled() {
@@ -174,7 +224,9 @@ function runAllTests() {
     testFixedSecondNumberGeneration();
     testRangeSecondNumberGeneration();
     testCorrectAnswerAdvances();
+    testBlurValidationAcceptsCorrectAnswer();
     testWrongAnswerDoesNotAdvanceAndShowsHint();
+    testDuplicateEnterBlurDoesNotDoubleRecordAttempt();
     testHintDisabled();
     testResultSummary();
     testTrialAnalyticsFields();

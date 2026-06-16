@@ -277,7 +277,7 @@ test.describe('Number Bridges viewport smoke', () => {
             await expect(page.getByTestId('number-bridges-main-task')).toBeVisible();
             await expect(page.getByTestId('number-bridges-question')).toHaveText('1 + 1 = ?');
             await expect(page.getByTestId('number-bridges-answer-input')).toBeVisible();
-            await expect(page.getByTestId('number-bridges-check-button')).toBeVisible();
+            await expect(page.getByTestId('number-bridges-check-button')).toBeHidden();
             await expect(page.getByTestId('number-bridges-support-panel')).toBeVisible();
             await expect(page.getByText('Back to Dashboard')).toBeHidden();
             await expect(page.getByText('Activity: Kumon Quiz')).toBeHidden();
@@ -315,12 +315,13 @@ test.describe('Number Bridges viewport smoke', () => {
         await initializeKumonQuiz(page);
 
         await page.getByTestId('number-bridges-answer-input').fill('2');
-        await page.getByTestId('number-bridges-check-button').click();
-        await expect(page.getByTestId('number-bridges-success-tick')).toBeVisible();
+        await page.getByTestId('number-bridges-answer-input').press('Enter');
+        await expect(page.getByTestId('number-bridges-local-tick')).toBeVisible();
+        await expect(page.getByText(`Great work, ${LEARNER_NAME}!`)).toHaveCount(0);
         await expect(page.getByTestId('number-bridges-question')).toHaveText('2 + 1 = ?', { timeout: 1600 });
 
         await page.getByTestId('number-bridges-answer-input').fill('9');
-        await page.getByTestId('number-bridges-check-button').click();
+        await page.keyboard.press('Tab');
         await expect(page.getByTestId('number-bridges-question')).toHaveText('2 + 1 = ?');
         await expect(page.getByTestId('number-bridges-feedback')).toContainText('You got close.');
         await expect(page.getByTestId('number-bridges-support-text')).toContainText('Think about 2 + 0.');
@@ -332,12 +333,12 @@ test.describe('Number Bridges viewport smoke', () => {
         await initializeKumonQuiz(page);
 
         await page.getByTestId('number-bridges-answer-input').fill('3');
-        await page.getByTestId('number-bridges-check-button').click();
+        await page.getByTestId('number-bridges-answer-input').press('Enter');
         await expect(page.getByTestId('number-bridges-support-text')).toContainText('Think about 1 + 0.');
 
         for (const answer of ['2', '3', '4', '5', '6']) {
             await page.getByTestId('number-bridges-answer-input').fill(answer);
-            await page.getByTestId('number-bridges-check-button').click();
+            await page.getByTestId('number-bridges-answer-input').press('Enter');
             await page.waitForTimeout(900);
         }
 

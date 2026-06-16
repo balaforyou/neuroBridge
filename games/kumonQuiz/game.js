@@ -3,8 +3,7 @@ import {
     applyWorksheetHeaderState,
     getWorksheetSupportPrompts,
     normalizeWorksheetLearnerName,
-    renderWorksheetCompletion,
-    WORKSHEET_ACTIVITY_TYPES
+    renderWorksheetCompletion
 } from '../../js/worksheetTemplate.js';
 import { renderSiraashFeedback } from '../../js/siraashFeedback.js';
 
@@ -116,6 +115,17 @@ export function createKumonQuizGame(config = {}) {
         }
 
         const question = getCurrentQuestion();
+        const normalizedAnswer = normalizeAnswerValue(rawAnswer);
+        const lastSubmittedAnswer = state.lastSubmittedAnswerByQuestion[question.questionId];
+
+        if (lastSubmittedAnswer === normalizedAnswer) {
+            return { result: 'duplicate', state: getState() };
+        }
+
+        if (state.successPendingAdvance) {
+            return { result: 'ignored', state: getState() };
+        }
+
         const learnerAnswer = Number(rawAnswer);
         const isCorrect = Number.isFinite(learnerAnswer) && learnerAnswer === question.expectedAnswer;
         const hintUsed = state.currentHintLevel > 0;
@@ -129,6 +139,7 @@ export function createKumonQuizGame(config = {}) {
             timestamp: options.timestamp || new Date().toISOString()
         });
 
+        state.lastSubmittedAnswerByQuestion[question.questionId] = normalizedAnswer;
         state.trials.push(trial);
         state.attemptNumberByQuestion[question.questionId] = (state.attemptNumberByQuestion[question.questionId] || 0) + 1;
         state.lastResult = isCorrect ? 'success' : 'mistake';
@@ -173,6 +184,8 @@ export function createKumonQuizGame(config = {}) {
         state.successPendingAdvance = false;
         state.currentHintLevel = 0;
         state.supportState = null;
+        state.feedbackState = null;
+        state.lastResult = null;
 
         if (state.currentQuestionIndex >= state.questions.length - 1) {
             state.completed = true;
@@ -222,7 +235,8 @@ export function createKumonQuizGame(config = {}) {
         getState,
         requestHint,
         resetRound,
-        submitAnswer
+        submitAnswer,
+        validateAnswer: submitAnswer
     };
 }
 
@@ -242,6 +256,7 @@ function createInitialState(config, roundNumber = 1, learnerName = 'Learner') {
         currentQuestionIndex: 0,
         questionStartedAt: Date.now(),
         attemptNumberByQuestion: {},
+        lastSubmittedAnswerByQuestion: {},
         trials: [],
         wrongAnswers: [],
         supportState: null,
@@ -300,6 +315,7 @@ function cloneState(state) {
         config: { ...state.config },
         questions: state.questions.map(question => ({ ...question })),
         attemptNumberByQuestion: { ...state.attemptNumberByQuestion },
+        lastSubmittedAnswerByQuestion: { ...state.lastSubmittedAnswerByQuestion },
         trials: state.trials.map(trial => ({ ...trial })),
         wrongAnswers: state.wrongAnswers.map(answer => ({ ...answer })),
         supportState: state.supportState ? { ...state.supportState } : null,
@@ -311,6 +327,10 @@ function cloneState(state) {
             }
             : null
     };
+}
+
+function normalizeAnswerValue(rawAnswer) {
+    return String(rawAnswer ?? '').trim();
 }
 
 function clampInteger(value, min, max, fallback) {
@@ -361,11 +381,9 @@ function mountKumonQuiz() {
                     <p class="text-sm font-black uppercase tracking-[0.14em] text-sky-800">Number Bridge</p>
                     <div data-testid="number-bridges-question" class="my-4 text-5xl sm:text-6xl font-black text-slate-950">${formatQuestion(question)} = ?</div>
                     <label class="sr-only" for="answer-input">Answer</label>
-                    <input id="answer-input" data-testid="number-bridges-answer-input" inputmode="numeric" type="number" class="mx-auto min-h-[56px] w-full max-w-xs rounded-2xl border-4 border-sky-200 bg-sky-50 px-4 text-center text-3xl font-black focus:border-emerald-400 focus:outline-none" autocomplete="off">
-                    <button data-testid="number-bridges-check-button" type="button" class="mx-auto mt-3 min-h-[48px] rounded-full bg-emerald-700 px-6 py-2 text-lg font-black text-white shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-300">Check</button>
-                    <div data-testid="number-bridges-success-tick" class="${state.lastResult === 'success' ? 'number-bridge-success mt-4' : 'hidden'}">
-                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-4xl font-black text-white">&#10003;</div>
-                        <p class="mt-2 text-lg font-black">Great work, ${learnerName}! &#127793;</p>
+                    <div class="relative mx-auto w-full max-w-xs">
+                        <input id="answer-input" data-testid="number-bridges-answer-input" inputmode="numeric" type="number" class="min-h-[56px] w-full rounded-2xl border-4 border-sky-200 bg-sky-50 px-4 pr-14 text-center text-3xl font-black focus:border-emerald-400 focus:outline-none" autocomplete="off">
+                        <div data-testid="number-bridges-local-tick" aria-label="Correct" class="${state.lastResult === 'success' ? 'absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-emerald-600 text-2xl font-black text-white' : 'hidden'}">&#10003;</div>
                     </div>
                     <section data-testid="number-bridges-feedback" class="mt-3 min-h-[4rem]">${state.lastResult === 'mistake' ? renderSiraashFeedback('mistake') : ''}</section>
                 </section>
@@ -378,11 +396,13 @@ function mountKumonQuiz() {
         `;
 
         const input = root.querySelector('[data-testid="number-bridges-answer-input"]');
-        const submit = () => submitCurrentAnswer(input.value);
-        root.querySelector('[data-testid="number-bridges-check-button"]').addEventListener('click', submit);
+        const submit = (source) => submitCurrentAnswer(input.value, source);
         input.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') submit();
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            submit('enter');
         });
+        input.addEventListener('blur', () => submit('blur'));
         root.querySelector('[data-testid="number-bridges-help-button"]').addEventListener('click', () => {
             game.requestHint();
             render();
@@ -390,12 +410,21 @@ function mountKumonQuiz() {
         input.focus();
     }
 
-    function submitCurrentAnswer(answer) {
+    function submitCurrentAnswer(answer, source = 'auto') {
+        if (String(answer ?? '').trim() === '') {
+            return;
+        }
+
         const stateBefore = game.getState();
         const outcome = game.submitAnswer(answer, {
             reactionTimeMs: getReactionTime(stateBefore),
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            validationSource: source
         });
+
+        if (outcome.result === 'duplicate' || outcome.result === 'ignored') {
+            return;
+        }
 
         render();
 
@@ -409,6 +438,10 @@ function mountKumonQuiz() {
                 }
                 render();
             }, 800);
+        } else if (outcome.result === 'mistake') {
+            window.setTimeout(() => {
+                root.querySelector('[data-testid="number-bridges-answer-input"]')?.focus();
+            }, 0);
         }
     }
 
