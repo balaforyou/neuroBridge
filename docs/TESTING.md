@@ -145,7 +145,7 @@ Current browser coverage uses Chromium only and checks:
 - Attribute Matching Worksheet at 1366 x 768 and 1024 x 768
 - Attribute Matching Worksheet shell-managed launch, shared completion panel, and next-round flow at 1366 x 768
 - Number Bridges / Kumon Quiz at 1366 x 768 and 1024 x 768
-- Number Bridges tile launch, default five-row layout, Check-free Enter validation, local correct tick, wrong-answer scaffold, group advancement, and completion result summary at 1366 x 768
+- Number Bridges tile launch, default five-row layout, Check-free Enter validation, local correct tick, orange wrong-answer emphasis, support-panel-owned scaffold guidance, group advancement, and completion metrics/review at 1366 x 768
 - Attribute Explorer at 1366 x 768 and 1024 x 768
 - Attribute Explorer help nudge timing at 1366 x 768
 - Matrix Reasoning at 1366 x 768 and 1024 x 768

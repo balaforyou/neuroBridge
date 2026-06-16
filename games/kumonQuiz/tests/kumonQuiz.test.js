@@ -220,9 +220,27 @@ function testResultSummary() {
     const summary = game.getResultSummary();
     assert(summary.correct === 1, 'Summary should count correct answers');
     assert(summary.total === 5, 'Summary should include total questions');
+    assert(summary.timeTakenSeconds === 0, 'Summary should include rounded time taken');
+    assert(summary.averageTimeSeconds === 0.1, 'Summary should include average time per question');
     assert(summary.wrongAnswers.length === 1, 'Summary should include wrong answer list');
     assert(summary.wrongAnswers[0].correctAnswer === first.expectedAnswer, 'Wrong list should include correct answer');
     console.log('Result summary test passed');
+}
+
+function testResultSummaryHintsUsed() {
+    const game = createKumonQuizGame({ questionCount: 5, questionsPerScreen: 5, hintsEnabled: true });
+    const first = game.getCurrentQuestion();
+
+    game.requestHint({ questionId: first.questionId });
+    game.submitAnswer(first.expectedAnswer + 1, {
+        questionId: first.questionId,
+        reactionTimeMs: 200,
+        timestamp: '2026-06-16T00:00:00.000Z'
+    });
+
+    const summary = game.getResultSummary();
+    assert(summary.hintsUsed === 2, 'Summary should count manual and wrong-answer scaffold hints');
+    console.log('Result summary hints used test passed');
 }
 
 function testTrialAnalyticsFields() {
@@ -300,6 +318,7 @@ function runAllTests() {
     testFiveRowGroupAdvancesAfterAllVisibleRowsCorrect();
     testHintDisabled();
     testResultSummary();
+    testResultSummaryHintsUsed();
     testTrialAnalyticsFields();
     testHintText();
     console.log('=== All Kumon Quiz Tests Passed ===');

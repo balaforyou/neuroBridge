@@ -306,14 +306,14 @@ test.describe('Number Bridges viewport smoke', () => {
                 return {
                     questionInsideRow: questionBox.top >= rowBox.top && questionBox.bottom <= rowBox.bottom,
                     inputInsideRow: inputBox.top >= rowBox.top && inputBox.bottom <= rowBox.bottom,
-                    tickInsideRow: tickBox.top >= rowBox.top && tickBox.bottom <= rowBox.bottom
+                    tickInsideRow: tickBox.top >= rowBox.top && tickBox.bottom <= rowBox.bottom,
+                    inputGap: Math.round(inputBox.left - questionBox.right)
                 };
             });
-            expect(rowAlignment).toEqual({
-                questionInsideRow: true,
-                inputInsideRow: true,
-                tickInsideRow: true
-            });
+            expect(rowAlignment.questionInsideRow).toBe(true);
+            expect(rowAlignment.inputInsideRow).toBe(true);
+            expect(rowAlignment.tickInsideRow).toBe(true);
+            expect(rowAlignment.inputGap).toBeLessThanOrEqual(16);
             await expect(page.getByText('Back to Dashboard')).toBeHidden();
             await expect(page.getByText('Activity: Kumon Quiz')).toBeHidden();
             await expectNoPageScrollbar(page);
@@ -360,7 +360,10 @@ test.describe('Number Bridges viewport smoke', () => {
         await page.keyboard.press('Tab');
         await expect(page.getByTestId('number-bridges-question-1')).toHaveText('2 + 1 =');
         await expect(page.getByTestId('number-bridges-answer-input-1')).toBeEditable();
-        await expect(page.getByTestId('number-bridges-feedback')).toContainText('You got close.');
+        await expect(page.getByTestId('number-bridges-answer-input-1')).toHaveClass(/border-amber-400/);
+        await expect(page.getByTestId('number-bridges-answer-input-1')).toHaveClass(/shadow-\[/);
+        await expect(page.getByTestId('number-bridges-feedback')).toBeEmpty();
+        await expect(page.getByTestId('number-bridges-support-text')).toContainText(`You got close, ${LEARNER_NAME}.`);
         await expect(page.getByTestId('number-bridges-support-text')).toContainText('Think about 2 + 0.');
 
         for (const [rowIndex, answer] of [[1, 3], [2, 4], [3, 5], [4, 6]]) {
@@ -385,11 +388,16 @@ test.describe('Number Bridges viewport smoke', () => {
 
         await expect(page.getByTestId('number-bridges-results')).toBeVisible();
         await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
-        await expect(page.getByTestId('number-bridges-score')).toHaveText('Score: 5 / 5');
+        await expect(page.getByTestId('number-bridges-total')).toHaveText('Questions: 5');
+        await expect(page.getByTestId('number-bridges-score')).toHaveText('Correct: 5');
         await expect(page.getByTestId('number-bridges-accuracy')).toHaveText('Accuracy: 100%');
-        await expect(page.getByTestId('number-bridges-wrong-list')).toContainText('1 + 1 = 2');
-        await expect(page.getByTestId('number-bridges-wrong-list')).toContainText('Your answer: 3');
+        await expect(page.getByTestId('number-bridges-time-taken')).toContainText(/Time Taken: \d+ sec/);
+        await expect(page.getByTestId('number-bridges-average-time')).toContainText(/Average Time: [\d.]+ sec\/question/);
+        await expect(page.getByTestId('number-bridges-hints-used')).toHaveText('Hints Used: 1');
+        await expect(page.getByTestId('number-bridges-wrong-list')).toContainText('1 + 1 = 3');
+        await expect(page.getByTestId('number-bridges-wrong-list')).toContainText('Correct: 2');
         await expect(page.getByTestId('number-bridges-next-round-button')).toBeVisible();
+        await expect(page.getByTestId('number-bridges-next-round-button')).toHaveText('Try Again');
         await expect(page.getByTestId('number-bridges-home-button')).toBeVisible();
         await expectNoPageScrollbar(page, { vertical: true });
     });

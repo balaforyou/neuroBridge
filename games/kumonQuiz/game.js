@@ -5,7 +5,6 @@ import {
     normalizeWorksheetLearnerName,
     renderWorksheetCompletion
 } from '../../js/worksheetTemplate.js';
-import { renderSiraashFeedback } from '../../js/siraashFeedback.js';
 
 export const KUMON_QUIZ_ACTIVITY_ID = 'kumonQuiz';
 export const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
@@ -251,11 +250,18 @@ export function createKumonQuizGame(config = {}) {
     function getResultSummary() {
         const total = state.questions.length;
         const accuracy = total ? Math.round((state.correctCount / total) * 100) : 0;
+        const totalReactionTimeMs = state.trials.reduce((sum, trial) => sum + Number(trial.reactionTimeMs || 0), 0);
+        const averageTimeSeconds = total ? roundToOneDecimal((totalReactionTimeMs / 1000) / total) : 0;
+        const timeTakenSeconds = Math.round(totalReactionTimeMs / 1000);
+        const hintsUsed = Object.values(state.currentHintLevelByQuestion).reduce((sum, hintLevel) => sum + Number(hintLevel || 0), 0);
 
         return {
             correct: state.correctCount,
             total,
             accuracy,
+            timeTakenSeconds,
+            averageTimeSeconds,
+            hintsUsed,
             wrongAnswers: state.wrongAnswers.map(answer => ({ ...answer })),
             allCorrect: state.wrongAnswers.length === 0
         };
@@ -479,16 +485,16 @@ function mountKumonQuiz() {
 
         root.innerHTML = `
             <div class="grid h-full min-h-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_18rem]" data-testid="number-bridges-layout">
-                <section data-testid="number-bridges-main-task" class="flex min-h-0 flex-col justify-center rounded-2xl border-2 border-sky-200 bg-white p-3 text-center sm:p-4">
+                <section data-testid="number-bridges-main-task" class="flex min-h-0 flex-col justify-start rounded-2xl border-2 border-sky-200 bg-white p-3 pt-6 text-center sm:p-4 sm:pt-8">
                     <p class="text-sm font-black uppercase tracking-[0.14em] text-sky-800">Number Bridge</p>
-                    <div data-testid="number-bridges-row-list" class="mt-3 flex flex-col gap-2">
+                    <div data-testid="number-bridges-row-list" class="mt-4 flex flex-col gap-2">
                         ${visibleQuestions.map((question, rowIndex) => renderQuestionRow(question, rowIndex, state)).join('')}
                     </div>
-                    <section data-testid="number-bridges-feedback" class="mt-3 min-h-[4rem]">${state.lastResult === 'mistake' ? renderSiraashFeedback('mistake') : ''}</section>
+                    <section data-testid="number-bridges-feedback" class="hidden"></section>
                 </section>
                 <aside data-testid="number-bridges-support-panel" class="rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 text-slate-950">
                     <button data-testid="number-bridges-help-button" type="button" class="min-h-[44px] rounded-full border-2 border-emerald-200 bg-white px-4 py-2 text-sm font-black text-emerald-900 shadow-sm">${getWorksheetSupportPrompts(learnerName).initial}</button>
-                    <div data-testid="number-bridges-support-text" class="mt-4 text-sm font-bold text-amber-950">${state.supportState?.text || 'SIRAASH can show a clue after a try.'}</div>
+                    <div data-testid="number-bridges-support-text" class="mt-4 text-sm font-bold text-amber-950">${renderSupportText(state)}</div>
                     ${state.supportState?.hintLevel === 3 ? '<div data-testid="number-bridges-number-line" class="mt-3 rounded-xl border border-amber-300 bg-white p-2 text-xs font-black">0 -- 1 -- 2 -- 3 -- 4 -- 5 -- 6 -- 7 -- 8 -- 9 -- 10 -- 11 -- 12</div>' : ''}
                 </aside>
             </div>
@@ -527,15 +533,31 @@ function mountKumonQuiz() {
         const tickTestId = rowIndex === 0
             ? 'number-bridges-local-tick'
             : `number-bridges-local-tick-${rowIndex}`;
+        const rowClass = isMistake
+            ? 'border-amber-300 bg-amber-50'
+            : 'border-sky-100 bg-sky-50';
+        const inputClass = isCorrect
+            ? 'border-emerald-300 bg-emerald-50 text-emerald-950'
+            : isMistake
+                ? 'border-amber-400 bg-amber-50 text-slate-950 shadow-[0_0_0_4px_rgba(251,191,36,0.28)]'
+                : 'border-sky-200 bg-white text-slate-950';
 
         return `
-            <div data-testid="number-bridges-row-${rowIndex}" class="grid min-h-[64px] grid-cols-[2rem_minmax(8rem,1fr)_minmax(5rem,8rem)_2.5rem] items-center gap-2 rounded-2xl border-2 ${isMistake ? 'border-amber-300 bg-amber-50' : 'border-sky-100 bg-sky-50'} px-3 py-2">
+            <div data-testid="number-bridges-row-${rowIndex}" class="grid min-h-[64px] grid-cols-[2rem_auto_6rem_2.5rem] items-center justify-center gap-2 rounded-2xl border-2 ${rowClass} px-3 py-2">
                 <div class="text-base font-black text-sky-900">${question.questionIndex + 1})</div>
-                <label data-testid="${questionTestId}" for="answer-input-${rowIndex}" class="text-left text-3xl font-black text-slate-950 sm:text-4xl">${formatQuestion(question)} =</label>
-                <input id="answer-input-${rowIndex}" data-testid="${inputTestId}" data-question-id="${questionId}" inputmode="numeric" type="number" value="${answerValue}" ${isCorrect ? 'disabled' : ''} class="min-h-[52px] w-full rounded-2xl border-4 ${isCorrect ? 'border-emerald-300 bg-emerald-50 text-emerald-950' : 'border-sky-200 bg-white text-slate-950'} px-3 text-center text-3xl font-black focus:border-emerald-400 focus:outline-none disabled:opacity-100" autocomplete="off">
+                <label data-testid="${questionTestId}" for="answer-input-${rowIndex}" class="text-left text-3xl font-black text-[#102a43] sm:text-4xl">${formatQuestion(question)} =</label>
+                <input id="answer-input-${rowIndex}" data-testid="${inputTestId}" data-question-id="${questionId}" inputmode="numeric" type="number" value="${answerValue}" ${isCorrect ? 'disabled' : ''} class="min-h-[52px] w-full rounded-2xl border-4 ${inputClass} px-3 text-center text-3xl font-black focus:border-emerald-400 focus:outline-none disabled:opacity-100" autocomplete="off">
                 <div data-testid="${tickTestId}" aria-label="Correct" class="${isCorrect ? 'flex' : 'invisible flex'} h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-2xl font-black text-white">&#10003;</div>
             </div>
         `;
+    }
+
+    function renderSupportText(state) {
+        if (state.lastResult === 'mistake' && state.supportState?.text) {
+            return `<p>&#127793; You got close, ${learnerName}.</p><p class="mt-3">${state.supportState.text}</p>`;
+        }
+
+        return state.supportState?.text || 'SIRAASH can show a clue after a try.';
     }
 
     function submitCurrentAnswer(questionId, answer, source = 'auto') {
@@ -594,26 +616,38 @@ function mountKumonQuiz() {
         });
 
         const wrongList = summary.wrongAnswers.length
-            ? `<ul data-testid="number-bridges-wrong-list" class="mt-3 space-y-2 text-left">${summary.wrongAnswers.map(answer => `
+            ? `<div class="mt-4 w-full max-w-lg text-left">
+                <h3 class="text-base font-black text-slate-950">Review</h3>
+                <ul data-testid="number-bridges-wrong-list" class="mt-2 space-y-2">${summary.wrongAnswers.map(answer => `
                 <li class="rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm font-bold">
-                    <div>${answer.question} = ${answer.correctAnswer}</div>
-                    <div class="text-amber-900">Your answer: ${Number.isNaN(answer.learnerAnswer) ? 'No answer' : answer.learnerAnswer}</div>
+                    <span>${answer.question} = ${Number.isNaN(answer.learnerAnswer) ? 'No answer' : answer.learnerAnswer}</span>
+                    <span class="text-amber-900"> &rarr; Correct: ${answer.correctAnswer}</span>
                 </li>
-            `).join('')}</ul>`
+            `).join('')}</ul>
+            </div>`
             : '<p data-testid="number-bridges-all-correct" class="mt-3 text-base font-black text-emerald-800">All answers correct!</p>';
 
         root.innerHTML = `
-            <section data-testid="number-bridges-results" class="flex h-full min-h-0 flex-col items-center justify-center overflow-y-auto rounded-2xl border-2 border-emerald-200 bg-white p-4 text-center">
+            <section data-testid="number-bridges-results" class="flex h-full min-h-0 flex-col items-center justify-start overflow-y-auto rounded-2xl border-2 border-emerald-200 bg-white p-4 pt-5 text-center">
                 ${renderWorksheetCompletion({
                     learnerName,
                     message: 'You finished your number bridges.',
-                    actionTestId: 'number-bridges-next-round-button'
+                    actionTestId: 'number-bridges-next-round-button',
+                    actionLabel: 'Try Again'
                 })}
-                <div class="mt-4 w-full max-w-md rounded-2xl border-2 border-sky-200 bg-sky-50 p-4">
-                    <p data-testid="number-bridges-score" class="text-xl font-black">Score: ${summary.correct} / ${summary.total}</p>
-                    <p data-testid="number-bridges-accuracy" class="mt-1 text-lg font-bold text-sky-900">Accuracy: ${summary.accuracy}%</p>
+                <div class="mt-4 w-full max-w-2xl rounded-2xl border-2 border-sky-200 bg-sky-50 p-4">
+                    <div data-testid="number-bridges-metrics" class="grid grid-cols-2 gap-2 text-left text-sm font-black text-slate-950 sm:grid-cols-3">
+                        <p data-testid="number-bridges-total">Questions: ${summary.total}</p>
+                        <p data-testid="number-bridges-score">Correct: ${summary.correct}</p>
+                        <p data-testid="number-bridges-accuracy">Accuracy: ${summary.accuracy}%</p>
+                        <p data-testid="number-bridges-time-taken">Time Taken: ${summary.timeTakenSeconds} sec</p>
+                        <p data-testid="number-bridges-average-time">Average Time: ${summary.averageTimeSeconds} sec/question</p>
+                        <p data-testid="number-bridges-hints-used">Hints Used: ${summary.hintsUsed}</p>
+                    </div>
                     ${wrongList}
-                    <button data-testid="number-bridges-home-button" type="button" class="mt-4 min-h-[44px] rounded-full border-2 border-emerald-200 bg-white px-5 py-2 text-base font-black text-emerald-900">Home</button>
+                    <div class="mt-4 flex flex-wrap justify-center gap-3">
+                        <button data-testid="number-bridges-home-button" type="button" class="min-h-[44px] rounded-full border-2 border-emerald-200 bg-white px-5 py-2 text-base font-black text-emerald-900">Home</button>
+                    </div>
                 </div>
             </section>
         `;
@@ -652,6 +686,10 @@ function getReactionTime(state) {
 function average(values) {
     if (!values.length) return 0;
     return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+function roundToOneDecimal(value) {
+    return Math.round(value * 10) / 10;
 }
 
 if (typeof document !== 'undefined') {
