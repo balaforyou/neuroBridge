@@ -126,7 +126,7 @@
         </section>
 
         <!-- View 4: Game Sandbox View -->
-        <section id="view-game" class="view-section hidden flex flex-col h-[70vh]">
+        <section id="view-game" class="view-section hidden flex flex-col min-h-[calc(100vh-9rem)]">
             <div id="game-nav-row" class="flex justify-between items-center mb-4">
                 <button id="btn-exit-game" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">
                     ← Back to Dashboard
@@ -134,7 +134,7 @@
                 <span id="active-game-title" class="text-lg font-semibold tracking-wide text-indigo-400">Loading Game Module...</span>
             </div>
             <!-- The Isolated Stage Frame -->
-            <iframe id="game-frame" src="about:blank" class="flex-1 w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl"></iframe>
+            <iframe id="game-frame" src="about:blank" class="flex-1 min-h-0 w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl"></iframe>
         </section>
 
     </main>

@@ -15,6 +15,13 @@ import {
     createTrialId,
     createTrialResult
 } from '../../js/trialResult.js';
+import {
+    HELP_NUDGE_ACTIVE_CLASS,
+    HELP_NUDGE_DELAY_MS,
+    createHelpNudgeController,
+    getDelayedHelpPrompt,
+    getInitialHelpPrompt
+} from './helpNudge.js';
 
 const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
 
@@ -26,6 +33,10 @@ const SHAPE_TEMPLATES = {
 };
 
 let audioContext = null;
+const helpNudgeController = createHelpNudgeController({
+    delayMs: HELP_NUDGE_DELAY_MS,
+    onActivate: activateHelpNudge
+});
 
 const gameState = {
     sessionId: createSessionId(ATTRIBUTE_EXPLORER_GAME_ID),
@@ -41,7 +52,8 @@ const gameState = {
     uiSupportLevel: DEFAULT_UI_SUPPORT_LEVEL,
     isTestSession: false,
     learnerName: 'Learner',
-    session: null
+    session: null,
+    hasAnsweredCurrentTrial: false
 };
 
 window.addEventListener('message', event => {
@@ -71,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('hint-button')?.addEventListener('click', giveHint);
+    document.getElementById('clue-control')?.addEventListener('click', giveHint);
     document.getElementById('home-button')?.addEventListener('click', navigateHome);
 
     if (!gameState.currentProblem) {
@@ -100,6 +113,9 @@ function renderProblem() {
     const problem = gameState.currentProblem;
     if (!problem) return;
 
+    gameState.hasAnsweredCurrentTrial = false;
+    stopHelpNudge();
+
     const promptEl = document.getElementById('attribute-prompt');
     const feedbackEl = document.getElementById('feedback-text');
     const celebrationEl = document.getElementById('celebration-burst');
@@ -127,9 +143,11 @@ function renderProblem() {
         hintButton.classList.remove('opacity-60');
     }
 
-    const companionHelpEl = document.getElementById('companion-help-text');
+    const companionHelpEl = document.getElementById('clue-control');
     if (companionHelpEl) {
-        companionHelpEl.innerText = `Need a clue, ${getLearnerName()}? 🌱`;
+        companionHelpEl.innerText = getInitialHelpPrompt(getLearnerName());
+        companionHelpEl.disabled = false;
+        companionHelpEl.classList.remove('opacity-60');
     }
 
     renderItem(itemA, problem.cells[0], problem.rule.attribute);
@@ -141,19 +159,20 @@ function renderProblem() {
     });
 
     updateHeader();
+    startHelpNudgeTimer();
 }
 
 function renderItem(container, item, targetAttribute) {
     if (!container || !item) return;
 
     container.innerHTML = SHAPE_TEMPLATES[item.shape];
-    container.className = 'relative w-48 h-44 sm:w-60 sm:h-52 rounded-2xl bg-white border-4 border-sky-300 shadow-sm flex items-center justify-center';
+    container.className = 'comparison-card relative rounded-2xl bg-white border-4 border-sky-300 shadow-sm flex items-center justify-center';
 
     const svg = container.querySelector('.attribute-shape');
     if (svg) {
         if (item.sizePx) {
-            svg.style.width = `${item.sizePx}px`;
-            svg.style.height = `${item.sizePx}px`;
+            svg.style.setProperty('--attribute-shape-size', `${item.sizePx}px`);
+            svg.classList.add('attribute-sized-shape');
         } else {
             svg.classList.add(...SIZE_CLASS_MAP[item.size].split(' '));
         }
@@ -171,6 +190,9 @@ function renderItem(container, item, targetAttribute) {
 function processSelection(choice) {
     const problem = gameState.currentProblem;
     if (!problem) return;
+
+    gameState.hasAnsweredCurrentTrial = true;
+    stopHelpNudge();
 
     const latency = Date.now() - gameState.trialStartTime;
     const isCorrect = choice === problem.correctAnswer;
@@ -191,6 +213,13 @@ function processSelection(choice) {
     if (hintButton) {
         hintButton.disabled = true;
         hintButton.classList.add('opacity-60');
+    }
+
+    const companionHelpEl = document.getElementById('clue-control');
+    if (companionHelpEl) {
+        companionHelpEl.innerText = getInitialHelpPrompt(getLearnerName());
+        companionHelpEl.disabled = true;
+        companionHelpEl.classList.add('opacity-60');
     }
 
     if (feedbackEl) {
@@ -259,6 +288,8 @@ function giveHint() {
     const problem = gameState.currentProblem;
     if (!problem) return;
 
+    stopHelpNudge();
+
     gameState.currentScaffold = {
         used: true,
         level: 1,
@@ -272,9 +303,11 @@ function giveHint() {
         feedbackEl.className = 'feedback-area text-center text-base sm:text-lg font-black text-amber-700 min-h-[24px]';
     }
 
-    const companionHelpEl = document.getElementById('companion-help-text');
+    const companionHelpEl = document.getElementById('clue-control');
     if (companionHelpEl) {
         companionHelpEl.innerText = `SIRAASH has a clue for you, ${getLearnerName()} 🌱`;
+        companionHelpEl.disabled = true;
+        companionHelpEl.classList.add('opacity-60');
     }
 
     renderCurrentItems();
@@ -284,6 +317,35 @@ function giveHint() {
         hintButton.disabled = true;
         hintButton.classList.add('opacity-60');
     }
+}
+
+function startHelpNudgeTimer() {
+    stopHelpNudge();
+
+    helpNudgeController.start(() => {
+        const companionHelpEl = document.getElementById('clue-control');
+        return Boolean(
+            companionHelpEl &&
+            !companionHelpEl.disabled &&
+            !gameState.hasAnsweredCurrentTrial &&
+            !gameState.currentScaffold.used
+        );
+    });
+}
+
+function activateHelpNudge() {
+    const companionHelpEl = document.getElementById('clue-control');
+    if (!companionHelpEl || companionHelpEl.disabled) return;
+
+    companionHelpEl.innerText = getDelayedHelpPrompt(getLearnerName());
+    companionHelpEl.classList.add(HELP_NUDGE_ACTIVE_CLASS);
+}
+
+function stopHelpNudge() {
+    helpNudgeController.stop();
+
+    const companionHelpEl = document.getElementById('clue-control');
+    companionHelpEl?.classList.remove(HELP_NUDGE_ACTIVE_CLASS);
 }
 
 function updateHeader() {

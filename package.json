@@ -1,0 +1,27 @@
+{
+  "name": "neurobridge",
+  "version": "1.0.0",
+  "description": "NeuroBridge is a scaffold-driven learning platform for neurodivergent learners. It is designed to help parents, teachers, therapists, and researchers observe how a learner responds to tasks, scaffolds, and feedback over time.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/balaforyou/neuroBridge.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/balaforyou/neuroBridge/issues"
+  },
+  "homepage": "https://github.com/balaforyou/neuroBridge#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.61.0"
+  }
+}

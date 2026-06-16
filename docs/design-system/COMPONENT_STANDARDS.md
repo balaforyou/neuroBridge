@@ -87,6 +87,10 @@ Behavior:
 - Uses learner-friendly wording such as `Need Help?`.
 - Should not visually compete with primary answer actions.
 - Should appear after answer actions when space is tight.
+- May use a compact clickable prompt such as `Need a clue, {learnerName}?`.
+- May use a delayed subtle nudge when the learner has not answered, such as `{learnerName}, SIRAASH can help you`.
+- Delayed nudges must not auto-reveal hints, play sound, flash, or shift layout.
+- Delayed nudges should stop as soon as the learner answers or requests help.
 
 Accessibility Notes:
 

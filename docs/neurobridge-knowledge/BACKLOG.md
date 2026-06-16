@@ -277,6 +277,42 @@ Notes:
 Required before public deployment, not required for local-first
 MVP usage.
 
+Backlog ID:
+NB-060.16
+
+Title:
+Browser Visual Smoke Tests
+
+Epic:
+Platform Readiness
+
+Priority:
+Medium
+
+Status:
+Backlog
+
+Problem:
+Node tests cannot catch layout clipping, viewport overflow, or partially
+hidden learner controls.
+
+Objective:
+Add browser-level visual smoke tests for high-risk learner layouts.
+
+Scope:
+- Attribute Explorer answer/help visibility
+- Matrix next button visibility
+- Activity Hub tile layout
+- Mobile and tablet viewport checks
+
+Outcome:
+Layout regressions are caught before learner review.
+
+Notes:
+Can be implemented with Playwright later. Documentation and Node
+layout-contract tests remain useful but are not a replacement for
+browser-level visual checks.
+
 
 Backlog ID:
 NB-110.1
