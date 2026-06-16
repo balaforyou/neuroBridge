@@ -8,11 +8,23 @@ export const SIRAASH_FEEDBACK = {
         icon: '',
         title: 'You got close.',
         message: 'SIRAASH will guide you.'
+    },
+    celebration: {
+        levelUp: {
+            enabled: false,
+            effects: ['claps', 'balloons'],
+            title: 'New level!',
+            message: 'You are growing stronger.'
+        }
     }
 };
 
 export function getSiraashFeedback(type) {
     return SIRAASH_FEEDBACK[type] || null;
+}
+
+export function getSiraashCelebration(type) {
+    return SIRAASH_FEEDBACK.celebration?.[type] || null;
 }
 
 export function renderSiraashFeedback(type) {
