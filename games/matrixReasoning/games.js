@@ -7,6 +7,7 @@ import { generateStageProblem } from './stages/stageFactory.js';
 import { getStageMetadata } from './stages/stageMetadata.js';
 import { resolveForcedStageOverride } from './stages/forcedStageOverride.js';
 import { getOptionButtonClassList } from './stages/visualOptionStyles.js';
+import { renderSiraashFeedback } from '../../js/siraashFeedback.js';
 
 const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
 
@@ -229,16 +230,8 @@ function showLinearDecoder(isCorrect, completedProblem) {
     const { rule, cells, correctAnswer } = completedProblem;
 
     const tone = isCorrect ? {
-        emoji: '🌟',
-        title: `Great thinking, ${getLearnerName()}!`,
-        subtitle: 'You found the pattern.',
-        badgeClass: 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30',
         cardClass: 'bg-emerald-950/20 border-emerald-500/25'
     } : {
-        emoji: '🧩',
-        title: 'Good try!',
-        subtitle: `Let's look again together, ${getLearnerName()}.`,
-        badgeClass: 'bg-amber-500/10 text-amber-300 border border-amber-500/30',
         cardClass: 'bg-amber-950/20 border-amber-500/25'
     };
 
@@ -247,16 +240,7 @@ function showLinearDecoder(isCorrect, completedProblem) {
     let explanationHTML = `
         <div class="flex flex-col text-center space-y-2">
 
-            <div class="text-3xl">${tone.emoji}</div>
-            <div>
-                <div class="inline-flex px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wide ${tone.badgeClass}">
-                    ${tone.title}
-                </div>
-
-                <p class="mt-2 text-xs text-slate-300 font-semibold leading-relaxed">
-                    ${tone.subtitle}
-                </p>
-            </div>
+            ${renderSiraashFeedback(isCorrect ? 'success' : 'mistake')}
     `;
 
     if (rule.type === 'linear') {

@@ -137,6 +137,8 @@ test.describe('Matrix Reasoning viewport smoke', () => {
 
             expect(correctOptionIndex).toBeGreaterThanOrEqual(0);
             await page.locator('#options-dock button').nth(correctOptionIndex).click();
+            await expect(page.getByTestId('siraash-feedback')).toContainText('Great work!');
+            await expect(page.getByTestId('siraash-feedback')).toContainText('You found the answer.');
             await expect(page.getByTestId('matrix-next-button')).toBeVisible();
             await expectNoPageScrollbar(page);
         });

@@ -22,6 +22,7 @@ import {
     getDelayedHelpPrompt,
     getInitialHelpPrompt
 } from './helpNudge.js';
+import { renderSiraashFeedback } from '../../js/siraashFeedback.js';
 
 const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
 
@@ -223,12 +224,10 @@ function processSelection(choice) {
     }
 
     if (feedbackEl) {
-        feedbackEl.innerText = isCorrect
-            ? `Nice work, ${getLearnerName()} 😊`
-            : `Let's look again together, ${getLearnerName()} 🌱`;
+        feedbackEl.innerHTML = renderSiraashFeedback(isCorrect ? 'success' : 'mistake');
         feedbackEl.className = isCorrect
-            ? 'feedback-area text-center text-xl sm:text-2xl font-black text-emerald-700 min-h-[24px]'
-            : 'feedback-area text-center text-base sm:text-lg font-black text-amber-700 min-h-[24px]';
+            ? 'feedback-area text-center text-emerald-700 min-h-[24px]'
+            : 'feedback-area text-center text-amber-700 min-h-[24px]';
     }
 
     if (isCorrect && celebrationEl) {
