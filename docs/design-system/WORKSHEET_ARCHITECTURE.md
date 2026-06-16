@@ -278,6 +278,17 @@ Attribute Matching implementation:
 - Learning bridge: Moves from identical-object matching, such as apple to apple, toward property matching, such as apple to red or ball to round.
 - Shared services: Uses `createWorksheetShell`, progressive hints, shared SIRAASH feedback, and the inactive level-up celebration placeholder. Routine correct answers do not trigger celebration effects.
 
+Attribute Reasoning progression:
+
+- Story: NB-WS-001.2.a
+- Status: Future Backlog
+- Level 1: Visible Attributes. Learner matches direct observable properties such as color, shape, and size.
+- Level 2: Functional Attributes. Learner matches by purpose, such as used for eating, writing, travelling, or cleaning.
+- Level 3: Conceptual Attributes. Learner matches by category, such as living things, transport, food, animals, people, or plants.
+- Level 4: Multi-Attribute Reasoning. Learner matches across simultaneous properties, such as red and round, big and living, or used for eating and metal.
+- Future telemetry: `attributeType`, `attributeLevel`, `singleAttributeSuccessRate`, `multiAttributeSuccessRate`, and `hintUsageByAttributeLevel`.
+- Architectural ladder: See It -> Describe It -> Use It -> Group It -> Reason About It.
+
 User story:
 
 ```text

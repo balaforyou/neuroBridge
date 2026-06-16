@@ -244,6 +244,20 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 - Status: Done
 - Notes: Implemented the next worksheet step at `games/attributeMatchingWorksheet/` using `createWorksheetShell`. Learners match shared properties instead of identical objects through deterministic color, shape, and size prompts, single-select choices, progressive hints, shared SIRAASH feedback, no routine celebration trigger, Node logic tests, and Playwright viewport smoke tests.
 
+- Story ID: NB-WS-001.2.a
+- Title: Attribute Reasoning Progression
+- Domain: Executive Function & Cognitive Shifting
+- Epic: Worksheets
+- Priority: P2
+- Status: Future Backlog
+- Objective: Define the future scaffold ladder for Attribute Matching from visible properties to functional properties, conceptual properties, and multi-attribute reasoning.
+- NeuroBridge Progression: Identity -> Attribute -> Function -> Category -> Abstraction.
+- Attribute Ladder: L1 Visible Attributes such as red, blue, round, square, big, and small; L2 Functional Attributes such as used for eating, writing, travelling, or cleaning; L3 Conceptual Attributes such as living things, transport, food, animals, people, and plants; L4 Multi-Attribute Reasoning such as red and round, big and living, or used for eating and metal.
+- Cognitive Demand: L1 requires direct visual observation; L2 requires understanding purpose; L3 requires category formation; L4 requires simultaneous processing of multiple attributes.
+- Future Analytics: attributeType, attributeLevel, singleAttributeSuccessRate, multiAttributeSuccessRate, hintUsageByAttributeLevel.
+- Architectural Observation: Introduces a future NeuroBridge abstraction ladder: See It -> Describe It -> Use It -> Group It -> Reason About It.
+- Notes: Documentation-only refinement. Current NB-WS-001.2 remains focused on visible attributes. No implementation, analytics behavior, or activity code changes included.
+
 - Story ID: NB-101.4.5.1
 - Title: Worksheet Architecture Specification
 - Epic: Design System
