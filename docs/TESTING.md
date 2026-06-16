@@ -46,6 +46,7 @@ node games/attributeExplorer/tests/attributeSameDifferent.runner.js
 node games/attributeExplorer/tests/attributeTrialResult.runner.js
 node games/attributeExplorer/tests/attributeLayout.runner.js
 node games/attributeExplorer/tests/attributeHelpNudge.runner.js
+node games/attributeMatchingWorksheet/tests/attributeMatchingWorksheet.runner.js
 node games/matchingWorksheet/tests/matchingWorksheet.runner.js
 node games/matrixReasoning/tests/stage1LinearNumbers.runner.js
 node games/matrixReasoning/tests/stage2NonLinearNumbers.runner.js
@@ -115,8 +116,9 @@ These verify question generation, controlled non-target attributes, size difficu
 Expected passing suite:
 
 - Matching Worksheet
+- Attribute Matching Worksheet
 
-These verify deterministic card pair creation, stable card ids, matching and non-matching pair checks, tap-to-select success and mistake behavior, matched-card selection guards, and completion detection.
+These verify deterministic card pair creation, stable card ids, matching and non-matching pair checks, tap-to-select success and mistake behavior, matched-card selection guards, completion detection, attribute question creation, answer detection, deterministic attribute datasets, single-select flow, and hint progression data.
 
 ## Browser Viewport Smoke Tests
 
@@ -128,6 +130,7 @@ Current browser coverage uses Chromium only and checks:
 
 - SIRAASH Welcome / Activity Hub at 1366 x 768
 - Matching Worksheet at 1366 x 768 and 1024 x 768
+- Attribute Matching Worksheet at 1366 x 768 and 1024 x 768
 - Attribute Explorer at 1366 x 768 and 1024 x 768
 - Attribute Explorer help nudge timing at 1366 x 768
 - Matrix Reasoning at 1366 x 768 and 1024 x 768

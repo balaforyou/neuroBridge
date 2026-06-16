@@ -269,6 +269,15 @@ V1 implementation:
 - Interaction: Tap one card, then tap its matching card. Drag and drop remains a future option.
 - Shared services: Uses `createWorksheetShell`, progressive hints, shared SIRAASH feedback, and the inactive level-up celebration placeholder. Routine correct answers do not trigger celebration effects.
 
+Attribute Matching implementation:
+
+- Story: NB-WS-001.2
+- Location: `games/attributeMatchingWorksheet/`
+- Scope: Attribute-based matching for color, shape, and size.
+- Interaction: Single-select choice from three options. No drag and drop and no multi-select in V1.
+- Learning bridge: Moves from identical-object matching, such as apple to apple, toward property matching, such as apple to red or ball to round.
+- Shared services: Uses `createWorksheetShell`, progressive hints, shared SIRAASH feedback, and the inactive level-up celebration placeholder. Routine correct answers do not trigger celebration effects.
+
 User story:
 
 ```text

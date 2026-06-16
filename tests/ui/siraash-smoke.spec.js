@@ -64,6 +64,8 @@ test.describe('SIRAASH Activity Hub', () => {
         await expect(page.getByText(`${LEARNER_NAME}, let's learn together`)).toBeVisible();
         await expect(page.getByTestId('activity-tile-matching-worksheet')).toBeVisible();
         await expect(page.getByText('Matching Worksheet')).toBeVisible();
+        await expect(page.getByTestId('activity-tile-attribute-matching')).toBeVisible();
+        await expect(page.getByText('Attribute Matching')).toBeVisible();
         await expect(page.getByTestId('activity-tile-pattern-detective')).toBeVisible();
         await expect(page.getByTestId('activity-tile-look-closely')).toBeVisible();
         await expect(page.getByText('Coming Soon').first()).toBeVisible();
@@ -86,6 +88,27 @@ test.describe('Matching Worksheet viewport smoke', () => {
             await expect(page.getByTestId('worksheet-celebration')).toHaveAttribute('data-enabled', 'false');
             await expect(page.getByTestId('matching-card-apple-a')).toBeVisible();
             await expect(page.getByTestId('worksheet-hint-button')).toBeVisible();
+            await expectNoPageScrollbar(page);
+        });
+    }
+});
+
+test.describe('Attribute Matching Worksheet viewport smoke', () => {
+    for (const viewport of TEST_VIEWPORTS) {
+        test(`keeps prompt and choices visible at ${viewport.name}`, async ({ page }) => {
+            await page.setViewportSize({ width: viewport.width, height: viewport.height });
+            await page.goto('/games/attributeMatchingWorksheet/');
+
+            await expect(page.getByTestId('attribute-matching-worksheet')).toBeVisible();
+            await expect(page.getByTestId('worksheet-instruction')).toBeVisible();
+            await expect(page.getByTestId('worksheet-activity')).toBeVisible();
+            await expect(page.getByTestId('worksheet-help')).toBeVisible();
+            await expect(page.getByTestId('attribute-prompt')).toHaveText('Find another red item.');
+            await expect(page.getByTestId('attribute-choice-strawberry')).toBeVisible();
+            await expect(page.getByTestId('attribute-choice-ball')).toBeVisible();
+            await expect(page.getByTestId('attribute-choice-sun')).toBeVisible();
+            await expect(page.getByTestId('worksheet-hint-button')).toBeVisible();
+            await expect(page.getByTestId('worksheet-celebration')).toHaveAttribute('data-enabled', 'false');
             await expectNoPageScrollbar(page);
         });
     }

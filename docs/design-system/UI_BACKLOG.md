@@ -158,6 +158,12 @@ Purpose: Capture design-system and UI templating work for NeuroBridge after the 
 - Status: Done
 - Notes: Implemented the first worksheet activity with exact picture matching, tap-to-select pairs, shared worksheet shell zones, progressive hints, shared SIRAASH feedback, inactive celebration placeholder, and browser viewport smoke coverage.
 
+- Story ID: NB-WS-001.2
+- Title: Attribute Matching Worksheet
+- Priority: P1
+- Status: Done
+- Notes: Implemented single-select attribute matching with deterministic color, shape, and size prompts using the worksheet shell, shared SIRAASH feedback, progressive hints, inactive celebration placeholder, Node regression tests, and browser viewport smoke coverage.
+
 - Story ID: NB-110
 - Title: Printable worksheet support
 - Priority: Medium

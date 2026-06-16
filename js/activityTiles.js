@@ -17,6 +17,19 @@ const ACTIVITY_TILE_GROUPS = [
                 actionClass: 'bg-emerald-600 group-hover:bg-emerald-500',
                 domain: 'executive-function',
                 skills: ['visual-discrimination', 'matching', 'categorization']
+            },
+            {
+                activityId: 'attributeMatchingWorksheet',
+                parentName: 'Attribute Matching Worksheet',
+                learnerName: 'Attribute Matching',
+                icon: '&#127912;',
+                description: 'Find items that share a property.',
+                status: 'available',
+                identityClass: 'from-rose-100 via-amber-50 to-emerald-50 border-rose-300',
+                iconClass: 'from-rose-300 via-amber-200 to-emerald-200',
+                actionClass: 'bg-rose-600 group-hover:bg-rose-500',
+                domain: 'executive-function',
+                skills: ['attribute-matching', 'visual-discrimination', 'early-abstraction']
             }
         ]
     },
@@ -235,7 +248,8 @@ function getActivityTileTestId(tile) {
     const explicitIds = {
         matrixReasoning: 'activity-tile-pattern-detective',
         attributeExplorer: 'activity-tile-look-closely',
-        matchingWorksheet: 'activity-tile-matching-worksheet'
+        matchingWorksheet: 'activity-tile-matching-worksheet',
+        attributeMatchingWorksheet: 'activity-tile-attribute-matching'
     };
 
     return explicitIds[tile.activityId] || `activity-tile-${tile.activityId}`;
