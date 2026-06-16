@@ -7,9 +7,10 @@
     "doc": "docs"
   },
   "scripts": {
-    "serve": "http-server . -p 5501",
+    "serve": "node scripts/serve-static.cjs 5501",
+    "test:node": "node scripts/run-node-regression.cjs",
     "test:ui": "playwright test",
-    "test": "echo \"Run documented test suites from docs/TESTING.md\" && exit 0"
+    "test": "npm run test:node"
   },
   "repository": {
     "type": "git",
@@ -24,7 +25,6 @@
   },
   "homepage": "https://github.com/balaforyou/neuroBridge#readme",
   "devDependencies": {
-    "@playwright/test": "^1.61.0",
-    "http-server": "^14.1.1"
+    "@playwright/test": "^1.61.0"
   }
 }

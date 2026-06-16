@@ -6,6 +6,14 @@ Purpose: Reference available NeuroBridge test suites and expected passing runner
 
 Tests are JavaScript module tests with lightweight runner files.
 
+Run the full Node regression suite:
+
+```bash
+npm run test
+```
+
+`npm run test` delegates to `npm run test:node`, which discovers and runs all `*.runner.js` files under `js/` and `games/`. The repository root remains CommonJS for tooling, while `js/` and `games/` are explicit ESM module scopes for browser code and Node regression runners.
+
 Run browser viewport smoke tests with Playwright:
 
 ```bash
@@ -34,6 +42,8 @@ Game tests:
 ```bash
 node games/attributeExplorer/tests/attributeSameDifferent.runner.js
 node games/attributeExplorer/tests/attributeTrialResult.runner.js
+node games/attributeExplorer/tests/attributeLayout.runner.js
+node games/attributeExplorer/tests/attributeHelpNudge.runner.js
 node games/matrixReasoning/tests/stage1LinearNumbers.runner.js
 node games/matrixReasoning/tests/stage2NonLinearNumbers.runner.js
 node games/matrixReasoning/tests/stage3ShapePattern.runner.js
@@ -83,6 +93,8 @@ Expected passing suites:
 
 - Attribute Same / Different
 - Attribute Trial Result
+- Attribute Layout Contract
+- Attribute Help Nudge
 
 These verify question generation, controlled non-target attributes, size difficulty metadata, options, trial result structure, scaffold metadata, reaction time, and label scaffold behavior.
 

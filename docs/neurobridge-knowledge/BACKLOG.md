@@ -218,7 +218,7 @@ Priority:
 Medium
 
 Status:
-Backlog
+Done
 
 Problem:
 Activities run inside isolated activity containers/frames and
@@ -336,7 +336,9 @@ Normalize the Node test runner module mode so local and CI executions do not
 depend on Node version-specific module detection.
 
 Notes:
-Testing infrastructure follow-up. Keep separate from browser smoke tests.
+Implemented with explicit ESM module scopes under js/ and games/, plus a
+CommonJS Node regression orchestrator at scripts/run-node-regression.cjs.
+Root package.json remains CommonJS.
 
 
 Backlog ID:
