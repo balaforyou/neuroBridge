@@ -62,6 +62,15 @@ async function initializeKumonQuiz(page, overrides = {}) {
     }, { learnerName: LEARNER_NAME, overrides });
 }
 
+async function answerNumberBridgeRow(page, rowIndex, answer) {
+    const testId = rowIndex === 0
+        ? 'number-bridges-answer-input'
+        : `number-bridges-answer-input-${rowIndex}`;
+
+    await page.getByTestId(testId).fill(String(answer));
+    await page.getByTestId(testId).press('Enter');
+}
+
 test.describe('SIRAASH Activity Hub', () => {
     test.use({ viewport: DESKTOP });
 
@@ -275,10 +284,36 @@ test.describe('Number Bridges viewport smoke', () => {
             await expect(page.getByRole('heading', { name: 'Number Bridges' })).toBeVisible();
             await expect(page.getByTestId('kumon-quiz')).toBeVisible();
             await expect(page.getByTestId('number-bridges-main-task')).toBeVisible();
-            await expect(page.getByTestId('number-bridges-question')).toHaveText('1 + 1 = ?');
+            await expect(page.getByTestId('number-bridges-row-list')).toBeVisible();
+            await expect(page.locator('[data-testid="number-bridges-row-0"]')).toBeVisible();
+            await expect(page.locator('[data-testid="number-bridges-row-4"]')).toBeVisible();
+            await expect(page.getByTestId('number-bridges-question')).toHaveText('1 + 1 =');
             await expect(page.getByTestId('number-bridges-answer-input')).toBeVisible();
             await expect(page.getByTestId('number-bridges-check-button')).toBeHidden();
             await expect(page.getByTestId('number-bridges-support-panel')).toBeVisible();
+            await expect(page.getByTestId('number-bridges-local-tick')).toBeHidden();
+
+            const rowAlignment = await page.evaluate(() => {
+                const row = document.querySelector('[data-testid="number-bridges-row-0"]');
+                const question = document.querySelector('[data-testid="number-bridges-question"]');
+                const input = document.querySelector('[data-testid="number-bridges-answer-input"]');
+                const tick = document.querySelector('[data-testid="number-bridges-local-tick"]');
+                const rowBox = row.getBoundingClientRect();
+                const questionBox = question.getBoundingClientRect();
+                const inputBox = input.getBoundingClientRect();
+                const tickBox = tick.getBoundingClientRect();
+
+                return {
+                    questionInsideRow: questionBox.top >= rowBox.top && questionBox.bottom <= rowBox.bottom,
+                    inputInsideRow: inputBox.top >= rowBox.top && inputBox.bottom <= rowBox.bottom,
+                    tickInsideRow: tickBox.top >= rowBox.top && tickBox.bottom <= rowBox.bottom
+                };
+            });
+            expect(rowAlignment).toEqual({
+                questionInsideRow: true,
+                inputInsideRow: true,
+                tickInsideRow: true
+            });
             await expect(page.getByText('Back to Dashboard')).toBeHidden();
             await expect(page.getByText('Activity: Kumon Quiz')).toBeHidden();
             await expectNoPageScrollbar(page);
@@ -310,21 +345,29 @@ test.describe('Number Bridges viewport smoke', () => {
         await expect(frame.getByTestId('number-bridges-question')).toBeVisible();
     });
 
-    test('auto-advances on correct answer and scaffolds wrong answer', async ({ page }) => {
+    test('locks correct rows and scaffolds wrong rows without Check', async ({ page }) => {
         await page.goto('/games/kumonQuiz/');
-        await initializeKumonQuiz(page);
+        await initializeKumonQuiz(page, { firstNumberMax: 10, questionCount: 10 });
 
-        await page.getByTestId('number-bridges-answer-input').fill('2');
-        await page.getByTestId('number-bridges-answer-input').press('Enter');
+        await answerNumberBridgeRow(page, 0, 2);
         await expect(page.getByTestId('number-bridges-local-tick')).toBeVisible();
+        await expect(page.getByTestId('number-bridges-answer-input')).toHaveValue('2');
+        await expect(page.getByTestId('number-bridges-answer-input')).toBeDisabled();
         await expect(page.getByText(`Great work, ${LEARNER_NAME}!`)).toHaveCount(0);
-        await expect(page.getByTestId('number-bridges-question')).toHaveText('2 + 1 = ?', { timeout: 1600 });
+        await expect(page.getByTestId('number-bridges-question')).toHaveText('1 + 1 =');
 
-        await page.getByTestId('number-bridges-answer-input').fill('9');
+        await page.getByTestId('number-bridges-answer-input-1').fill('9');
         await page.keyboard.press('Tab');
-        await expect(page.getByTestId('number-bridges-question')).toHaveText('2 + 1 = ?');
+        await expect(page.getByTestId('number-bridges-question-1')).toHaveText('2 + 1 =');
+        await expect(page.getByTestId('number-bridges-answer-input-1')).toBeEditable();
         await expect(page.getByTestId('number-bridges-feedback')).toContainText('You got close.');
         await expect(page.getByTestId('number-bridges-support-text')).toContainText('Think about 2 + 0.');
+
+        for (const [rowIndex, answer] of [[1, 3], [2, 4], [3, 5], [4, 6]]) {
+            await answerNumberBridgeRow(page, rowIndex, answer);
+        }
+
+        await expect(page.getByTestId('number-bridges-question')).toHaveText('6 + 1 =', { timeout: 1600 });
         await expectNoPageScrollbar(page);
     });
 
@@ -336,10 +379,8 @@ test.describe('Number Bridges viewport smoke', () => {
         await page.getByTestId('number-bridges-answer-input').press('Enter');
         await expect(page.getByTestId('number-bridges-support-text')).toContainText('Think about 1 + 0.');
 
-        for (const answer of ['2', '3', '4', '5', '6']) {
-            await page.getByTestId('number-bridges-answer-input').fill(answer);
-            await page.getByTestId('number-bridges-answer-input').press('Enter');
-            await page.waitForTimeout(900);
+        for (const [rowIndex, answer] of [[0, 2], [1, 3], [2, 4], [3, 5], [4, 6]]) {
+            await answerNumberBridgeRow(page, rowIndex, answer);
         }
 
         await expect(page.getByTestId('number-bridges-results')).toBeVisible();

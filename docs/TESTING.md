@@ -129,7 +129,7 @@ Expected passing suite:
 
 - Kumon Quiz
 
-These verify default parent configuration, fixed and ranged addition question generation, Enter and blur answer validation, duplicate auto-validation guards, correct-answer local tick and auto-advance behavior, wrong-answer retry behavior, hint behavior, result summaries, wrong-answer lists, and trial analytics fields.
+These verify default parent configuration, configurable 1/3/5 questions-per-screen modes, fixed and ranged addition question generation, Enter and blur answer validation, duplicate auto-validation guards, correct-answer local tick and row locking behavior, group-only auto-advance behavior, wrong-answer retry behavior, hint behavior, result summaries, wrong-answer lists, and trial analytics fields.
 
 ## Browser Viewport Smoke Tests
 
@@ -145,7 +145,7 @@ Current browser coverage uses Chromium only and checks:
 - Attribute Matching Worksheet at 1366 x 768 and 1024 x 768
 - Attribute Matching Worksheet shell-managed launch, shared completion panel, and next-round flow at 1366 x 768
 - Number Bridges / Kumon Quiz at 1366 x 768 and 1024 x 768
-- Number Bridges tile launch, Check-free Enter validation, local correct tick, wrong-answer scaffold, and completion result summary at 1366 x 768
+- Number Bridges tile launch, default five-row layout, Check-free Enter validation, local correct tick, wrong-answer scaffold, group advancement, and completion result summary at 1366 x 768
 - Attribute Explorer at 1366 x 768 and 1024 x 768
 - Attribute Explorer help nudge timing at 1366 x 768
 - Matrix Reasoning at 1366 x 768 and 1024 x 768

@@ -21,9 +21,18 @@ function testConfigDefaults() {
     assert(config.secondNumberMode === 'fixed', 'Second number mode should default to fixed');
     assert(config.secondNumberFixedValue === 1, 'Fixed second number should default to 1');
     assert(config.questionCount === 10, 'Question count should default to 10');
+    assert(config.questionsPerScreen === 5, 'Questions per screen should default to 5');
     assert(config.hintsEnabled === true, 'Hints should default enabled');
     assert(config.mode === 'practice', 'Mode should default to practice');
     console.log('Kumon config defaults test passed');
+}
+
+function testQuestionsPerScreenConfig() {
+    assert(normalizeKumonConfig({ questionsPerScreen: 1 }).questionsPerScreen === 1, 'Should accept 1 question per screen');
+    assert(normalizeKumonConfig({ questionsPerScreen: 3 }).questionsPerScreen === 3, 'Should accept 3 questions per screen');
+    assert(normalizeKumonConfig({ questionsPerScreen: 5 }).questionsPerScreen === 5, 'Should accept 5 questions per screen');
+    assert(normalizeKumonConfig({ questionsPerScreen: 2 }).questionsPerScreen === 5, 'Unsupported row count should fall back to 5');
+    console.log('Questions per screen config test passed');
 }
 
 function testFixedSecondNumberGeneration() {
@@ -59,7 +68,7 @@ function testRangeSecondNumberGeneration() {
 }
 
 function testCorrectAnswerAdvances() {
-    const game = createKumonQuizGame({ questionCount: 5 });
+    const game = createKumonQuizGame({ questionCount: 5, questionsPerScreen: 1 });
     const question = game.getCurrentQuestion();
 
     const outcome = game.validateAnswer(question.expectedAnswer, {
@@ -80,7 +89,7 @@ function testCorrectAnswerAdvances() {
 }
 
 function testBlurValidationAcceptsCorrectAnswer() {
-    const game = createKumonQuizGame({ questionCount: 5 });
+    const game = createKumonQuizGame({ questionCount: 5, questionsPerScreen: 1 });
     const question = game.getCurrentQuestion();
 
     const outcome = game.validateAnswer(String(question.expectedAnswer), {
@@ -95,7 +104,7 @@ function testBlurValidationAcceptsCorrectAnswer() {
 }
 
 function testWrongAnswerDoesNotAdvanceAndShowsHint() {
-    const game = createKumonQuizGame({ questionCount: 5, hintsEnabled: true });
+    const game = createKumonQuizGame({ questionCount: 5, questionsPerScreen: 5, hintsEnabled: true });
     const question = game.getCurrentQuestion();
 
     const outcome = game.validateAnswer(question.expectedAnswer + 1, {
@@ -109,6 +118,7 @@ function testWrongAnswerDoesNotAdvanceAndShowsHint() {
     assert(outcome.trial.autoAdvanced === false, 'Wrong answer should preserve no-auto-advance analytics');
     assert(state.currentQuestionIndex === 0, 'Wrong answer should stay on same question');
     assert(state.supportState?.hintLevel === 1, 'Wrong answer should reveal first hint when enabled');
+    assert(state.correctQuestionIds[question.questionId] !== true, 'Wrong answer should not lock row');
     console.log('Wrong answer scaffold test passed');
 }
 
@@ -133,6 +143,57 @@ function testDuplicateEnterBlurDoesNotDoubleRecordAttempt() {
     assert(state.trials.length === 1, 'Duplicate Enter plus blur should not double-record analytics');
     assert(state.attemptNumberByQuestion[question.questionId] === 1, 'Duplicate validation should not increment attempts');
     console.log('Duplicate validation guard test passed');
+}
+
+function testFiveRowModeLocksCorrectRowsAndKeepsAnswers() {
+    const game = createKumonQuizGame({ questionCount: 10, questionsPerScreen: 5 });
+    const visibleQuestions = game.getVisibleQuestions();
+    const first = visibleQuestions[0];
+
+    assert(visibleQuestions.length === 5, 'Five-row mode should expose five active rows');
+
+    const outcome = game.validateAnswer(first.expectedAnswer, {
+        questionId: first.questionId,
+        reactionTimeMs: 110,
+        timestamp: '2026-06-16T00:00:00.000Z',
+        validationSource: 'enter'
+    });
+    const state = game.getState();
+
+    assert(outcome.result === 'success', 'Correct row should validate successfully');
+    assert(outcome.trial.autoAdvanced === false, 'Partial group correct row should not auto-advance analytics');
+    assert(state.correctQuestionIds[first.questionId] === true, 'Correct row should lock');
+    assert(state.answerValueByQuestion[first.questionId] === String(first.expectedAnswer), 'Correct row answer should remain visible in state');
+    assert(state.rowResultByQuestion[first.questionId] === 'success', 'Correct row should expose local tick state');
+    assert(state.successPendingAdvance === false, 'Group should not advance until all visible rows are correct');
+    assert(game.advanceAfterCorrect().result === 'ignored', 'Partial group should not advance');
+    console.log('Five-row row lock test passed');
+}
+
+function testFiveRowGroupAdvancesAfterAllVisibleRowsCorrect() {
+    const game = createKumonQuizGame({ questionCount: 10, questionsPerScreen: 5 });
+    const visibleQuestions = game.getVisibleQuestions();
+
+    visibleQuestions.forEach((question, rowIndex) => {
+        const outcome = game.validateAnswer(question.expectedAnswer, {
+            questionId: question.questionId,
+            reactionTimeMs: 100 + rowIndex,
+            timestamp: `2026-06-16T00:00:0${rowIndex}.000Z`,
+            validationSource: 'enter'
+        });
+
+        assert(outcome.result === 'success', `Row ${rowIndex} should validate successfully`);
+        assert(outcome.trial.rowIndex === rowIndex, `Row ${rowIndex} analytics should include row index`);
+        assert(outcome.trial.pageIndex === 0, 'First group analytics should include page index 0');
+        assert(outcome.trial.questionsPerScreen === 5, 'Analytics should include configured row count');
+    });
+
+    assert(game.getState().successPendingAdvance === true, 'Group should be ready to advance after all rows correct');
+
+    const advance = game.advanceAfterCorrect();
+    assert(advance.result === 'advanced', 'Completed visible group should advance');
+    assert(game.getState().currentQuestionIndex === 5, 'Next group should start after five rows');
+    console.log('Five-row group advance test passed');
 }
 
 function testHintDisabled() {
@@ -167,6 +228,7 @@ function testResultSummary() {
 function testTrialAnalyticsFields() {
     const game = createKumonQuizGame({
         questionCount: 5,
+        questionsPerScreen: 1,
         learnerName: 'Adarsh',
         mode: 'assessment'
     });
@@ -199,6 +261,9 @@ function testTrialAnalyticsFields() {
         'autoAdvanced',
         'configuredMode',
         'hintsEnabled',
+        'questionsPerScreen',
+        'pageIndex',
+        'rowIndex',
         'timestamp'
     ].forEach(field => {
         assert(Object.prototype.hasOwnProperty.call(trial, field), `Trial should include ${field}`);
@@ -208,6 +273,9 @@ function testTrialAnalyticsFields() {
     assert(trial.hintUsed === true, 'Trial should capture hint usage');
     assert(trial.autoAdvanced === true, 'Correct trial should capture auto-advance intent');
     assert(trial.configuredMode === 'assessment', 'Trial should capture configured mode');
+    assert(trial.questionsPerScreen === 1, 'Trial should capture questions per screen');
+    assert(trial.pageIndex === 0, 'Trial should capture page index');
+    assert(trial.rowIndex === 0, 'Trial should capture row index');
     console.log('Trial analytics fields test passed');
 }
 
@@ -221,12 +289,15 @@ function testHintText() {
 function runAllTests() {
     console.log('=== Kumon Quiz Unit Tests ===');
     testConfigDefaults();
+    testQuestionsPerScreenConfig();
     testFixedSecondNumberGeneration();
     testRangeSecondNumberGeneration();
     testCorrectAnswerAdvances();
     testBlurValidationAcceptsCorrectAnswer();
     testWrongAnswerDoesNotAdvanceAndShowsHint();
     testDuplicateEnterBlurDoesNotDoubleRecordAttempt();
+    testFiveRowModeLocksCorrectRowsAndKeepsAnswers();
+    testFiveRowGroupAdvancesAfterAllVisibleRowsCorrect();
     testHintDisabled();
     testResultSummary();
     testTrialAnalyticsFields();
