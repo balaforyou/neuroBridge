@@ -46,6 +46,26 @@ export const GAME_REGISTRY = [
         supportsScaffolds: true,
         supportsDifficulty: true,
         version: '1.0.0'
+    },
+    {
+        gameId: GAME_IDS.KUMON_QUIZ,
+        id: GAME_IDS.KUMON_QUIZ,
+        name: 'Kumon Quiz',
+        title: 'Number Bridges',
+        folder: 'kumonQuiz',
+        enabled: true,
+        domain: 'numeracy',
+        description: 'Addition worksheet practice with scaffolded SIRAASH support.',
+        skills: [
+            'number-bonds',
+            'arithmetic-fluency'
+        ],
+        maxStage: 1,
+        maxLevel: 1,
+        maxDifficulty: 1,
+        supportsScaffolds: true,
+        supportsDifficulty: false,
+        version: '1.0.0'
     }
 ];
 

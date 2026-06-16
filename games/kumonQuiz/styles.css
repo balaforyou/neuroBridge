@@ -1,0 +1,28 @@
+body {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.siraash-letter:nth-child(1) { color: #047857; }
+.siraash-letter:nth-child(2) { color: #0f766e; }
+.siraash-letter:nth-child(3) { color: #0369a1; }
+.siraash-letter:nth-child(4) { color: #b7791f; }
+.siraash-letter:nth-child(5) { color: #059669; }
+.siraash-letter:nth-child(6) { color: #115e59; }
+.siraash-letter:nth-child(7) { color: #075985; }
+
+.number-bridge-success {
+    animation: number-bridge-pop 520ms ease-out both;
+}
+
+@keyframes number-bridge-pop {
+    0% {
+        opacity: 0;
+        transform: translateY(8px) scale(0.92);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

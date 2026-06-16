@@ -48,6 +48,7 @@ node games/attributeExplorer/tests/attributeTrialResult.runner.js
 node games/attributeExplorer/tests/attributeLayout.runner.js
 node games/attributeExplorer/tests/attributeHelpNudge.runner.js
 node games/attributeMatchingWorksheet/tests/attributeMatchingWorksheet.runner.js
+node games/kumonQuiz/tests/kumonQuiz.runner.js
 node games/matchingWorksheet/tests/matchingWorksheet.runner.js
 node games/matrixReasoning/tests/stage1LinearNumbers.runner.js
 node games/matrixReasoning/tests/stage2NonLinearNumbers.runner.js
@@ -122,6 +123,14 @@ Expected passing suite:
 
 These verify deterministic card pair creation, stable card ids, matching and non-matching pair checks, tap-to-select success and mistake behavior, local success and mistake card ids, matched-card selection guards, completion detection, next round reset behavior, attribute question creation, answer detection, deterministic attribute datasets, single-select flow, and hint progression data.
 
+## Number Bridges / Kumon Quiz Test Suites
+
+Expected passing suite:
+
+- Kumon Quiz
+
+These verify default parent configuration, fixed and ranged addition question generation, correct-answer auto-advance, wrong-answer retry behavior, hint behavior, result summaries, wrong-answer lists, and trial analytics fields.
+
 ## Browser Viewport Smoke Tests
 
 Expected passing suite:
@@ -135,6 +144,8 @@ Current browser coverage uses Chromium only and checks:
 - Matching Worksheet shell-managed launch, local feedback, clean completion panel, and next-round flow at 1366 x 768
 - Attribute Matching Worksheet at 1366 x 768 and 1024 x 768
 - Attribute Matching Worksheet shell-managed launch, shared completion panel, and next-round flow at 1366 x 768
+- Number Bridges / Kumon Quiz at 1366 x 768 and 1024 x 768
+- Number Bridges tile launch, correct auto-advance, wrong-answer scaffold, and completion result summary at 1366 x 768
 - Attribute Explorer at 1366 x 768 and 1024 x 768
 - Attribute Explorer help nudge timing at 1366 x 768
 - Matrix Reasoning at 1366 x 768 and 1024 x 768

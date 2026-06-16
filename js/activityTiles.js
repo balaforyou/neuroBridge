@@ -94,16 +94,17 @@ const ACTIVITY_TILE_GROUPS = [
         labelClass: 'text-amber-300',
         tiles: [
             {
-                activityId: 'numberBridges',
-                parentName: 'Number Bonds',
+                activityId: 'kumonQuiz',
+                parentName: 'Kumon Quiz',
                 learnerName: 'Number Bridges',
                 icon: '🔢',
                 description: 'Build number confidence one step at a time.',
-                status: 'coming-soon',
-                identityClass: 'from-amber-50 via-yellow-50 to-emerald-50 border-amber-200',
-                iconClass: 'from-amber-200 via-yellow-100 to-emerald-100',
+                status: 'available',
+                identityClass: 'from-amber-100 via-yellow-50 to-emerald-50 border-amber-300',
+                iconClass: 'from-amber-300 via-yellow-200 to-emerald-200',
+                actionClass: 'bg-amber-600 group-hover:bg-amber-500',
                 domain: 'numeracy',
-                skills: ['number-bonds']
+                skills: ['number-bonds', 'arithmetic-fluency']
             }
         ]
     },
@@ -249,7 +250,8 @@ function getActivityTileTestId(tile) {
         matrixReasoning: 'activity-tile-pattern-detective',
         attributeExplorer: 'activity-tile-look-closely',
         matchingWorksheet: 'activity-tile-matching-worksheet',
-        attributeMatchingWorksheet: 'activity-tile-attribute-matching'
+        attributeMatchingWorksheet: 'activity-tile-attribute-matching',
+        kumonQuiz: 'activity-tile-number-bridges'
     };
 
     return explicitIds[tile.activityId] || `activity-tile-${tile.activityId}`;

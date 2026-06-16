@@ -13,7 +13,8 @@ export const USER_ROLES = {
 
 export const GAME_IDS = {
     MATRIX_REASONING: 'matrixReasoning',
-    ATTRIBUTE_EXPLORER: 'attributeExplorer'
+    ATTRIBUTE_EXPLORER: 'attributeExplorer',
+    KUMON_QUIZ: 'kumonQuiz'
 };
 
 export const DEFAULT_GAME_CONFIG = {

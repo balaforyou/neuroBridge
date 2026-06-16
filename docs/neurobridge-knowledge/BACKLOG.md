@@ -263,10 +263,10 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 - Domain: Numeracy
 - Epic: Worksheets
 - Priority: P1
-- Status: Ready after NB-102.1
+- Status: Done
 - Purpose: Implement the first arithmetic worksheet-style activity using Worksheet Activity Template v1.0.
 - Acceptance Criteria: Uses frozen Worksheet Activity Template v1.0; includes SIRAASH Activity Shell header; main task and support panel follow the template; uses shared SIRAASH feedback and completion helper; preserves analytics/session contracts; includes Node and Playwright coverage.
-- Notes: Follow-up only. Do not implement until NB-102.1 is complete.
+- Notes: Implemented as `games/kumonQuiz/` with learner-facing Number Bridges tile, addition-only v1, configurable defaults, scaffolded hints, smooth correct-answer advance, completion summary, wrong-answer list, per-attempt trial analytics, Node tests, and Playwright viewport coverage.
 
 - Story ID: NB-101.4.5.1
 - Title: Worksheet Architecture Specification

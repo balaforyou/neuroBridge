@@ -41,6 +41,27 @@ async function initializeActivity(page) {
     }, LEARNER_NAME);
 }
 
+async function initializeKumonQuiz(page, overrides = {}) {
+    await page.evaluate(({ learnerName, overrides }) => {
+        window.postMessage({
+            type: 'INITIALIZE_GAME_RULES',
+            payload: {
+                operation: '+',
+                firstNumberMin: 1,
+                firstNumberMax: 5,
+                secondNumberMode: 'fixed',
+                secondNumberFixedValue: 1,
+                questionCount: 5,
+                hintsEnabled: true,
+                mode: 'practice',
+                ...overrides
+            },
+            learnerName,
+            isTestSession: true
+        }, '*');
+    }, { learnerName: LEARNER_NAME, overrides });
+}
+
 test.describe('SIRAASH Activity Hub', () => {
     test.use({ viewport: DESKTOP });
 
@@ -68,8 +89,10 @@ test.describe('SIRAASH Activity Hub', () => {
         await expect(page.getByText('Attribute Matching')).toBeVisible();
         await expect(page.getByTestId('activity-tile-pattern-detective')).toBeVisible();
         await expect(page.getByTestId('activity-tile-look-closely')).toBeVisible();
+        await expect(page.getByTestId('activity-tile-number-bridges')).toBeVisible();
+        await expect(page.getByText('Number Bridges')).toBeVisible();
         await expect(page.getByText('Coming Soon').first()).toBeVisible();
-        await expect(page.getByText('Coming Soon')).toHaveCount(3);
+        await expect(page.getByText('Coming Soon')).toHaveCount(2);
         await expectNoPageScrollbar(page, { vertical: true });
     });
 });
@@ -237,6 +260,96 @@ test.describe('Attribute Matching Worksheet viewport smoke', () => {
         await expect(page.getByTestId('attribute-prompt')).toHaveText('Find another round item.');
         await expect(page.getByTestId('worksheet-feedback')).toBeEmpty();
         await expectNoPageScrollbar(page);
+    });
+});
+
+test.describe('Number Bridges viewport smoke', () => {
+    for (const viewport of TEST_VIEWPORTS) {
+        test(`keeps question, answer, and support visible at ${viewport.name}`, async ({ page }) => {
+            await page.setViewportSize({ width: viewport.width, height: viewport.height });
+            await page.goto('/games/kumonQuiz/');
+            await initializeKumonQuiz(page);
+
+            await expect(page.getByRole('button', { name: /Home/ })).toBeVisible();
+            await expect(page.getByLabel('SIRAASH')).toBeVisible();
+            await expect(page.getByRole('heading', { name: 'Number Bridges' })).toBeVisible();
+            await expect(page.getByTestId('kumon-quiz')).toBeVisible();
+            await expect(page.getByTestId('number-bridges-main-task')).toBeVisible();
+            await expect(page.getByTestId('number-bridges-question')).toHaveText('1 + 1 = ?');
+            await expect(page.getByTestId('number-bridges-answer-input')).toBeVisible();
+            await expect(page.getByTestId('number-bridges-check-button')).toBeVisible();
+            await expect(page.getByTestId('number-bridges-support-panel')).toBeVisible();
+            await expect(page.getByText('Back to Dashboard')).toBeHidden();
+            await expect(page.getByText('Activity: Kumon Quiz')).toBeHidden();
+            await expectNoPageScrollbar(page);
+        });
+    }
+
+    test.use({ viewport: DESKTOP });
+
+    test('launches from the hub without legacy parent navigation labels', async ({ page }) => {
+        await page.goto('/');
+
+        await page.evaluate(async (learnerName) => {
+            const db = await import('/js/database.js');
+            await db.seedCustomPins('4321', '2580', learnerName);
+        }, LEARNER_NAME);
+
+        await page.getByRole('button', { name: 'Learner Login' }).click();
+        await page.getByPlaceholder('Enter PIN').fill('2580');
+        await page.getByRole('button', { name: 'Enter' }).click();
+        await page.getByRole('button', { name: "Let's Begin" }).click();
+        await page.getByTestId('activity-tile-number-bridges').click();
+
+        await expect(page.locator('#game-nav-row')).toBeHidden();
+        await expect(page.getByText('Back to Dashboard')).toBeHidden();
+        await expect(page.getByText('Activity: Kumon Quiz')).toBeHidden();
+
+        const frame = page.frameLocator('#game-frame');
+        await expect(frame.getByRole('heading', { name: 'Number Bridges' })).toBeVisible();
+        await expect(frame.getByTestId('number-bridges-question')).toBeVisible();
+    });
+
+    test('auto-advances on correct answer and scaffolds wrong answer', async ({ page }) => {
+        await page.goto('/games/kumonQuiz/');
+        await initializeKumonQuiz(page);
+
+        await page.getByTestId('number-bridges-answer-input').fill('2');
+        await page.getByTestId('number-bridges-check-button').click();
+        await expect(page.getByTestId('number-bridges-success-tick')).toBeVisible();
+        await expect(page.getByTestId('number-bridges-question')).toHaveText('2 + 1 = ?', { timeout: 1600 });
+
+        await page.getByTestId('number-bridges-answer-input').fill('9');
+        await page.getByTestId('number-bridges-check-button').click();
+        await expect(page.getByTestId('number-bridges-question')).toHaveText('2 + 1 = ?');
+        await expect(page.getByTestId('number-bridges-feedback')).toContainText('You got close.');
+        await expect(page.getByTestId('number-bridges-support-text')).toContainText('Think about 2 + 0.');
+        await expectNoPageScrollbar(page);
+    });
+
+    test('shows completion score and wrong answer list', async ({ page }) => {
+        await page.goto('/games/kumonQuiz/');
+        await initializeKumonQuiz(page);
+
+        await page.getByTestId('number-bridges-answer-input').fill('3');
+        await page.getByTestId('number-bridges-check-button').click();
+        await expect(page.getByTestId('number-bridges-support-text')).toContainText('Think about 1 + 0.');
+
+        for (const answer of ['2', '3', '4', '5', '6']) {
+            await page.getByTestId('number-bridges-answer-input').fill(answer);
+            await page.getByTestId('number-bridges-check-button').click();
+            await page.waitForTimeout(900);
+        }
+
+        await expect(page.getByTestId('number-bridges-results')).toBeVisible();
+        await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
+        await expect(page.getByTestId('number-bridges-score')).toHaveText('Score: 5 / 5');
+        await expect(page.getByTestId('number-bridges-accuracy')).toHaveText('Accuracy: 100%');
+        await expect(page.getByTestId('number-bridges-wrong-list')).toContainText('1 + 1 = 2');
+        await expect(page.getByTestId('number-bridges-wrong-list')).toContainText('Your answer: 3');
+        await expect(page.getByTestId('number-bridges-next-round-button')).toBeVisible();
+        await expect(page.getByTestId('number-bridges-home-button')).toBeVisible();
+        await expectNoPageScrollbar(page, { vertical: true });
     });
 });
 
