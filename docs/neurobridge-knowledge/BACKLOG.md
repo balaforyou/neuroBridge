@@ -168,6 +168,19 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 - Relationship To Future Epic: Supports NB-AI-WS-001, where worksheet intelligence may detect songs, reading passages, or verbal sequences and generate Audio Chain activities.
 - Notes: Architecture only. No audio services, speech recognition, activity code, or implementation work included in this story.
 
+- Story ID: NB-AUD-001.2
+- Title: Audio Chain Generalization Framework
+- Domain: Expression & Logic
+- Epic: EPIC 6 - Narrative Expression & Memory Externalization
+- Priority: P1
+- Status: Design
+- Problem Statement: The Audio Chain architecture can appear song-centric, but songs are only one example of a broader NeuroBridge sequence-completion scaffold.
+- Refinement: Future versions should treat Audio Chain as the first implementation of a generalized Sequence Completion Engine.
+- Underlying Skill Progression: Recognize -> Recall -> Continue -> Generate.
+- Content Families: Auditory songs, counting chains, weekday chains, month chains, story chains, conversation chains, functional scripts, reading fluency, narration chains, classroom routines, and functional conversations.
+- Backlog Outcome: NB-AUD-001 should support non-song sequence completion using the same retrieval scaffolding model, with audio remaining one input mode rather than the only content type.
+- Notes: Documentation-only refinement. No implementation, renaming, audio services, speech recognition, or activity code changes included.
+
 ## Future Ideas
 
 - Story ID: NB-AI-WS-001

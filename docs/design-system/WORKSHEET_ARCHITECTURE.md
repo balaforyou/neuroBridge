@@ -363,7 +363,18 @@ Architecture story:
 
 ```text
 NB-AUD-001.1
+NB-AUD-001.2
 ```
+
+Generalization:
+
+Audio Chain remains the first implementation, but the broader internal abstraction should be:
+
+```text
+Sequence Completion Engine
+```
+
+The engine supports the same retrieval scaffolding model across auditory, verbal, narrative, conversational, classroom, and functional sequences.
 
 Design principle:
 
@@ -372,13 +383,13 @@ SIRAASH does not test memory. SIRAASH scaffolds retrieval.
 Target progression:
 
 ```text
-Hear
+Recognize
   |
 Recall
   |
 Continue
   |
-Generalize
+Generate
 ```
 
 Core learning loop:
@@ -422,8 +433,11 @@ Supported content types:
 - Counting sequences.
 - Days of the week.
 - Months.
+- Story chains.
+- Conversation chains.
 - Functional scripts such as requests, help phrases, and social responses.
 - Classroom routines.
+- Reading fluency and narration chains.
 
 Proposed content model:
 
