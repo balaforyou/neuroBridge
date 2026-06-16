@@ -41,6 +41,8 @@ function testTapToSelectSuccess() {
     const state = game.getState();
     assert(state.cards.find(card => card.cardId === 'apple-a').matched === true, 'First matched card should be marked');
     assert(state.cards.find(card => card.cardId === 'apple-b').matched === true, 'Second matched card should be marked');
+    assert(state.lastMatchedCardIds.join(',') === 'apple-a,apple-b', 'Matched card ids should be exposed for local feedback');
+    assert(state.lastMistakeCardIds.length === 0, 'Successful match should clear mistake ids');
     assert(state.attempts === 1, 'Successful pair should count as one attempt');
     console.log('Tap-to-select success test passed');
 }
@@ -54,6 +56,8 @@ function testTapToSelectMistake() {
     const state = game.getState();
     assert(state.selectedCardId === null, 'Selection should clear after mistake');
     assert(state.cards.every(card => card.matched === false), 'Mistake should not mark cards');
+    assert(state.lastMistakeCardIds.join(',') === 'apple-a,ball-a', 'Mistake card ids should be exposed for correction feedback');
+    assert(state.lastMatchedCardIds.length === 0, 'Mistake should clear matched ids');
     assert(state.attempts === 1, 'Mistake should count as one attempt');
     console.log('Tap-to-select mistake test passed');
 }
@@ -83,6 +87,25 @@ function testCompletion() {
     console.log('Matching worksheet completion test passed');
 }
 
+function testNextRoundReset() {
+    const game = createMatchingWorksheetGame();
+
+    game.selectCard('apple-a');
+    game.selectCard('apple-b');
+    game.selectCard('ball-a');
+    game.selectCard('ball-b');
+    game.selectCard('cat-a');
+    game.selectCard('cat-b');
+
+    const resetState = game.resetRound();
+    assert(resetState.roundNumber === 2, 'Round number should advance after reset');
+    assert(resetState.completed === false, 'Reset round should clear completion');
+    assert(resetState.cards.every(card => card.matched === false), 'Reset round should clear matched cards');
+    assert(resetState.lastMatchedCardIds.length === 0, 'Reset round should clear local success ids');
+    assert(resetState.lastMistakeCardIds.length === 0, 'Reset round should clear local mistake ids');
+    console.log('Next round reset test passed');
+}
+
 function runAllTests() {
     console.log('=== Matching Worksheet Unit Tests ===');
     testCreateMatchingPairs();
@@ -91,6 +114,7 @@ function runAllTests() {
     testTapToSelectMistake();
     testMatchedCardsCannotBeSelectedAgain();
     testCompletion();
+    testNextRoundReset();
     console.log('=== All Matching Worksheet Unit Tests Passed ===');
 }
 

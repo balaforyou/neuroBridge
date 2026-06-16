@@ -118,7 +118,7 @@ Expected passing suite:
 - Matching Worksheet
 - Attribute Matching Worksheet
 
-These verify deterministic card pair creation, stable card ids, matching and non-matching pair checks, tap-to-select success and mistake behavior, matched-card selection guards, completion detection, attribute question creation, answer detection, deterministic attribute datasets, single-select flow, and hint progression data.
+These verify deterministic card pair creation, stable card ids, matching and non-matching pair checks, tap-to-select success and mistake behavior, local success and mistake card ids, matched-card selection guards, completion detection, next round reset behavior, attribute question creation, answer detection, deterministic attribute datasets, single-select flow, and hint progression data.
 
 ## Browser Viewport Smoke Tests
 
@@ -130,6 +130,7 @@ Current browser coverage uses Chromium only and checks:
 
 - SIRAASH Welcome / Activity Hub at 1366 x 768
 - Matching Worksheet at 1366 x 768 and 1024 x 768
+- Matching Worksheet local feedback, completion, and next-round flow at 1366 x 768
 - Attribute Matching Worksheet at 1366 x 768 and 1024 x 768
 - Attribute Explorer at 1366 x 768 and 1024 x 768
 - Attribute Explorer help nudge timing at 1366 x 768

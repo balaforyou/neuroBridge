@@ -31,12 +31,16 @@ export function isMatchingPair(firstCard, secondCard) {
 }
 
 export function createMatchingWorksheetGame(config = {}) {
+    const initialCards = (config.cards || createMatchingPairs(config.items)).map(card => ({ ...card }));
     const state = {
-        cards: (config.cards || createMatchingPairs(config.items)).map(card => ({ ...card })),
+        cards: initialCards.map(card => ({ ...card })),
         selectedCardId: null,
         attempts: 0,
         completed: false,
-        lastResult: null
+        lastResult: null,
+        lastMatchedCardIds: [],
+        lastMistakeCardIds: [],
+        roundNumber: 1
     };
 
     function getCard(cardId) {
@@ -46,7 +50,9 @@ export function createMatchingWorksheetGame(config = {}) {
     function getState() {
         return {
             ...state,
-            cards: state.cards.map(card => ({ ...card }))
+            cards: state.cards.map(card => ({ ...card })),
+            lastMatchedCardIds: state.lastMatchedCardIds.slice(),
+            lastMistakeCardIds: state.lastMistakeCardIds.slice()
         };
     }
 
@@ -63,6 +69,8 @@ export function createMatchingWorksheetGame(config = {}) {
         if (!state.selectedCardId) {
             state.selectedCardId = card.cardId;
             state.lastResult = 'selected';
+            state.lastMatchedCardIds = [];
+            state.lastMistakeCardIds = [];
             return { result: 'selected', state: getState() };
         }
 
@@ -70,6 +78,8 @@ export function createMatchingWorksheetGame(config = {}) {
         if (!firstCard || firstCard.cardId === card.cardId) {
             state.selectedCardId = card.cardId;
             state.lastResult = 'selected';
+            state.lastMatchedCardIds = [];
+            state.lastMistakeCardIds = [];
             return { result: 'selected', state: getState() };
         }
 
@@ -81,16 +91,33 @@ export function createMatchingWorksheetGame(config = {}) {
             card.matched = true;
             state.completed = isComplete();
             state.lastResult = state.completed ? 'complete' : 'success';
+            state.lastMatchedCardIds = [firstCard.cardId, card.cardId];
+            state.lastMistakeCardIds = [];
             return { result: state.lastResult, state: getState() };
         }
 
         state.lastResult = 'mistake';
+        state.lastMatchedCardIds = [];
+        state.lastMistakeCardIds = [firstCard.cardId, card.cardId];
         return { result: 'mistake', state: getState() };
+    }
+
+    function resetRound() {
+        state.cards = initialCards.map(card => ({ ...card, matched: false }));
+        state.selectedCardId = null;
+        state.attempts = 0;
+        state.completed = false;
+        state.lastResult = null;
+        state.lastMatchedCardIds = [];
+        state.lastMistakeCardIds = [];
+        state.roundNumber += 1;
+        return getState();
     }
 
     return {
         getState,
         isComplete,
+        resetRound,
         selectCard
     };
 }
@@ -102,13 +129,27 @@ function mountMatchingWorksheet() {
     const game = createMatchingWorksheetGame();
     let shell = null;
     let activityGrid = null;
+    let completionPanel = null;
+    let transientMistakeCardIds = [];
+    let mistakeClearTimer = null;
 
     function renderActivity() {
+        const activityContent = document.createElement('div');
+        activityContent.setAttribute('data-testid', 'matching-worksheet');
+        activityContent.className = 'flex h-full min-h-0 flex-col justify-center gap-3';
+
         activityGrid = document.createElement('div');
-        activityGrid.setAttribute('data-testid', 'matching-worksheet');
-        activityGrid.className = 'grid h-full min-h-0 grid-cols-2 sm:grid-cols-3 gap-3 content-center';
+        activityGrid.setAttribute('data-testid', 'matching-card-grid');
+        activityGrid.className = 'grid min-h-0 grid-cols-2 sm:grid-cols-3 gap-3 content-center';
+
+        completionPanel = document.createElement('div');
+        completionPanel.setAttribute('data-testid', 'matching-completion');
+        completionPanel.className = 'hidden rounded-2xl border-4 border-emerald-300 bg-emerald-50 px-4 py-3 text-center text-slate-950';
+
+        activityContent.append(activityGrid, completionPanel);
         renderCards();
-        return activityGrid;
+        renderCompletion();
+        return activityContent;
     }
 
     function renderCards() {
@@ -125,17 +166,23 @@ function mountMatchingWorksheet() {
             button.disabled = card.matched;
 
             const isSelected = state.selectedCardId === card.cardId;
+            const isMistake = transientMistakeCardIds.includes(card.cardId);
             const selectedClass = isSelected
                 ? 'border-sky-500 bg-sky-50 ring-4 ring-sky-200'
                 : 'border-sky-200 bg-white';
             const matchedClass = card.matched
                 ? 'border-emerald-500 bg-emerald-50 text-emerald-950 opacity-85'
                 : selectedClass;
+            const mistakeClass = isMistake
+                ? 'matching-card-nudge border-orange-500 bg-orange-50 text-orange-950 ring-4 ring-orange-200'
+                : matchedClass;
 
-            button.className = `matching-card min-h-[104px] rounded-2xl border-4 ${matchedClass} p-3 text-center shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-300`;
+            button.className = `matching-card relative min-h-[104px] rounded-2xl border-4 ${mistakeClass} p-3 text-center shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-300`;
             button.innerHTML = `
                 <span class="block text-4xl sm:text-5xl" aria-hidden="true">${card.symbol}</span>
                 <span class="mt-2 block text-base sm:text-lg font-black">${card.label}</span>
+                ${card.matched ? `<span data-testid="matching-card-${card.cardId}-check" class="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-600 text-base font-black text-white" aria-label="${card.label} matched">&#10003;</span>` : ''}
+                ${isMistake ? `<span data-testid="matching-card-${card.cardId}-cross" class="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-orange-600 text-base font-black text-white" aria-label="${card.label} needs another try">&#10005;</span>` : ''}
             `;
 
             button.addEventListener('click', () => handleCardSelection(card.cardId));
@@ -143,18 +190,69 @@ function mountMatchingWorksheet() {
         });
     }
 
-    function handleCardSelection(cardId) {
-        const { result } = game.selectCard(cardId);
-        renderCards();
+    function renderCompletion() {
+        if (!completionPanel) return;
 
-        if (result === 'success' || result === 'complete') {
+        const state = game.getState();
+        if (!state.completed) {
+            completionPanel.className = 'hidden rounded-2xl border-4 border-emerald-300 bg-emerald-50 px-4 py-3 text-center text-slate-950';
+            completionPanel.innerHTML = '';
+            return;
+        }
+
+        completionPanel.className = 'rounded-2xl border-4 border-emerald-300 bg-emerald-50 px-4 py-3 text-center text-slate-950';
+        completionPanel.innerHTML = `
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-3xl font-black text-white" aria-hidden="true">&#10003;</div>
+            <p class="mt-2 text-xl font-black">All done!</p>
+            <p class="text-sm font-bold text-emerald-900">Great work!</p>
+            <button type="button" data-testid="matching-next-round-button" class="mt-3 min-h-[44px] rounded-full bg-emerald-700 px-5 py-2 text-base font-black text-white shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-300">
+                Next round
+            </button>
+        `;
+        completionPanel.querySelector('[data-testid="matching-next-round-button"]').addEventListener('click', handleNextRound);
+    }
+
+    function handleCardSelection(cardId) {
+        if (mistakeClearTimer) {
+            clearTimeout(mistakeClearTimer);
+            mistakeClearTimer = null;
+        }
+
+        const { result, state } = game.selectCard(cardId);
+        transientMistakeCardIds = result === 'mistake' ? state.lastMistakeCardIds : [];
+        renderCards();
+        renderCompletion();
+
+        if (result === 'complete') {
             shell.showFeedback('success');
+            return;
+        }
+
+        if (result === 'success') {
+            shell.clearFeedback();
             return;
         }
 
         if (result === 'mistake') {
             shell.showFeedback('mistake');
+            mistakeClearTimer = setTimeout(() => {
+                transientMistakeCardIds = [];
+                renderCards();
+            }, 900);
         }
+    }
+
+    function handleNextRound() {
+        if (mistakeClearTimer) {
+            clearTimeout(mistakeClearTimer);
+            mistakeClearTimer = null;
+        }
+
+        transientMistakeCardIds = [];
+        game.resetRound();
+        shell.clearFeedback();
+        renderCards();
+        renderCompletion();
     }
 
     shell = createWorksheetShell({

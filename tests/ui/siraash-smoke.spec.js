@@ -91,6 +91,42 @@ test.describe('Matching Worksheet viewport smoke', () => {
             await expectNoPageScrollbar(page);
         });
     }
+
+    test.use({ viewport: DESKTOP });
+
+    test('uses local pair feedback and a next round completion flow', async ({ page }) => {
+        await page.goto('/games/matchingWorksheet/');
+
+        await page.getByTestId('matching-card-apple-a').click();
+        await page.getByTestId('matching-card-apple-b').click();
+        await expect(page.getByTestId('matching-card-apple-a-check')).toBeVisible();
+        await expect(page.getByTestId('matching-card-apple-b-check')).toBeVisible();
+        await expect(page.getByTestId('worksheet-feedback')).toBeEmpty();
+
+        await page.getByTestId('matching-card-ball-a').click();
+        await page.getByTestId('matching-card-cat-a').click();
+        await expect(page.getByTestId('matching-card-ball-a-cross')).toBeVisible();
+        await expect(page.getByTestId('matching-card-cat-a-cross')).toBeVisible();
+        await expect(page.getByTestId('matching-card-ball-a')).toHaveClass(/matching-card-nudge/);
+        await expect(page.getByTestId('worksheet-feedback')).toContainText('You got close.');
+        await expect(page.getByTestId('worksheet-feedback')).toContainText('SIRAASH will guide you.');
+        await expect(page.getByTestId('matching-card-ball-a-cross')).toBeHidden({ timeout: 1500 });
+
+        await page.getByTestId('matching-card-ball-a').click();
+        await page.getByTestId('matching-card-ball-b').click();
+        await page.getByTestId('matching-card-cat-a').click();
+        await page.getByTestId('matching-card-cat-b').click();
+        await expect(page.getByTestId('matching-completion')).toBeVisible();
+        await expect(page.getByTestId('matching-completion')).toContainText('All done!');
+        await expect(page.getByTestId('matching-completion')).toContainText('Great work!');
+        await expect(page.getByTestId('matching-next-round-button')).toBeVisible();
+        await expect(page.getByTestId('worksheet-feedback')).toContainText('Great work!');
+
+        await page.getByTestId('matching-next-round-button').click();
+        await expect(page.getByTestId('matching-card-apple-a-check')).toBeHidden();
+        await expect(page.getByTestId('matching-completion')).toBeHidden();
+        await expect(page.getByTestId('worksheet-feedback')).toBeEmpty();
+    });
 });
 
 test.describe('Attribute Matching Worksheet viewport smoke', () => {
