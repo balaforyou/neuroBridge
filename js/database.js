@@ -113,7 +113,9 @@ export async function commitScoreLog(scoreObject) {
         accuracy,
         accuracyPercent: Math.round(accuracy * 100),
         averageReactionTimeMs: Number(scoreObject.averageReactionTimeMs || 0),
+        averageTimePerQuestion: Number(scoreObject.averageTimePerQuestion || 0),
         hintUsageCount: Number(scoreObject.hintUsageCount || 0),
+        mistakeCount: Number(scoreObject.mistakeCount || 0),
         highestLevelReached: Number(scoreObject.highestLevelReached || 1),
         sessionLengthSeconds: Number(scoreObject.sessionLengthSeconds || 0),
 

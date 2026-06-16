@@ -248,8 +248,68 @@ function testSessionSummaryStoresScoreTotalAndAccuracy() {
     assert(session.accuracy === 0.8, `Session accuracy should be ratio 0.8, got ${session.accuracy}`);
     assert(session.accuracyPercent === 80, 'Session accuracyPercent should be 80');
     assert(session.sessionLengthSeconds === summary.timeTakenSeconds, 'Session should store total time seconds');
+    assert(session.averageTimePerQuestion === summary.averageTimeSeconds, 'Session should store average time per question');
     assert(session.hintUsageCount === summary.hintsUsed, 'Session should store hint usage');
+    assert(session.mistakeCount === summary.mistakeCount, 'Session should store mistake count');
     console.log('Session summary analytics test passed');
+}
+
+function testWrongAttemptsDoNotReduceResolvedScore() {
+    const game = createKumonQuizGame({ questionCount: 5, questionsPerScreen: 5, hintsEnabled: true });
+    const visibleQuestions = game.getVisibleQuestions();
+    const first = visibleQuestions[0];
+
+    game.validateAnswer(8, {
+        questionId: first.questionId,
+        reactionTimeMs: 100,
+        timestamp: '2026-06-16T00:00:00.000Z'
+    });
+    game.validateAnswer(5, {
+        questionId: first.questionId,
+        reactionTimeMs: 120,
+        timestamp: '2026-06-16T00:00:01.000Z'
+    });
+
+    visibleQuestions.forEach(question => {
+        game.validateAnswer(question.expectedAnswer, {
+            questionId: question.questionId,
+            reactionTimeMs: 140,
+            timestamp: '2026-06-16T00:00:02.000Z'
+        });
+    });
+
+    const summary = game.getResultSummary();
+
+    assert(summary.correct === 5, 'Resolved score should count the corrected question as correct');
+    assert(summary.accuracy === 100, 'Resolved accuracy should use final question state');
+    assert(summary.mistakeCount === 2, 'Mistake count should track wrong attempts separately');
+    assert(summary.wrongAnswers.length === 1, 'Review should show one corrected question');
+    assert(summary.wrongAnswers[0].attemptedAnswers.join(',') === '8,5', 'Review should list wrong attempts');
+    assert(summary.wrongAnswers[0].correctAnswer === first.expectedAnswer, 'Review should show final correct answer');
+    console.log('Wrong attempts resolved score test passed');
+}
+
+function testHintUsageDoesNotReduceResolvedScore() {
+    const game = createKumonQuizGame({ questionCount: 5, questionsPerScreen: 5, hintsEnabled: true });
+    const visibleQuestions = game.getVisibleQuestions();
+    const first = visibleQuestions[0];
+
+    game.requestHint({ questionId: first.questionId });
+    visibleQuestions.forEach(question => {
+        game.validateAnswer(question.expectedAnswer, {
+            questionId: question.questionId,
+            reactionTimeMs: 140,
+            timestamp: '2026-06-16T00:00:02.000Z'
+        });
+    });
+
+    const summary = game.getResultSummary();
+
+    assert(summary.correct === 5, 'Hint usage should not reduce resolved score');
+    assert(summary.accuracy === 100, 'Hint usage should not reduce accuracy');
+    assert(summary.hintsUsed === 1, 'Hint usage should be counted separately');
+    assert(summary.mistakeCount === 0, 'Hint usage should not count as a mistake');
+    console.log('Hint usage resolved score test passed');
 }
 
 function testHintDisabled() {
@@ -278,8 +338,10 @@ function testResultSummary() {
     assert(summary.total === 5, 'Summary should include total questions');
     assert(summary.timeTakenSeconds === 0, 'Summary should include rounded time taken');
     assert(summary.averageTimeSeconds === 0.1, 'Summary should include average time per question');
+    assert(summary.mistakeCount === 1, 'Summary should include mistake count');
     assert(summary.wrongAnswers.length === 1, 'Summary should include wrong answer list');
     assert(summary.wrongAnswers[0].correctAnswer === first.expectedAnswer, 'Wrong list should include correct answer');
+    assert(summary.wrongAnswers[0].attemptedAnswers[0] === first.expectedAnswer + 1, 'Wrong list should include attempted answer');
     console.log('Result summary test passed');
 }
 
@@ -374,6 +436,8 @@ function runAllTests() {
     testFiveRowGroupAdvancesAfterAllVisibleRowsCorrect();
     testCompletionProducesResultState();
     testSessionSummaryStoresScoreTotalAndAccuracy();
+    testWrongAttemptsDoNotReduceResolvedScore();
+    testHintUsageDoesNotReduceResolvedScore();
     testHintDisabled();
     testResultSummary();
     testResultSummaryHintsUsed();

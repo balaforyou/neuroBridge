@@ -239,6 +239,14 @@ function formatTime(log) {
     return log.averageReactionTimeMs ? `${Math.round(Number(log.averageReactionTimeMs))} ms avg` : '--';
 }
 
+function formatHints(log) {
+    return `Hints: ${Number(log.hintUsageCount || 0)}`;
+}
+
+function formatMistakes(log) {
+    return `Mistakes Corrected: ${Number(log.mistakeCount || 0)}`;
+}
+
 function clampRatio(value) {
     if (!Number.isFinite(value)) return 0;
     return Math.min(1, Math.max(0, value));
@@ -301,6 +309,8 @@ export async function renderParentProgressReport() {
                 - Score ${formatScore(log)}
                 - ${formatAccuracy(log)}
                 ${Number(log.sessionLengthSeconds || 0) ? `- Time ${Math.round(Number(log.sessionLengthSeconds))} sec` : ''}
+                - ${formatHints(log)}
+                - ${formatMistakes(log)}
             </summary>
 
             <div class="mt-2 text-xs text-slate-500">

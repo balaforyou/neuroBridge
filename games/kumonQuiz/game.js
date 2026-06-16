@@ -182,6 +182,8 @@ export function createKumonQuizGame(config = {}) {
         }
 
         state.wrongAnswers.push({
+            questionId: question.questionId,
+            questionIndex: question.questionIndex,
             question: formatQuestion(question),
             learnerAnswer,
             correctAnswer: question.expectedAnswer
@@ -254,6 +256,8 @@ export function createKumonQuizGame(config = {}) {
         const averageTimeSeconds = total ? roundToOneDecimal((totalReactionTimeMs / 1000) / total) : 0;
         const timeTakenSeconds = Math.round(totalReactionTimeMs / 1000);
         const hintsUsed = Object.values(state.currentHintLevelByQuestion).reduce((sum, hintLevel) => sum + Number(hintLevel || 0), 0);
+        const mistakeCount = state.wrongAnswers.length;
+        const wrongAnswerReview = buildWrongAnswerReview(state.wrongAnswers);
 
         return {
             correct: state.correctCount,
@@ -262,8 +266,9 @@ export function createKumonQuizGame(config = {}) {
             timeTakenSeconds,
             averageTimeSeconds,
             hintsUsed,
-            wrongAnswers: state.wrongAnswers.map(answer => ({ ...answer })),
-            allCorrect: state.wrongAnswers.length === 0
+            mistakeCount,
+            wrongAnswers: wrongAnswerReview,
+            allCorrect: mistakeCount === 0
         };
     }
 
@@ -293,7 +298,8 @@ export function createKumonSessionSummary(state, resultSummary = null) {
         accuracy: state.questions.length ? Math.round((state.correctCount / state.questions.length) * 100) : 0,
         timeTakenSeconds: 0,
         averageTimeSeconds: 0,
-        hintsUsed: 0
+        hintsUsed: 0,
+        mistakeCount: 0
     };
     const accuracyPercent = Math.round((summary.correct / Math.max(summary.total, 1)) * 100);
 
@@ -307,7 +313,9 @@ export function createKumonSessionSummary(state, resultSummary = null) {
         accuracy: accuracyPercent / 100,
         accuracyPercent,
         averageReactionTimeMs: average(state.trials.map(trial => trial.reactionTimeMs)),
+        averageTimePerQuestion: summary.averageTimeSeconds,
         hintUsageCount: summary.hintsUsed,
+        mistakeCount: summary.mistakeCount,
         highestLevelReached: 1,
         sessionLengthSeconds: summary.timeTakenSeconds,
         trials: state.trials
@@ -412,7 +420,10 @@ function cloneState(state) {
         completionState: state.completionState
             ? {
                 ...state.completionState,
-                wrongAnswers: state.completionState.wrongAnswers.map(answer => ({ ...answer }))
+                wrongAnswers: state.completionState.wrongAnswers.map(answer => ({
+                    ...answer,
+                    attemptedAnswers: [...answer.attemptedAnswers]
+                }))
             }
             : null
     };
@@ -457,6 +468,32 @@ function getPageIndex(state) {
 
 function getRowIndex(state, question) {
     return Math.max(0, question.questionIndex - state.currentQuestionIndex);
+}
+
+function buildWrongAnswerReview(wrongAnswers = []) {
+    const reviewByQuestion = new Map();
+
+    wrongAnswers.forEach(answer => {
+        const key = answer.questionId || `${answer.question}-${answer.correctAnswer}`;
+        const existing = reviewByQuestion.get(key);
+
+        if (existing) {
+            existing.attemptedAnswers.push(answer.learnerAnswer);
+            return;
+        }
+
+        reviewByQuestion.set(key, {
+            questionId: answer.questionId,
+            questionIndex: answer.questionIndex,
+            question: answer.question,
+            correctAnswer: answer.correctAnswer,
+            attemptedAnswers: [answer.learnerAnswer]
+        });
+    });
+
+    return Array.from(reviewByQuestion.values()).sort((a, b) => (
+        Number(a.questionIndex ?? 0) - Number(b.questionIndex ?? 0)
+    ));
 }
 
 function normalizeAnswerValue(rawAnswer) {
@@ -648,8 +685,9 @@ function mountKumonQuiz() {
                 <h3 class="text-base font-black text-slate-950">Review</h3>
                 <ul data-testid="number-bridges-wrong-list" class="mt-2 space-y-2">${summary.wrongAnswers.map(answer => `
                 <li class="rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm font-bold">
-                    <span>${answer.question} = ${Number.isNaN(answer.learnerAnswer) ? 'No answer' : answer.learnerAnswer}</span>
-                    <span class="text-amber-900"> &rarr; Correct: ${answer.correctAnswer}</span>
+                    <div>${answer.question}</div>
+                    <div class="text-amber-900">Attempted: ${answer.attemptedAnswers.map(formatLearnerAnswer).join(', ')}</div>
+                    <div class="text-emerald-900">Correct: ${answer.correctAnswer}</div>
                 </li>
             `).join('')}</ul>
             </div>`
@@ -660,8 +698,8 @@ function mountKumonQuiz() {
                 ${renderWorksheetCompletion({
                     learnerName,
                     message: summary.accuracy >= 80
-                        ? 'You finished your number bridges. Clap clap, strong work!'
-                        : 'You finished your number bridges.',
+                        ? '&#128079;&#128079;&#128079;<br>You finished your Number Bridges.'
+                        : `Great effort, ${learnerName}!<br>Let's build more bridges together.`,
                     actionTestId: 'number-bridges-next-round-button',
                     actionLabel: 'Try Again'
                 })}
@@ -669,11 +707,12 @@ function mountKumonQuiz() {
                     <div data-testid="number-bridges-metrics" class="grid grid-cols-2 gap-2 text-left text-sm font-black text-slate-950 sm:grid-cols-3">
                         <p data-testid="number-bridges-total">Questions: ${summary.total}</p>
                         <p data-testid="number-bridges-correct-total">Correct / Total: ${summary.correct} / ${summary.total}</p>
-                        <p data-testid="number-bridges-score">Correct: ${summary.correct}</p>
+                        <p data-testid="number-bridges-score">Correct: ${summary.correct} / ${summary.total}</p>
                         <p data-testid="number-bridges-accuracy">Accuracy: ${summary.accuracy}%</p>
                         <p data-testid="number-bridges-time-taken">Time Taken: ${summary.timeTakenSeconds} sec</p>
                         <p data-testid="number-bridges-average-time">Average Time: ${summary.averageTimeSeconds} sec/question</p>
                         <p data-testid="number-bridges-hints-used">Hints Used: ${summary.hintsUsed}</p>
+                        <p data-testid="number-bridges-mistakes-corrected">Mistakes Corrected: ${summary.mistakeCount}</p>
                     </div>
                     ${wrongList}
                     <div class="mt-4 flex flex-wrap justify-center gap-3">
@@ -714,6 +753,10 @@ function average(values) {
 
 function roundToOneDecimal(value) {
     return Math.round(value * 10) / 10;
+}
+
+function formatLearnerAnswer(answer) {
+    return Number.isNaN(answer) ? 'No answer' : String(answer);
 }
 
 if (typeof document !== 'undefined') {

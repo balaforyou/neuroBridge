@@ -390,12 +390,13 @@ test.describe('Number Bridges viewport smoke', () => {
         await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
         await expect(page.getByTestId('number-bridges-total')).toHaveText('Questions: 5');
         await expect(page.getByTestId('number-bridges-correct-total')).toHaveText('Correct / Total: 5 / 5');
-        await expect(page.getByTestId('number-bridges-score')).toHaveText('Correct: 5');
+        await expect(page.getByTestId('number-bridges-score')).toHaveText('Correct: 5 / 5');
         await expect(page.getByTestId('number-bridges-accuracy')).toHaveText('Accuracy: 100%');
         await expect(page.getByTestId('number-bridges-time-taken')).toContainText(/Time Taken: \d+ sec/);
         await expect(page.getByTestId('number-bridges-average-time')).toContainText(/Average Time: [\d.]+ sec\/question/);
         await expect(page.getByTestId('number-bridges-hints-used')).toHaveText('Hints Used: 1');
-        await expect(page.getByTestId('number-bridges-wrong-list')).toContainText('1 + 1 = 3');
+        await expect(page.getByTestId('number-bridges-wrong-list')).toContainText('1 + 1');
+        await expect(page.getByTestId('number-bridges-wrong-list')).toContainText('Attempted: 3');
         await expect(page.getByTestId('number-bridges-wrong-list')).toContainText('Correct: 2');
         await expect(page.getByTestId('number-bridges-next-round-button')).toBeVisible();
         await expect(page.getByTestId('number-bridges-next-round-button')).toHaveText('Try Again');
