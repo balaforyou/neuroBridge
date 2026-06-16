@@ -554,6 +554,7 @@ Not part of initial implementation:
 - Adaptive difficulty.
 - AI-assisted narration support.
 - SIRAASH Worksheet Intelligence (`NB-AI-WS-001`): future parent workflow for uploading school worksheet images and generating scaffolded Bridge Worksheets through existing worksheet templates. This should focus on scaffold generation and learner independence, not answer generation or custom page layouts.
+- Observation-Aware Worksheet Intelligence (`NB-AI-WS-001.1`): future refinement where worksheet generation uses learner context from observations, prompt dependency, skill mastery, `#selfContinuation`, recent successes, and recent struggles before selecting the scaffolded worksheet form.
 
 ## Success Criteria
 

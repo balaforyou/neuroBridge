@@ -203,6 +203,20 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 - Potential Telemetry: worksheetType, detectedSkill, scaffoldLevel, promptUsage, completionRate, timeToSuccess, returnToOriginalWorksheet.
 - Notes: This epic transforms SIRAASH from a collection of activities into an adaptive learning companion that can translate real-world educational material into learner-specific scaffolds. Candidate for P1 after the worksheet ecosystem matures.
 
+- Story ID: NB-AI-WS-001.1
+- Title: Observation-Aware Worksheet Intelligence
+- Epic: Worksheet Intelligence
+- Priority: P2
+- Status: Future
+- Problem Statement: Two learners can receive the same school worksheet but should not necessarily receive the same scaffold. Worksheet analysis and skill detection are incomplete without learner context.
+- Refinement: Future SIRAASH worksheet generation should consume observation history, prompt dependency, skill mastery, self-continuation signals, recent successes, and recent struggles before selecting scaffolds.
+- Future Workflow: Worksheet -> Skill Detection -> Observation Retrieval -> Scaffold Selection -> Worksheet Generation.
+- Observation Signals: #selfContinuation, prompt dependency, skill mastery, recent successes, recent struggles, hint dependency, and parent-noted scaffold responses.
+- Example: For "Find the object that starts with B", a learner with strong matching and self-continuation may receive a picture matching bridge; a learner with strong reading and weak categorization may receive a word-based categorization bridge.
+- NeuroBridge Differentiator: Most AI systems generate content. SIRAASH should generate personalized scaffolds based on observed learner behavior.
+- Depends On: OBSERVATIONS.md; FOUNDATION.md; knowledge signals; Worksheet Shell; NB-AI-WS-001.
+- Notes: Documentation-only refinement. No implementation, AI service integration, retrieval pipeline, or activity code changes included.
+
 - Story ID: NB-WS-001
 - Title: Matching Worksheet Template
 - Domain: Executive Function & Cognitive Shifting
