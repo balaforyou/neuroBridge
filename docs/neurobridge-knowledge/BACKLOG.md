@@ -149,6 +149,17 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 
 ## Future Ideas
 
+- Story ID: NB-WS-001
+- Title: Matching Worksheet Template
+- Domain: Executive Function & Cognitive Shifting
+- Epic: Worksheets
+- Priority: P1
+- Status: Backlog
+- User Story: As a learner, I want to match pictures, objects, attributes, and functions so that I can develop visual discrimination, categorization, and early reasoning skills.
+- Acceptance Criteria: Supports image-to-image matching; image-to-word matching; attribute matching; functional matching; hint integration; shared feedback integration; milestone celebration integration; analytics integration; responsive worksheet shell.
+- Scaffold Levels: L1 Exact Matching; L2 Picture to Picture; L3 Picture to Word; L4 Attribute Matching; L5 Functional Matching.
+- Notes: Foundational worksheet template and first step in the NeuroBridge reasoning ladder: Matching -> Sorting -> Patterns -> Rules -> Generalization. See `docs/design-system/WORKSHEET_ARCHITECTURE.md`.
+
 - Story ID: NB-101.4.5.1
 - Title: Worksheet Architecture Specification
 - Epic: Design System

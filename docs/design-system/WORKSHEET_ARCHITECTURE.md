@@ -219,17 +219,92 @@ The shell must support registration of worksheet types.
 
 ### Template 0: Matching Worksheet
 
-Purpose:
-
-- Similarity detection.
-- Categorization.
-- Visual discrimination.
-
-Future feature:
+Feature ID:
 
 ```text
 NB-WS-001
 ```
+
+Purpose:
+
+- Visual discrimination.
+- Similarity detection.
+- Categorization.
+- Attention to detail.
+- Early reasoning confidence.
+- Scanning skills.
+
+Matching is the foundational entry point for later reasoning activities:
+
+```text
+Matching
+  |
+Sorting
+  |
+Pattern Recognition
+  |
+Pattern Completion
+  |
+Rule Discovery
+  |
+Generalization
+```
+
+Domain: Executive Function & Cognitive Shifting
+
+Priority: P1
+
+Status: Backlog
+
+User story:
+
+```text
+As a learner, I want to match pictures, objects, attributes, and functions so that I can develop visual discrimination, categorization, and early reasoning skills.
+```
+
+Scaffold levels:
+
+- Level 1: Exact Matching. Recognize identical items, such as apple to apple, car to car, or cat to cat.
+- Level 2: Picture to Picture. Match the same object from a set of choices to build visual scanning and selection.
+- Level 3: Picture to Word. Match an image to a written label, such as a picture of an apple to "Apple", to build image-symbol association.
+- Level 4: Attribute Matching. Find another red object, round object, or big object to build attribute awareness. Bridge to Attribute Explorer.
+- Level 5: Functional Matching. Match related functions, such as toothbrush to teeth, shoe to foot, or plate to food. Bridge to Functional Life Worksheets.
+
+Worksheet layout:
+
+- Instruction Zone: Short learner instruction, such as `Match the same items.`
+- Activity Zone: Matching workspace supporting drag and drop, tap to connect, or tap pair selection. Implementation may choose the interaction mode.
+- Help Zone: Progressive assistance such as `Look carefully.`, `Find the same picture.`, or `Try the red object.`
+- Feedback Zone: Uses the shared SIRAASH feedback contract.
+- Celebration Zone: Uses the existing level-up placeholder contract only for milestone advancement.
+
+Acceptance criteria:
+
+- Supports image-to-image matching.
+- Supports image-to-word matching.
+- Supports attribute matching.
+- Supports functional matching.
+- Integrates hints.
+- Integrates shared feedback.
+- Integrates milestone celebration contract.
+- Integrates analytics.
+- Uses the responsive worksheet shell.
+
+Future activities expected to use this template:
+
+- Same / Different Foundations.
+- Object Matching.
+- Category Matching.
+- Color Matching.
+- Shape Matching.
+- Community Helpers.
+- Household Objects.
+- Food Categorization.
+- Emotion Matching.
+
+NeuroBridge note:
+
+This template is expected to become the earliest-entry worksheet type for many learners and should be treated as a foundational scaffold rather than a simple game mechanic.
 
 ### Template 1: Guided Discovery Worksheet
 
