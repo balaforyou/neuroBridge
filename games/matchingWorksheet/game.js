@@ -2,6 +2,7 @@ import {
     createWorksheetShell,
     WORKSHEET_TEMPLATE_TYPES
 } from '../../js/worksheetShell.js';
+import { renderSiraashCompletionFeedback } from '../../js/siraashFeedback.js';
 
 export const MATCHING_WORKSHEET_ACTIVITY_ID = 'matching-worksheet-v1';
 const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
@@ -221,15 +222,12 @@ function mountMatchingWorksheet() {
             return;
         }
 
-        completionPanel.className = 'rounded-2xl border-4 border-emerald-300 bg-emerald-50 px-5 py-5 text-center text-slate-950 shadow-sm';
-        completionPanel.innerHTML = `
-            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-4xl font-black text-white" aria-hidden="true">&#10003;</div>
-            <p data-testid="matching-completion-title" class="mt-3 text-xl sm:text-2xl font-black">Great work, ${pageState.learnerName}! &#127793;</p>
-            <p data-testid="matching-completion-message" class="mt-1 text-base sm:text-lg font-bold text-emerald-900">You matched all the pictures.</p>
-            <button type="button" data-testid="matching-next-round-button" class="mt-4 min-h-[44px] rounded-full bg-emerald-700 px-5 py-2 text-base font-black text-white shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-300">
-                Next Round
-            </button>
-        `;
+        completionPanel.className = 'rounded-2xl text-center text-slate-950';
+        completionPanel.innerHTML = renderSiraashCompletionFeedback({
+            learnerName: pageState.learnerName,
+            message: 'You matched all the pictures.',
+            actionTestId: 'matching-next-round-button'
+        });
         completionPanel.querySelector('[data-testid="matching-next-round-button"]').addEventListener('click', handleNextRound);
     }
 

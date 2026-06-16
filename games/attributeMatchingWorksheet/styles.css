@@ -3,6 +3,14 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
+.siraash-letter:nth-child(1) { color: #047857; }
+.siraash-letter:nth-child(2) { color: #0f766e; }
+.siraash-letter:nth-child(3) { color: #0369a1; }
+.siraash-letter:nth-child(4) { color: #b7791f; }
+.siraash-letter:nth-child(5) { color: #059669; }
+.siraash-letter:nth-child(6) { color: #115e59; }
+.siraash-letter:nth-child(7) { color: #075985; }
+
 .attribute-choice {
     transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background-color 140ms ease;
 }

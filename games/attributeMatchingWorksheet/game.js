@@ -2,8 +2,10 @@ import {
     createWorksheetShell,
     WORKSHEET_TEMPLATE_TYPES
 } from '../../js/worksheetShell.js';
+import { renderSiraashCompletionFeedback } from '../../js/siraashFeedback.js';
 
 export const ATTRIBUTE_MATCHING_ACTIVITY_ID = 'attribute-matching-worksheet-v1';
+const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
 
 export const ATTRIBUTE_MATCHING_QUESTIONS = [
     {
@@ -137,7 +139,9 @@ export function createAttributeMatchingWorksheetGame(config = {}) {
         currentQuestion: createAttributeQuestion(config.questionIndex || 0, questions),
         selectedChoiceId: null,
         attempts: 0,
-        lastResult: null
+        completed: false,
+        lastResult: null,
+        roundNumber: 1
     };
 
     function getState() {
@@ -148,6 +152,10 @@ export function createAttributeMatchingWorksheetGame(config = {}) {
     }
 
     function selectChoice(choiceId) {
+        if (state.completed) {
+            return { result: 'ignored', state: getState() };
+        }
+
         const exists = state.currentQuestion.choices.some(choice => choice.id === choiceId);
         if (!exists) {
             return { result: 'ignored', state: getState() };
@@ -158,6 +166,7 @@ export function createAttributeMatchingWorksheetGame(config = {}) {
         state.lastResult = isCorrectAttributeChoice(state.currentQuestion, choiceId)
             ? 'success'
             : 'mistake';
+        state.completed = state.lastResult === 'success';
 
         return {
             result: state.lastResult,
@@ -165,8 +174,20 @@ export function createAttributeMatchingWorksheetGame(config = {}) {
         };
     }
 
+    function nextRound() {
+        state.questionIndex = (state.questionIndex + 1) % questions.length;
+        state.currentQuestion = createAttributeQuestion(state.questionIndex, questions);
+        state.selectedChoiceId = null;
+        state.attempts = 0;
+        state.completed = false;
+        state.lastResult = null;
+        state.roundNumber += 1;
+        return getState();
+    }
+
     return {
         getState,
+        nextRound,
         selectChoice
     };
 }
@@ -185,23 +206,53 @@ function mountAttributeMatchingWorksheet() {
     if (!root) return;
 
     const game = createAttributeMatchingWorksheetGame();
+    const pageState = {
+        learnerName: 'Learner',
+        stars: 0
+    };
     let shell = null;
     let activityContent = null;
+    let questionContent = null;
+    let completionPanel = null;
+
+    window.addEventListener('message', (event) => {
+        if (event.data?.type !== 'INITIALIZE_GAME_RULES') return;
+
+        pageState.learnerName = normalizeLearnerName(event.data.learnerName);
+        updateHeader();
+        renderCompletion();
+    });
+
+    const homeButton = document.getElementById('home-button');
+    if (homeButton) {
+        homeButton.addEventListener('click', () => {
+            window.parent?.postMessage({ type: ACTIVITY_HOME_EVENT }, '*');
+        });
+    }
 
     function renderActivity() {
         activityContent = document.createElement('div');
         activityContent.setAttribute('data-testid', 'attribute-matching-worksheet');
         activityContent.className = 'flex h-full min-h-0 flex-col justify-center gap-3';
+        questionContent = document.createElement('div');
+        questionContent.setAttribute('data-testid', 'attribute-matching-question');
+        questionContent.className = 'flex h-full min-h-0 flex-col justify-center gap-3';
+        completionPanel = document.createElement('div');
+        completionPanel.setAttribute('data-testid', 'attribute-matching-completion');
+        completionPanel.className = 'hidden rounded-2xl text-center text-slate-950';
+        activityContent.append(questionContent, completionPanel);
         renderQuestion();
+        renderCompletion();
         return activityContent;
     }
 
     function renderQuestion() {
-        if (!activityContent) return;
+        if (!questionContent) return;
 
         const state = game.getState();
         const question = state.currentQuestion;
-        activityContent.innerHTML = '';
+        questionContent.classList.toggle('hidden', state.completed);
+        questionContent.innerHTML = '';
 
         const sourcePanel = document.createElement('div');
         sourcePanel.className = 'grid grid-cols-1 gap-3 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-center';
@@ -231,15 +282,37 @@ function mountAttributeMatchingWorksheet() {
             choices.appendChild(button);
         });
 
-        activityContent.append(sourcePanel, choices);
+        questionContent.append(sourcePanel, choices);
+    }
+
+    function renderCompletion() {
+        if (!completionPanel) return;
+
+        const state = game.getState();
+        if (!state.completed) {
+            completionPanel.className = 'hidden rounded-2xl text-center text-slate-950';
+            completionPanel.innerHTML = '';
+            return;
+        }
+
+        completionPanel.className = 'rounded-2xl text-center text-slate-950';
+        completionPanel.innerHTML = renderSiraashCompletionFeedback({
+            learnerName: pageState.learnerName,
+            message: 'You found the matching attribute.',
+            actionTestId: 'attribute-matching-next-round-button'
+        });
+        completionPanel.querySelector('[data-testid="attribute-matching-next-round-button"]').addEventListener('click', handleNextRound);
     }
 
     function handleChoice(choiceId) {
         const { result } = game.selectChoice(choiceId);
         renderQuestion();
+        renderCompletion();
 
         if (result === 'success') {
-            shell.showFeedback('success');
+            pageState.stars += 1;
+            updateHeader();
+            shell.clearFeedback();
             return;
         }
 
@@ -248,10 +321,30 @@ function mountAttributeMatchingWorksheet() {
         }
     }
 
+    function handleNextRound() {
+        game.nextRound();
+        shell.clearFeedback();
+        updateHeader();
+        renderQuestion();
+        renderCompletion();
+    }
+
+    function updateHeader() {
+        const roundEl = document.getElementById('ui-round');
+        if (roundEl) {
+            roundEl.textContent = String(game.getState().roundNumber);
+        }
+
+        const starsEl = document.getElementById('ui-stars');
+        if (starsEl) {
+            starsEl.textContent = String(pageState.stars);
+        }
+    }
+
     const initialQuestion = game.getState().currentQuestion;
     shell = createWorksheetShell({
         templateType: WORKSHEET_TEMPLATE_TYPES.MATCHING,
-        title: 'Attribute Matching',
+        title: 'Find the same attribute',
         instruction: 'Find another item with the same attribute.',
         activity: {
             render: renderActivity
@@ -276,8 +369,14 @@ function mountAttributeMatchingWorksheet() {
     shell.classList.add('h-full');
     root.innerHTML = '';
     root.appendChild(shell);
+    updateHeader();
 }
 
 if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', mountAttributeMatchingWorksheet);
+}
+
+function normalizeLearnerName(learnerName) {
+    const normalized = String(learnerName || '').trim();
+    return normalized || 'Learner';
 }

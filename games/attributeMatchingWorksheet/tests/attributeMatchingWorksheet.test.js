@@ -48,8 +48,24 @@ function testSingleSelectGameFlow() {
 
     const state = game.getState();
     assert(state.selectedChoiceId === 'strawberry', 'Selected choice should be tracked');
+    assert(state.completed === true, 'Correct choice should complete the current round');
     assert(state.attempts === 2, 'Each valid tap should count as one attempt');
+    assert(game.selectChoice('ball').result === 'ignored', 'Completed round should ignore further choices');
     console.log('Single-select game flow test passed');
+}
+
+function testNextRoundProgression() {
+    const game = createAttributeMatchingWorksheetGame();
+
+    game.selectChoice('strawberry');
+    const nextState = game.nextRound();
+
+    assert(nextState.roundNumber === 2, 'Next round should increment round number');
+    assert(nextState.currentQuestion.id === 'round-001', 'Next round should advance to next deterministic question');
+    assert(nextState.selectedChoiceId === null, 'Next round should clear selected choice');
+    assert(nextState.completed === false, 'Next round should clear completion');
+    assert(nextState.attempts === 0, 'Next round should reset attempts');
+    console.log('Next round progression test passed');
 }
 
 function testHintProgressionData() {
@@ -68,6 +84,7 @@ function runAllTests() {
     testCorrectAnswerDetection();
     testDeterministicDataset();
     testSingleSelectGameFlow();
+    testNextRoundProgression();
     testHintProgressionData();
     console.log('=== All Attribute Matching Worksheet Unit Tests Passed ===');
 }

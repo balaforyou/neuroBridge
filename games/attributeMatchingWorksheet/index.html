@@ -8,8 +8,40 @@
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body class="bg-[#edf8f3] text-slate-950 h-screen w-screen overflow-hidden select-none">
-    <main class="h-full w-full p-2 sm:p-3">
-        <div id="attribute-matching-root" class="h-full w-full"></div>
+    <main class="h-full w-full flex flex-col p-2 sm:p-3 gap-2 sm:gap-3">
+        <header class="shrink-0 rounded-2xl bg-gradient-to-r from-[#fff7df] via-[#e2f6ee] to-[#dff1fb] border-2 border-emerald-200 px-3 py-2 sm:px-5 sm:py-3 shadow-sm">
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0 flex items-center gap-2 sm:gap-3">
+                    <button id="home-button" class="shrink-0 min-h-[44px] rounded-full bg-white/80 border-2 border-emerald-200 px-3 py-2 text-sm sm:text-base font-black text-emerald-900 shadow-sm transition hover:bg-emerald-50 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-emerald-300/70">
+                        <span aria-hidden="true">&#127968;</span>
+                        <span class="hidden sm:inline">Home</span>
+                    </button>
+
+                    <div class="shrink-0 inline-flex items-center rounded-full bg-emerald-100/90 border-2 border-emerald-300 px-3 py-1.5 shadow-sm">
+                        <span class="text-xl sm:text-2xl mr-2" aria-hidden="true">&#127793;</span>
+                        <span class="text-lg sm:text-2xl font-black tracking-[0.12em]" aria-label="SIRAASH">
+                            <span class="siraash-letter">S</span><span class="siraash-letter">I</span><span class="siraash-letter">R</span><span class="siraash-letter">A</span><span class="siraash-letter">A</span><span class="siraash-letter">S</span><span class="siraash-letter">H</span>
+                        </span>
+                    </div>
+
+                    <div class="min-w-0">
+                        <div class="text-xs sm:text-sm font-black uppercase tracking-[0.12em] text-emerald-800">Activity</div>
+                        <h1 class="truncate text-lg sm:text-2xl font-black text-slate-950">Attribute Matching Worksheet</h1>
+                    </div>
+                </div>
+
+                <div class="shrink-0 flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-slate-800">
+                    <div class="rounded-full bg-white/75 border border-emerald-200 px-3 py-1.5">
+                        Round <span id="ui-round" class="font-black text-slate-950">1</span>
+                    </div>
+                    <div class="rounded-full bg-white/75 border border-amber-200 px-3 py-1.5">
+                        Stars <span id="ui-stars" class="font-black text-emerald-700">0</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div id="attribute-matching-root" class="min-h-0 flex-1 w-full"></div>
     </main>
 
     <script type="module" src="./game.js"></script>

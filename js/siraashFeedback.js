@@ -49,3 +49,30 @@ export function renderSiraashFeedback(type) {
         </div>
     `;
 }
+
+export function renderSiraashCompletionFeedback({
+    learnerName = 'Learner',
+    message,
+    actionTestId,
+    actionLabel = 'Next Round'
+} = {}) {
+    const normalizedName = normalizeLearnerName(learnerName);
+    const completionMessage = message || 'You found the answer.';
+    const action = actionTestId
+        ? `<button type="button" data-testid="${actionTestId}" class="mt-4 min-h-[44px] rounded-full bg-emerald-700 px-5 py-2 text-base font-black text-white shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-300">${actionLabel}</button>`
+        : '';
+
+    return `
+        <div data-testid="siraash-completion-feedback" class="siraash-completion-feedback mx-auto flex max-w-md flex-col items-center justify-center rounded-2xl border-4 border-emerald-300 bg-emerald-50 px-5 py-5 text-center text-slate-950 shadow-sm">
+            <div class="siraash-completion-feedback__icon flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-4xl font-black text-white" aria-hidden="true">&#10003;</div>
+            <p data-testid="siraash-completion-title" class="mt-3 text-xl sm:text-2xl font-black">Great work, ${normalizedName}! &#127793;</p>
+            <p data-testid="siraash-completion-message" class="mt-1 text-base sm:text-lg font-bold text-emerald-900">${completionMessage}</p>
+            ${action}
+        </div>
+    `;
+}
+
+function normalizeLearnerName(learnerName) {
+    const normalized = String(learnerName || '').trim();
+    return normalized || 'Learner';
+}
