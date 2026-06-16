@@ -35,6 +35,8 @@ node js/tests/cognitiveOntology.runner.js
 node js/tests/gameRegistry.runner.js
 node js/tests/analyticsAggregator.runner.js
 node js/tests/sessionResult.runner.js
+node js/tests/siraashFeedback.runner.js
+node js/tests/worksheetShell.runner.js
 ```
 
 Game tests:
@@ -72,6 +74,15 @@ Expected passing suites:
 - Analytics Aggregator
 
 These verify aggregation of independent, scaffolded, and failed trials, accuracy, reaction time, hint counts, domain metrics, skill metrics, and ontology-derived cognitive target metrics.
+
+## Shared UI Contract Test Suites
+
+Expected passing suites:
+
+- SIRAASH Feedback Contract
+- Worksheet Shell Contract
+
+These verify shared learner feedback wording, reserved level-up celebration contract, worksheet template registration, worksheet zone rendering, progressive hint reveal, feedback mounting, and inactive celebration placeholder behavior.
 
 ## Matrix Reasoning Test Suites
 

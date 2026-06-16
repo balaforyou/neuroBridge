@@ -8,6 +8,11 @@ Purpose: Define a single worksheet framework capable of hosting current and futu
 
 This specification is documentation-only. It does not change learner-facing activity logic, analytics, tests, UI, or infrastructure.
 
+Implementation foundation:
+
+- `js/worksheetShell.js`
+- `js/tests/worksheetShell.test.js`
+
 ## Goal
 
 Create a reusable worksheet shell where activities supply content, hints, and metadata while the platform provides the consistent learner experience.

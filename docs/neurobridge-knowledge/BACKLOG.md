@@ -167,6 +167,13 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 - Status: Design
 - Notes: Documentation-only worksheet shell specification covering instruction, activity, help, feedback, and celebration zones. See `docs/design-system/WORKSHEET_ARCHITECTURE.md`.
 
+- Story ID: NB-101.4.5.2
+- Title: Worksheet Shell Implementation
+- Epic: Design System
+- Priority: High
+- Status: Done
+- Notes: Implemented reusable worksheet shell foundation with five zones, template registry constants, progressive hints, SIRAASH feedback mount, and inactive celebration placeholder. See `js/worksheetShell.js`.
+
 - Story ID: NB-110
 - Title: Printable Worksheet Framework
 - Epic: Worksheets
