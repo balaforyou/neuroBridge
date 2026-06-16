@@ -149,6 +149,13 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 
 ## Future Ideas
 
+- Story ID: NB-101.4.5.1
+- Title: Worksheet Architecture Specification
+- Epic: Design System
+- Priority: High
+- Status: Design
+- Notes: Documentation-only worksheet shell specification covering instruction, activity, help, feedback, and celebration zones. See `docs/design-system/WORKSHEET_ARCHITECTURE.md`.
+
 - Story ID: NB-110
 - Title: Printable Worksheet Framework
 - Epic: Worksheets

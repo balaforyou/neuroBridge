@@ -140,6 +140,12 @@ Purpose: Capture design-system and UI templating work for NeuroBridge after the 
 
 ## Worksheets And Print
 
+- Story ID: NB-101.4.5.1
+- Title: Worksheet Architecture Specification
+- Priority: High
+- Status: Design
+- Notes: Defines the reusable worksheet shell, worksheet zones, template registry, shared services, responsive behavior, and future celebration zone. See `docs/design-system/WORKSHEET_ARCHITECTURE.md`.
+
 - Story ID: NB-110
 - Title: Printable worksheet support
 - Priority: Medium
