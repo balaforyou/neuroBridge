@@ -131,6 +131,20 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 - Status: Backlog
 - Notes: Future EI/social reasoning layer.
 
+## Expression & Logic Backlog
+
+- Story ID: NB-AUD-001
+- Title: Audio Chain Completer
+- Epic: EPIC 6 - Narrative Expression & Memory Externalization
+- Priority: P1
+- Status: Backlog
+- Problem: Adarsh demonstrates stronger language retrieval when language is embedded within rhythmic and predictable auditory structures.
+- User Story: As a learner, I want to hear part of a familiar auditory sequence and complete the missing portion so that I can strengthen memory retrieval and verbal sequencing.
+- Acceptance Criteria: Play partial audio cue; pause at configurable breakpoint; child completes sequence; record retrieval latency; record completion accuracy; support cue fading; parent can mark sequence mastered.
+- Scaffold Levels: L1 Full audio participation; L2 Complete final word; L3 Complete final phrase; L4 Continue from random cue; L5 Visual cue only; L6 Functional conversational use.
+- Telemetry: retrievalLatencyMs, completionAccuracy, cueLengthMs, promptLevel, continuationLength.
+- Notes: Triggered by OBS-AUD-20260615-001. For bottom-up learners, rhythmic auditory chains may function as memory scaffolds for song recall, narration, sequencing, classroom routines, conversational scripts, and functional language retrieval.
+
 ## Future Ideas
 
 - Story ID: NB-110
@@ -139,71 +153,6 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 - Priority: Medium
 - Status: Backlog
 - Notes: Matching, fill-in-the-blanks, measurement, ordering, and worksheet support.
-
-
-Domain
-
-Expression & Logic
-
-Epic
-
-EPIC 6 – Narrative Expression & Memory Externalization
-
-Feature
-
-NB-AUD-001: Audio Chain Completer
-
-Problem Statement
-
-Adarsh demonstrates stronger recall and verbal output when language is embedded within rhythmic, predictable auditory patterns. Traditional open-ended language tasks often place a high retrieval demand, whereas familiar auditory sequences provide a scaffold for successful recall.
-
-User Story
-
-As a child, I want to hear part of a familiar auditory sequence and complete the missing portion, so that I can strengthen memory retrieval, verbal sequencing, and language production with gradually reduced support.
-
-Acceptance Criteria
-System plays a familiar audio sequence.
-Audio pauses at a configurable point.
-Child completes the next word, phrase, or sequence.
-Completion can be through:
-Visual selection
-Parent confirmation
-Speech recognition (future)
-System records retrieval latency.
-System records completion accuracy.
-Cue length automatically reduces after repeated success.
-Parent can mark a sequence as "Mastered."
-Initial Scaffolding Levels
-Level	Support
-L1	Full audio, sing along
-L2	Pause before final word
-L3	Pause before final phrase
-L4	Random line cue
-L5	Visual cue only
-L6	Functional use of phrase in conversation
-Telemetry
-Metric	Description
-retrievalLatencyMs	Time taken to begin response
-completionAccuracy	Correct / Partial / Incorrect
-cueLengthMs	Duration of cue provided
-promptLevel	Current scaffold level
-continuationLength	Number of words/phrases recalled
-Parent Observation That Triggered This Backlog
-
-Parent sang a random line from Ekadantaya Vakratundaya while walking. Adarsh independently continued the song and sustained multiple subsequent lines without the original audio source.
-
-NeuroBridge Hypothesis
-
-For bottom-up learners, rhythmic auditory chains can function as memory scaffolds. Strengthening chain completion may improve not only song recall but also narration, sequencing, classroom routines, conversational scripts, and functional language retrieval.
-
-Priority
-
-P1 – Strong Candidate for MVP Inclusion
-
-Sprint Recommendation
-
-Future Readiness → Expression & Logic Track
-Target after stabilization of current visual pattern and narration scaffolds.
 
 Backlog ID:
 NB-060.14
@@ -290,7 +239,7 @@ Priority:
 Medium
 
 Status:
-Backlog
+Done
 
 Problem:
 Node tests cannot catch layout clipping, viewport overflow, or partially
@@ -309,9 +258,10 @@ Outcome:
 Layout regressions are caught before learner review.
 
 Notes:
-Can be implemented with Playwright later. Documentation and Node
-layout-contract tests remain useful but are not a replacement for
-browser-level visual checks.
+Implemented with Playwright viewport smoke tests for Activity Hub,
+Attribute Explorer, and Matrix Reasoning across desktop and tablet
+viewports. Documentation and Node layout-contract tests remain useful
+but are not a replacement for browser-level visual checks.
 
 Backlog ID:
 NB-060.17
@@ -326,7 +276,7 @@ Priority:
 Medium
 
 Status:
-Backlog
+Done
 
 Problem:
 Current Node runners use ESM imports while package.json may remain CommonJS.
