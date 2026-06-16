@@ -6,6 +6,18 @@ Purpose: Reference available NeuroBridge test suites and expected passing runner
 
 Tests are JavaScript module tests with lightweight runner files.
 
+Run browser viewport smoke tests with Playwright:
+
+```bash
+npm run test:ui
+```
+
+The Playwright config starts the static app with:
+
+```bash
+npm run serve
+```
+
 Run individual suites with Node.js:
 
 ```bash
@@ -73,6 +85,21 @@ Expected passing suites:
 - Attribute Trial Result
 
 These verify question generation, controlled non-target attributes, size difficulty metadata, options, trial result structure, scaffold metadata, reaction time, and label scaffold behavior.
+
+## Browser Viewport Smoke Tests
+
+Expected passing suite:
+
+- Playwright SIRAASH smoke tests
+
+Current browser coverage uses Chromium only and checks:
+
+- SIRAASH Welcome / Activity Hub at 1366 x 768
+- Attribute Explorer at 1366 x 768 and 1024 x 768
+- Attribute Explorer help nudge timing at 1366 x 768
+- Matrix Reasoning at 1366 x 768 and 1024 x 768
+
+These tests protect learner-facing layout regressions that Node tests cannot see, including clipped controls, unexpected horizontal scrollbars, desktop/tablet vertical overflow, and delayed help nudge behavior.
 
 ## Expected Baseline
 

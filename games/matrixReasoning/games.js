@@ -398,6 +398,7 @@ function showLinearDecoder(isCorrect, completedProblem) {
 
         <button 
             id="next-trial-btn" 
+            data-testid="matrix-next-button"
             class="mt-3 min-h-[44px] w-full py-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-xl text-xs font-extrabold transition shadow-lg shrink-0 tracking-wide">
             Next Puzzle ➔
         </button>

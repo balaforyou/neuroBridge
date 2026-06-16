@@ -175,6 +175,7 @@ function renderAvailableTile(tile) {
         <button
             type="button"
             data-game="${tile.activityId}"
+            data-testid="${getActivityTileTestId(tile)}"
             aria-label="Start ${tile.learnerName}"
             class="btn-launch-game group min-h-[148px] w-full rounded-lg border-2 ${tile.identityClass} bg-gradient-to-br px-4 py-3.5 text-left shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-emerald-300/80">
             <span class="flex h-full flex-col">
@@ -197,6 +198,7 @@ function renderComingSoonTile(tile) {
     return `
         <div
             role="group"
+            data-testid="${getActivityTileTestId(tile)}"
             aria-label="${tile.learnerName} coming soon"
             class="min-h-[148px] w-full rounded-lg border-2 ${tile.identityClass} bg-gradient-to-br px-4 py-3.5 text-left shadow-sm opacity-90">
             <span class="flex h-full flex-col">
@@ -213,4 +215,13 @@ function renderComingSoonTile(tile) {
             </span>
         </div>
     `;
+}
+
+function getActivityTileTestId(tile) {
+    const explicitIds = {
+        matrixReasoning: 'activity-tile-pattern-detective',
+        attributeExplorer: 'activity-tile-look-closely'
+    };
+
+    return explicitIds[tile.activityId] || `activity-tile-${tile.activityId}`;
 }

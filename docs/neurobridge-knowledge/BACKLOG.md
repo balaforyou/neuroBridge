@@ -313,6 +313,31 @@ Can be implemented with Playwright later. Documentation and Node
 layout-contract tests remain useful but are not a replacement for
 browser-level visual checks.
 
+Backlog ID:
+NB-060.17
+
+Title:
+Normalize Test Runner Module Mode
+
+Epic:
+Platform Readiness
+
+Priority:
+Medium
+
+Status:
+Backlog
+
+Problem:
+Current Node runners use ESM imports while package.json may remain CommonJS.
+
+Objective:
+Normalize the Node test runner module mode so local and CI executions do not
+depend on Node version-specific module detection.
+
+Notes:
+Testing infrastructure follow-up. Keep separate from browser smoke tests.
+
 
 Backlog ID:
 NB-110.1

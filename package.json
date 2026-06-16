@@ -7,7 +7,9 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "serve": "http-server . -p 5501",
+    "test:ui": "playwright test",
+    "test": "echo \"Run documented test suites from docs/TESTING.md\" && exit 0"
   },
   "repository": {
     "type": "git",
@@ -22,6 +24,7 @@
   },
   "homepage": "https://github.com/balaforyou/neuroBridge#readme",
   "devDependencies": {
-    "@playwright/test": "^1.61.0"
+    "@playwright/test": "^1.61.0",
+    "http-server": "^14.1.1"
   }
 }
