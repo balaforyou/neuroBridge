@@ -4,7 +4,21 @@ const ACTIVITY_TILE_GROUPS = [
         title: 'Start here',
         description: 'Choose an activity to explore today.',
         labelClass: 'text-emerald-300',
-        tiles: []
+        tiles: [
+            {
+                activityId: 'matchingWorksheet',
+                parentName: 'Matching Worksheet',
+                learnerName: 'Matching Worksheet',
+                icon: '&#129513;',
+                description: 'Match the same pictures.',
+                status: 'available',
+                identityClass: 'from-emerald-100 via-lime-50 to-sky-50 border-emerald-300',
+                iconClass: 'from-emerald-300 via-lime-200 to-sky-200',
+                actionClass: 'bg-emerald-600 group-hover:bg-emerald-500',
+                domain: 'executive-function',
+                skills: ['visual-discrimination', 'matching', 'categorization']
+            }
+        ]
     },
     {
         category: 'Thinking',
@@ -220,7 +234,8 @@ function renderComingSoonTile(tile) {
 function getActivityTileTestId(tile) {
     const explicitIds = {
         matrixReasoning: 'activity-tile-pattern-detective',
-        attributeExplorer: 'activity-tile-look-closely'
+        attributeExplorer: 'activity-tile-look-closely',
+        matchingWorksheet: 'activity-tile-matching-worksheet'
     };
 
     return explicitIds[tile.activityId] || `activity-tile-${tile.activityId}`;

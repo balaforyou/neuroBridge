@@ -261,6 +261,14 @@ Priority: P1
 
 Status: Backlog
 
+V1 implementation:
+
+- Story: NB-WS-001.1
+- Location: `games/matchingWorksheet/`
+- Scope: Exact image/card matching for apple, ball, and cat pairs.
+- Interaction: Tap one card, then tap its matching card. Drag and drop remains a future option.
+- Shared services: Uses `createWorksheetShell`, progressive hints, shared SIRAASH feedback, and the inactive level-up celebration placeholder. Routine correct answers do not trigger celebration effects.
+
 User story:
 
 ```text

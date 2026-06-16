@@ -152,6 +152,12 @@ Purpose: Capture design-system and UI templating work for NeuroBridge after the 
 - Status: Done
 - Notes: Implemented `createWorksheetShell(config)` with instruction, activity, help, feedback, and celebration placeholder zones in `js/worksheetShell.js`.
 
+- Story ID: NB-WS-001.1
+- Title: Matching Worksheet V1
+- Priority: P1
+- Status: Done
+- Notes: Implemented the first worksheet activity with exact picture matching, tap-to-select pairs, shared worksheet shell zones, progressive hints, shared SIRAASH feedback, inactive celebration placeholder, and browser viewport smoke coverage.
+
 - Story ID: NB-110
 - Title: Printable worksheet support
 - Priority: Medium

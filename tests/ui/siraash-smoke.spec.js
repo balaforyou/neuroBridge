@@ -62,12 +62,33 @@ test.describe('SIRAASH Activity Hub', () => {
         await expect(page.getByTestId('activity-hub')).toBeVisible();
         await expect(page.getByText('SIRAASH Activity Hub')).toBeVisible();
         await expect(page.getByText(`${LEARNER_NAME}, let's learn together`)).toBeVisible();
+        await expect(page.getByTestId('activity-tile-matching-worksheet')).toBeVisible();
+        await expect(page.getByText('Matching Worksheet')).toBeVisible();
         await expect(page.getByTestId('activity-tile-pattern-detective')).toBeVisible();
         await expect(page.getByTestId('activity-tile-look-closely')).toBeVisible();
         await expect(page.getByText('Coming Soon').first()).toBeVisible();
         await expect(page.getByText('Coming Soon')).toHaveCount(3);
         await expectNoPageScrollbar(page, { vertical: true });
     });
+});
+
+test.describe('Matching Worksheet viewport smoke', () => {
+    for (const viewport of TEST_VIEWPORTS) {
+        test(`keeps worksheet zones and cards visible at ${viewport.name}`, async ({ page }) => {
+            await page.setViewportSize({ width: viewport.width, height: viewport.height });
+            await page.goto('/games/matchingWorksheet/');
+
+            await expect(page.getByTestId('matching-worksheet')).toBeVisible();
+            await expect(page.getByTestId('worksheet-instruction')).toBeVisible();
+            await expect(page.getByTestId('worksheet-activity')).toBeVisible();
+            await expect(page.getByTestId('worksheet-help')).toBeVisible();
+            await expect(page.getByTestId('worksheet-feedback')).toBeVisible();
+            await expect(page.getByTestId('worksheet-celebration')).toHaveAttribute('data-enabled', 'false');
+            await expect(page.getByTestId('matching-card-apple-a')).toBeVisible();
+            await expect(page.getByTestId('worksheet-hint-button')).toBeVisible();
+            await expectNoPageScrollbar(page);
+        });
+    }
 });
 
 test.describe('Attribute Explorer viewport smoke', () => {

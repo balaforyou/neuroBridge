@@ -160,6 +160,14 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 - Scaffold Levels: L1 Exact Matching; L2 Picture to Picture; L3 Picture to Word; L4 Attribute Matching; L5 Functional Matching.
 - Notes: Foundational worksheet template and first step in the NeuroBridge reasoning ladder: Matching -> Sorting -> Patterns -> Rules -> Generalization. See `docs/design-system/WORKSHEET_ARCHITECTURE.md`.
 
+- Story ID: NB-WS-001.1
+- Title: Matching Worksheet V1
+- Domain: Executive Function & Cognitive Shifting
+- Epic: Worksheets
+- Priority: P1
+- Status: Done
+- Notes: Implemented the first learner-facing worksheet activity at `games/matchingWorksheet/` using `createWorksheetShell`. V1 supports exact image/card matching with deterministic apple, ball, and cat pairs, tap-to-select interaction, progressive hints, shared feedback, no routine celebration trigger, Node logic tests, and Playwright viewport smoke tests.
+
 - Story ID: NB-101.4.5.1
 - Title: Worksheet Architecture Specification
 - Epic: Design System
