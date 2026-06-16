@@ -349,12 +349,133 @@ Purpose:
 
 - Auditory recall.
 - Sequence completion.
+- Language retrieval.
+- Verbal confidence.
+- Self-continuation.
 
 Future feature:
 
 ```text
 NB-AUD-001
 ```
+
+Architecture story:
+
+```text
+NB-AUD-001.1
+```
+
+Design principle:
+
+SIRAASH does not test memory. SIRAASH scaffolds retrieval.
+
+Target progression:
+
+```text
+Hear
+  |
+Recall
+  |
+Continue
+  |
+Generalize
+```
+
+Core learning loop:
+
+```text
+Audio Cue
+  |
+Pause
+  |
+Learner Continues
+  |
+Feedback
+  |
+Reduced Cue
+  |
+Independent Recall
+```
+
+NeuroBridge hypothesis:
+
+Rhythmic and predictable auditory sequences provide a lower-friction route into language retrieval for many learners. Once a sequence becomes stable, recognition can progress into recall, continuation, and generation.
+
+Origin:
+
+- Observation: `OBS-AUD-20260615-001`
+- Signal: `#selfContinuation`
+- Related future epic: `NB-AI-WS-001`
+
+Levels:
+
+- Level 1: Listen and Sing Along. Audio plays completely and the learner participates for familiarity.
+- Level 2: Final Word Completion. Learner completes a single missing final word.
+- Level 3: Final Phrase Completion. Learner completes a missing phrase.
+- Level 4: Random Cue Continuation. Audio starts from the middle of a familiar sequence and the learner continues.
+- Level 5: Visual Cue Continuation. No audio is provided; a visual symbol or title activates recall.
+- Level 6: Functional Generalization. Learner bridges memorized language into understood language through simple meaning questions or functional use.
+
+Supported content types:
+
+- Songs, including devotional songs, nursery rhymes, and action songs.
+- Counting sequences.
+- Days of the week.
+- Months.
+- Functional scripts such as requests, help phrases, and social responses.
+- Classroom routines.
+
+Proposed content model:
+
+```js
+{
+  id: "ekadantaya",
+  type: "song",
+  title: "Ekadantaya Vakratundaya",
+  segments: [
+    {
+      id: "segment-1",
+      audioStartMs: 0,
+      audioEndMs: 5000,
+      expectedContinuation: "..."
+    }
+  ]
+}
+```
+
+Hint strategy:
+
+- Hint 1: Listen again.
+- Hint 2: Think about the next word.
+- Hint 3: Provide a first-word or first-sound cue, such as `The next word starts with "Ga..."`.
+
+Feedback:
+
+Audio Chain activities must use `siraashFeedback` for routine feedback:
+
+- Success: `Great work!` and `You found the answer.`
+- Mistake: `You got close.` and `SIRAASH will guide you.`
+
+Future response modes:
+
+- Parent confirmed: Correct, Partial, Incorrect.
+- Option selection: Multiple choice.
+- Speech recognition: Future only, not part of MVP.
+
+Future telemetry:
+
+- `retrievalLatencyMs`: Time from cue completion until learner response begins.
+- `promptLevel`: Prompt support used.
+- `completionAccuracy`: Correct, Partial, or Incorrect.
+- `continuationLength`: Words recalled after cue.
+- `cueLengthMs`: Amount of support provided.
+
+Implementation guardrails:
+
+- Architecture only at this stage.
+- No audio services.
+- No speech recognition.
+- No activity code changes.
 
 ### Template 5: Functional Life Worksheet
 

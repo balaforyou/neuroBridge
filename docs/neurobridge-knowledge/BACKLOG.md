@@ -147,6 +147,27 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 - Origin Observation: OBS-AUD-20260615-001
 - Notes: Emerging NeuroBridge insight: Self Continuation has now been observed in both cognitive-pattern tasks and auditory-language recall tasks. Future observations should explicitly track whether a learner can independently continue an activity after a minimal initiating cue.
 
+- Story ID: NB-AUD-001.1
+- Title: Audio Chain Completer Architecture
+- Domain: Expression & Logic
+- Epic: EPIC 6 - Narrative Expression & Memory Externalization
+- Priority: P1
+- Status: Design
+- Objective: Design the Audio Chain Completer framework to strengthen auditory memory, sequential recall, language retrieval, verbal confidence, and self-continuation through progressively reduced cues.
+- Design Principle: SIRAASH does not test memory. SIRAASH scaffolds retrieval.
+- Core Learning Loop: Audio cue -> pause -> learner continues -> feedback -> reduced cue -> independent recall.
+- NeuroBridge Hypothesis: Rhythmic and predictable auditory sequences provide a lower-friction route into language retrieval. Once a sequence becomes stable, recognition can progress to recall, continuation, and generation.
+- Worksheet Placement: Template 4 - Audio Chain Worksheet, rendered through the shared Worksheet Shell zones for instruction, activity, help, feedback, and celebration.
+- Levels: L1 Listen and Sing Along; L2 Final Word Completion; L3 Final Phrase Completion; L4 Random Cue Continuation; L5 Visual Cue Continuation; L6 Functional Generalization.
+- Content Types: Songs, counting sequences, days of week, months, functional scripts, and classroom routines.
+- Hint Strategy: Progressive support from listen again, to next-word prompt, to first-word or first-sound cue.
+- Future Response Modes: Parent confirmed, option selection, and future speech recognition.
+- Telemetry: retrievalLatencyMs, promptLevel, completionAccuracy, continuationLength, cueLengthMs.
+- Origin Observation: OBS-AUD-20260615-001.
+- Supporting Signal: #selfContinuation.
+- Relationship To Future Epic: Supports NB-AI-WS-001, where worksheet intelligence may detect songs, reading passages, or verbal sequences and generate Audio Chain activities.
+- Notes: Architecture only. No audio services, speech recognition, activity code, or implementation work included in this story.
+
 ## Future Ideas
 
 - Story ID: NB-AI-WS-001
