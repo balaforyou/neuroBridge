@@ -1,8 +1,12 @@
 # SIRAASH Worksheet Activity Template v1.0
 
-Status: Foundation standard for worksheet-like learner activities.
+Status: Frozen.
 
 Purpose: Define the reusable structure for SIRAASH worksheet activities without introducing a heavy framework.
+
+Freeze story: `NB-102.1`
+
+Freeze decision: Worksheet Activity Template v1.0 is stable for first-generation worksheet activities. Future worksheet-style activities should follow this template before introducing custom layout or interaction patterns.
 
 Applies to current and future worksheet-like activities:
 
@@ -45,9 +49,9 @@ Mobile:
 - Main task first.
 - Support panel below.
 
-## Required Regions
+## Mandatory Regions
 
-### A. Worksheet Header
+### A. Worksheet Activity Header
 
 Uses Activity Shell v1.0.
 
@@ -64,6 +68,7 @@ Rules:
 - Do not show duplicate outer activity rows.
 - Do not show learner-facing `Back to Dashboard`.
 - Do not show `Activity: <name>` outside the activity shell.
+- Home, SIRAASH identity, activity label, and worksheet title must live inside the activity shell.
 
 ### B. Main Task Region
 
@@ -79,6 +84,7 @@ Rules:
 - Primary answer visibility has priority.
 - Primary answer actions must remain visible in tested viewports.
 - The support panel must not push answer controls out of view.
+- Main task equals learner attempt.
 
 ### C. SIRAASH Support Region
 
@@ -89,6 +95,11 @@ Contains:
 - Visual aids.
 - Worked examples.
 - Step prompts.
+
+Purpose:
+
+- Support panel equals SIRAASH scaffold.
+- Help should support the attempt without visually competing with answer actions.
 
 Standard copy:
 
@@ -111,8 +122,11 @@ Uses the shared SIRAASH feedback standard.
 Rules:
 
 - One success event should produce one success marker.
+- Success uses one tick, learner-aware praise, and an activity-specific message when a completion or milestone is shown.
 - Routine correct answers should not leave overlapping global success cards.
 - Mistake feedback should remain supportive and non-harsh.
+- Mistake wording should avoid `wrong`, `failed`, and other harsh labels.
+- Mistake feedback should guide the learner toward correction.
 - Feedback must not overlap answer controls.
 
 ### E. Completion Region
@@ -131,6 +145,7 @@ Rules:
 - Do not show a generic success card and a completion panel together.
 - Do not leave hidden grids or cards visually overlapping completion.
 - Completion is shown only after round completion.
+- Repeatable worksheets include Next Round.
 
 ## Template Contract
 
@@ -189,7 +204,7 @@ Responsibilities:
 
 This helper is intentionally small. It is not a new framework.
 
-## Current Alignments
+## Reference Implementations
 
 - `games/matchingWorksheet/`
 - `games/attributeMatchingWorksheet/`
@@ -201,15 +216,66 @@ Both use:
 - Support panel via `createWorksheetShell`.
 - Shared feedback.
 - Shared completion helper for round completion.
+- No legacy parent `Back to Dashboard` row.
+- No outer `Activity: <name>` row.
+
+Review findings:
+
+- Matching Worksheet aligns with Activity Shell v1.0, uses local pair ticks for routine success, and uses the shared completion helper only after the round is complete.
+- Attribute Matching Worksheet aligns with Activity Shell v1.0, uses the main/support worksheet structure, and uses the shared completion helper after the correct attribute choice completes the round.
+- Both reference activities preserve existing analytics/session contracts.
 
 ## Responsive Rules
 
-- No horizontal scrolling.
+Tablet and desktop:
+
+- Main task and support panel may sit side-by-side.
+- No horizontal scrollbar.
+- Primary answer actions must remain visible.
+- Support panel must not push the main task out of view.
+
+Mobile:
+
+- Main task first.
+- Support panel below.
+- Natural vertical scroll is allowed.
+- Primary answer actions should appear before support where possible.
+
+General:
+
 - Natural flow is preferred over fixed heights.
-- Primary answer controls remain visible.
 - Support panel stays visible but secondary to the answer task.
-- Desktop/tablet landscape may use side-by-side main/support regions.
-- Mobile stacks main task before support.
+
+## Frozen Feedback Rules
+
+Success:
+
+- One tick only.
+- Learner-aware praise.
+- Activity-specific message.
+
+Mistake:
+
+- No `wrong` label.
+- Use supportive language.
+- SIRAASH guides the learner toward correction.
+
+Completion:
+
+- One clean completion state.
+- Personalized praise.
+- Activity-specific completion text.
+- Next Round for repeatable worksheets.
+
+## Known Future Activities
+
+- Kumon Quiz.
+- Shopping Cart.
+- Number Bridges.
+- Neural Bond.
+- Picture Description.
+- Sequencing.
+- Measurement.
 
 ## Future Notes
 

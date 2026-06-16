@@ -258,6 +258,16 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 - Architectural Observation: Introduces a future NeuroBridge abstraction ladder: See It -> Describe It -> Use It -> Group It -> Reason About It.
 - Notes: Documentation-only refinement. Current NB-WS-001.2 remains focused on visible attributes. No implementation, analytics behavior, or activity code changes included.
 
+- Story ID: NB-KQ-001
+- Title: Kumon Quiz Activity v1.0
+- Domain: Numeracy
+- Epic: Worksheets
+- Priority: P1
+- Status: Ready after NB-102.1
+- Purpose: Implement the first arithmetic worksheet-style activity using Worksheet Activity Template v1.0.
+- Acceptance Criteria: Uses frozen Worksheet Activity Template v1.0; includes SIRAASH Activity Shell header; main task and support panel follow the template; uses shared SIRAASH feedback and completion helper; preserves analytics/session contracts; includes Node and Playwright coverage.
+- Notes: Follow-up only. Do not implement until NB-102.1 is complete.
+
 - Story ID: NB-101.4.5.1
 - Title: Worksheet Architecture Specification
 - Epic: Design System
