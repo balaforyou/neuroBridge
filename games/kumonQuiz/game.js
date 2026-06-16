@@ -286,6 +286,34 @@ export function createKumonQuizGame(config = {}) {
     };
 }
 
+export function createKumonSessionSummary(state, resultSummary = null) {
+    const summary = resultSummary || {
+        correct: state.correctCount,
+        total: state.questions.length,
+        accuracy: state.questions.length ? Math.round((state.correctCount / state.questions.length) * 100) : 0,
+        timeTakenSeconds: 0,
+        averageTimeSeconds: 0,
+        hintsUsed: 0
+    };
+    const accuracyPercent = Math.round((summary.correct / Math.max(summary.total, 1)) * 100);
+
+    return {
+        gameId: KUMON_QUIZ_ACTIVITY_ID,
+        activityId: KUMON_QUIZ_ACTIVITY_ID,
+        activityName: 'Kumon Quiz / Number Bridges',
+        score: summary.correct,
+        correctCount: summary.correct,
+        totalQuestions: summary.total,
+        accuracy: accuracyPercent / 100,
+        accuracyPercent,
+        averageReactionTimeMs: average(state.trials.map(trial => trial.reactionTimeMs)),
+        hintUsageCount: summary.hintsUsed,
+        highestLevelReached: 1,
+        sessionLengthSeconds: summary.timeTakenSeconds,
+        trials: state.trials
+    };
+}
+
 export function formatQuestion(question) {
     return `${question.operandA} ${question.operation} ${question.operandB}`;
 }
@@ -631,13 +659,16 @@ function mountKumonQuiz() {
             <section data-testid="number-bridges-results" class="flex h-full min-h-0 flex-col items-center justify-start overflow-y-auto rounded-2xl border-2 border-emerald-200 bg-white p-4 pt-5 text-center">
                 ${renderWorksheetCompletion({
                     learnerName,
-                    message: 'You finished your number bridges.',
+                    message: summary.accuracy >= 80
+                        ? 'You finished your number bridges. Clap clap, strong work!'
+                        : 'You finished your number bridges.',
                     actionTestId: 'number-bridges-next-round-button',
                     actionLabel: 'Try Again'
                 })}
                 <div class="mt-4 w-full max-w-2xl rounded-2xl border-2 border-sky-200 bg-sky-50 p-4">
                     <div data-testid="number-bridges-metrics" class="grid grid-cols-2 gap-2 text-left text-sm font-black text-slate-950 sm:grid-cols-3">
                         <p data-testid="number-bridges-total">Questions: ${summary.total}</p>
+                        <p data-testid="number-bridges-correct-total">Correct / Total: ${summary.correct} / ${summary.total}</p>
                         <p data-testid="number-bridges-score">Correct: ${summary.correct}</p>
                         <p data-testid="number-bridges-accuracy">Accuracy: ${summary.accuracy}%</p>
                         <p data-testid="number-bridges-time-taken">Time Taken: ${summary.timeTakenSeconds} sec</p>
@@ -662,17 +693,10 @@ function mountKumonQuiz() {
     }
 
     function submitSession(state) {
+        const summary = game.getResultSummary();
         window.parent?.postMessage({
             type: GAME_EVENTS.COMPLETE,
-            payload: {
-                gameId: KUMON_QUIZ_ACTIVITY_ID,
-                score: state.correctCount,
-                accuracy: game.getResultSummary().accuracy,
-                averageReactionTimeMs: average(state.trials.map(trial => trial.reactionTimeMs)),
-                highestLevelReached: 1,
-                sessionLengthSeconds: 0,
-                trials: state.trials
-            }
+            payload: createKumonSessionSummary(state, summary)
         }, '*');
     }
 

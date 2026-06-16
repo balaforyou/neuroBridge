@@ -97,14 +97,23 @@ export async function saveGameConfiguration(gameId, updates) {
 
 export async function commitScoreLog(scoreObject) {
     const db = await ensureDB();
+    const accuracy = normalizeAccuracy(scoreObject);
+    const totalQuestions = Number(scoreObject.totalQuestions || scoreObject.total || 0);
+    const correctCount = Number(scoreObject.correctCount ?? scoreObject.score ?? 0);
 
     const payload = {
         studentId: scoreObject.studentId || 'defaultStudent',
         gameId: scoreObject.gameId,
+        activityId: scoreObject.activityId || scoreObject.gameId,
+        activityName: scoreObject.activityName || scoreObject.gameId,
 
-        score: Number(scoreObject.score || 0),
-        accuracy: Number(scoreObject.accuracy || 0),
+        score: correctCount,
+        correctCount,
+        totalQuestions,
+        accuracy,
+        accuracyPercent: Math.round(accuracy * 100),
         averageReactionTimeMs: Number(scoreObject.averageReactionTimeMs || 0),
+        hintUsageCount: Number(scoreObject.hintUsageCount || 0),
         highestLevelReached: Number(scoreObject.highestLevelReached || 1),
         sessionLengthSeconds: Number(scoreObject.sessionLengthSeconds || 0),
 
@@ -195,6 +204,20 @@ export function verifyCredentials(role, inputPassword) {
             req.onerror = (e) => reject(e.target.error);
         });
     });
+}
+
+function normalizeAccuracy(scoreObject) {
+    if (Number.isFinite(Number(scoreObject.accuracyPercent))) {
+        return clampRatio(Number(scoreObject.accuracyPercent) / 100);
+    }
+
+    const rawAccuracy = Number(scoreObject.accuracy || 0);
+    return clampRatio(rawAccuracy > 1 ? rawAccuracy / 100 : rawAccuracy);
+}
+
+function clampRatio(value) {
+    if (!Number.isFinite(value)) return 0;
+    return Math.min(1, Math.max(0, value));
 }
 
 export function getUserProfile(role) {

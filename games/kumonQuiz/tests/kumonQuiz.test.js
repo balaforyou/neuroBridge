@@ -1,6 +1,7 @@
 import {
     createAdditionHint,
     createKumonQuizGame,
+    createKumonSessionSummary,
     DEFAULT_KUMON_CONFIG,
     generateKumonQuestions,
     normalizeKumonConfig
@@ -196,6 +197,61 @@ function testFiveRowGroupAdvancesAfterAllVisibleRowsCorrect() {
     console.log('Five-row group advance test passed');
 }
 
+function testCompletionProducesResultState() {
+    const game = createKumonQuizGame({ questionCount: 5, questionsPerScreen: 5 });
+    const visibleQuestions = game.getVisibleQuestions();
+
+    visibleQuestions.forEach(question => {
+        game.validateAnswer(question.expectedAnswer, {
+            questionId: question.questionId,
+            reactionTimeMs: 100,
+            timestamp: '2026-06-16T00:00:00.000Z'
+        });
+    });
+
+    const advance = game.advanceAfterCorrect();
+    const state = game.getState();
+
+    assert(advance.result === 'complete', 'Final group should complete into result state');
+    assert(state.completed === true, 'Completed flag should remain true for result page rendering');
+    assert(state.completionState.correct === 5, 'Completion state should include correct count');
+    assert(state.completionState.total === 5, 'Completion state should include total count');
+    console.log('Completion result state test passed');
+}
+
+function testSessionSummaryStoresScoreTotalAndAccuracy() {
+    const game = createKumonQuizGame({ questionCount: 5, questionsPerScreen: 5, hintsEnabled: true });
+    const visibleQuestions = game.getVisibleQuestions();
+
+    game.validateAnswer(visibleQuestions[0].expectedAnswer + 1, {
+        questionId: visibleQuestions[0].questionId,
+        reactionTimeMs: 1000,
+        timestamp: '2026-06-16T00:00:00.000Z'
+    });
+
+    visibleQuestions.slice(0, 4).forEach((question, index) => {
+        game.validateAnswer(question.expectedAnswer, {
+            questionId: question.questionId,
+            reactionTimeMs: 1000 + index,
+            timestamp: '2026-06-16T00:00:01.000Z'
+        });
+    });
+
+    const summary = game.getResultSummary();
+    const session = createKumonSessionSummary(game.getState(), summary);
+
+    assert(session.gameId === 'kumonQuiz', 'Session summary should store Number Bridges activity id');
+    assert(session.activityName === 'Kumon Quiz / Number Bridges', 'Session summary should store activity name');
+    assert(session.score === 4, 'Session score should be correct count');
+    assert(session.correctCount === 4, 'Session should store correct count');
+    assert(session.totalQuestions === 5, 'Session should store total questions');
+    assert(session.accuracy === 0.8, `Session accuracy should be ratio 0.8, got ${session.accuracy}`);
+    assert(session.accuracyPercent === 80, 'Session accuracyPercent should be 80');
+    assert(session.sessionLengthSeconds === summary.timeTakenSeconds, 'Session should store total time seconds');
+    assert(session.hintUsageCount === summary.hintsUsed, 'Session should store hint usage');
+    console.log('Session summary analytics test passed');
+}
+
 function testHintDisabled() {
     const game = createKumonQuizGame({ questionCount: 5, hintsEnabled: false });
     const question = game.getCurrentQuestion();
@@ -316,6 +372,8 @@ function runAllTests() {
     testDuplicateEnterBlurDoesNotDoubleRecordAttempt();
     testFiveRowModeLocksCorrectRowsAndKeepsAnswers();
     testFiveRowGroupAdvancesAfterAllVisibleRowsCorrect();
+    testCompletionProducesResultState();
+    testSessionSummaryStoresScoreTotalAndAccuracy();
     testHintDisabled();
     testResultSummary();
     testResultSummaryHintsUsed();

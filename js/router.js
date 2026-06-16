@@ -3,6 +3,7 @@
 import { AppState } from './app.js';
 import { getGameConfiguration, commitScoreLog } from './database.js';
 import { GAME_EVENTS, USER_ROLES } from './constants.js';
+import { renderStudentMetrics } from './dashboard.js';
 
 const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
 const SHELL_MANAGED_ACTIVITIES = new Set(['attributeExplorer', 'matrixReasoning', 'matchingWorksheet', 'attributeMatchingWorksheet', 'kumonQuiz']);
@@ -101,7 +102,9 @@ console.log('Trials received:', payload.trials);
 
     if (AppState.user === USER_ROLES.PARENT) {
         console.log('Parent sandbox detected. Suppressing score save.');
-        switchView('parent');
+        if (payload.gameId !== 'kumonQuiz') {
+            switchView('parent');
+        }
         return;
     }
 
@@ -112,11 +115,14 @@ console.log('Trials received:', payload.trials);
         });
 
         console.log('Student score saved successfully.');
+        await renderStudentMetrics();
     } catch (error) {
         console.error('Failed to save student score:', error);
     }
 
-    switchView('student');
+    if (payload.gameId !== 'kumonQuiz') {
+        switchView('student');
+    }
 }
 
 function formatActivityName(gameId) {

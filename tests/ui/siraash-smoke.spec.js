@@ -389,6 +389,7 @@ test.describe('Number Bridges viewport smoke', () => {
         await expect(page.getByTestId('number-bridges-results')).toBeVisible();
         await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
         await expect(page.getByTestId('number-bridges-total')).toHaveText('Questions: 5');
+        await expect(page.getByTestId('number-bridges-correct-total')).toHaveText('Correct / Total: 5 / 5');
         await expect(page.getByTestId('number-bridges-score')).toHaveText('Correct: 5');
         await expect(page.getByTestId('number-bridges-accuracy')).toHaveText('Accuracy: 100%');
         await expect(page.getByTestId('number-bridges-time-taken')).toContainText(/Time Taken: \d+ sec/);
@@ -400,6 +401,54 @@ test.describe('Number Bridges viewport smoke', () => {
         await expect(page.getByTestId('number-bridges-next-round-button')).toHaveText('Try Again');
         await expect(page.getByTestId('number-bridges-home-button')).toBeVisible();
         await expectNoPageScrollbar(page, { vertical: true });
+    });
+
+    test('keeps result page visible and records sane parent dashboard analytics', async ({ page }) => {
+        await page.goto('/');
+
+        await page.evaluate(async (learnerName) => {
+            const db = await import('/js/database.js');
+            await db.clearAllScores();
+            await db.seedCustomPins('4321', '2580', learnerName);
+        }, LEARNER_NAME);
+
+        await page.getByRole('button', { name: 'Learner Login' }).click();
+        await page.getByPlaceholder('Enter PIN').fill('2580');
+        await page.getByRole('button', { name: 'Enter' }).click();
+        await page.getByRole('button', { name: "Let's Begin" }).click();
+        await page.getByTestId('activity-tile-number-bridges').click();
+
+        const frame = page.frameLocator('#game-frame');
+        for (const [rowIndex, answer] of [[0, 2], [1, 3], [2, 4], [3, 5], [4, 6]]) {
+            await answerNumberBridgeRow(frame, rowIndex, answer);
+        }
+        await expect(frame.getByTestId('number-bridges-question')).toHaveText('6 + 1 =', { timeout: 1600 });
+
+        for (const [rowIndex, answer] of [[0, 7], [1, 8], [2, 9], [3, 10], [4, 11]]) {
+            await answerNumberBridgeRow(frame, rowIndex, answer);
+        }
+
+        await expect(frame.getByTestId('number-bridges-results')).toBeVisible();
+        await expect(frame.getByTestId('number-bridges-correct-total')).toHaveText('Correct / Total: 10 / 10');
+        await expect(frame.getByTestId('number-bridges-accuracy')).toHaveText('Accuracy: 100%');
+        await expect(frame.getByTestId('number-bridges-time-taken')).toContainText(/Time Taken: \d+ sec/);
+        await expect(frame.getByTestId('number-bridges-next-round-button')).toBeVisible();
+        await expect(frame.getByTestId('number-bridges-home-button')).toBeVisible();
+        await expect(page.getByTestId('activity-hub')).toBeHidden();
+        await expect(page.locator('#view-game')).toBeVisible();
+
+        await frame.getByTestId('number-bridges-home-button').click();
+        await expect(page.getByTestId('activity-hub')).toBeVisible();
+        await page.getByRole('button', { name: 'Parent Area' }).click();
+        await page.locator('#btn-login-parent').click();
+        await page.getByPlaceholder('Enter PIN').fill('4321');
+        await page.getByRole('button', { name: 'Enter' }).click();
+
+        const parentReport = page.locator('#parent-report-view');
+        await expect(parentReport).toContainText('Kumon Quiz / Number Bridges');
+        await expect(parentReport).toContainText('Score 10 / 10');
+        await expect(parentReport).toContainText('100%');
+        await expect(parentReport).not.toContainText('10000%');
     });
 });
 

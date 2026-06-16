@@ -4,7 +4,7 @@
     import { AppState } from './app.js';
     import { switchView } from './router.js';
     import { verifyCredentials, ensureDefaultPins, seedCustomPins, getUserProfile } from './database.js';
-    import { renderParentControls } from './dashboard.js';
+    import { renderParentControls, renderParentProgressReport } from './dashboard.js';
     import { startLearnerWelcomeExperience } from './welcomeExperience.js';
 
     // Manual reset notes:
@@ -133,6 +133,7 @@
                     AppState.user = 'parent';
                     updateHeader('parent', 'Parent Console');
                     renderParentControls();
+                    renderParentProgressReport();
                     switchView('parent');
                 });
             });

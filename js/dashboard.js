@@ -8,7 +8,7 @@ import {
     clearGameScores
 } from './database.js';
 
-import { getRegisteredGames } from './gameRegistry.js';
+import { getGameById, getRegisteredGames } from './gameRegistry.js';
 
 export function initDashboard() {
     console.log('Dashboard UI Controller Hooks Injected.');
@@ -130,9 +130,9 @@ export async function renderStudentMetrics() {
     const rows = logs.map(log => `
         <tr class="hover:bg-slate-900/60">
             <td class="p-3 font-semibold text-slate-200">${formatGameName(log.gameId)}</td>
-            <td class="p-3 text-emerald-400">${log.score}</td>
-            <td class="p-3">${log.accuracy ? Math.round(log.accuracy * 100) : 0}%</td>
-            <td class="p-3">${log.averageReactionTimeMs || '--'} ms</td>
+            <td class="p-3 text-emerald-400">${formatScore(log)}</td>
+            <td class="p-3">${formatAccuracy(log)}</td>
+            <td class="p-3">${formatTime(log)}</td>
             <td class="p-3">${log.highestLevelReached || '--'}</td>
             <td class="p-3">${formatDate(log.timestamp)}</td>
         </tr>
@@ -198,9 +198,50 @@ async function handleSettingModification(event) {
 function formatGameName(gameId) {
     if (!gameId) return 'Unknown Game';
 
+    const game = getGameById(gameId);
+    if (game?.name && game?.title && game.name !== game.title) {
+        return `${game.name} / ${game.title}`;
+    }
+
+    if (game?.title) return game.title;
+
     return gameId
         .replace(/([A-Z])/g, ' $1')
         .replace(/^./, char => char.toUpperCase());
+}
+
+function formatScore(log) {
+    if (Number(log.totalQuestions || 0) > 0) {
+        return `${Number(log.correctCount ?? log.score ?? 0)} / ${Number(log.totalQuestions)}`;
+    }
+
+    return String(Number(log.score || 0));
+}
+
+function getAccuracyRatio(log) {
+    if (Number.isFinite(Number(log.accuracyPercent))) {
+        return clampRatio(Number(log.accuracyPercent) / 100);
+    }
+
+    const rawAccuracy = Number(log.accuracy || 0);
+    return clampRatio(rawAccuracy > 1 ? rawAccuracy / 100 : rawAccuracy);
+}
+
+function formatAccuracy(log) {
+    return `${Math.round(getAccuracyRatio(log) * 100)}%`;
+}
+
+function formatTime(log) {
+    if (Number(log.sessionLengthSeconds || 0) > 0) {
+        return `${Math.round(Number(log.sessionLengthSeconds))} sec`;
+    }
+
+    return log.averageReactionTimeMs ? `${Math.round(Number(log.averageReactionTimeMs))} ms avg` : '--';
+}
+
+function clampRatio(value) {
+    if (!Number.isFinite(value)) return 0;
+    return Math.min(1, Math.max(0, value));
 }
 
 function formatDate(timestamp) {
@@ -227,7 +268,7 @@ export async function renderParentProgressReport() {
     const totalSessions = logs.length;
 
     const avgAccuracy =
-        logs.reduce((sum, log) => sum + Number(log.accuracy || 0), 0) / totalSessions;
+        logs.reduce((sum, log) => sum + getAccuracyRatio(log), 0) / totalSessions;
 
     const avgReactionTime =
         logs.reduce((sum, log) => sum + Number(log.averageReactionTimeMs || 0), 0) / totalSessions;
@@ -257,8 +298,9 @@ export async function renderParentProgressReport() {
         <details class="bg-slate-950 border border-slate-800 rounded-xl p-3">
             <summary class="cursor-pointer text-slate-200 font-semibold">
                 ${formatGameName(log.gameId)}
-                • Score ${log.score}
-                • ${Math.round((log.accuracy || 0) * 100)}%
+                - Score ${formatScore(log)}
+                - ${formatAccuracy(log)}
+                ${Number(log.sessionLengthSeconds || 0) ? `- Time ${Math.round(Number(log.sessionLengthSeconds))} sec` : ''}
             </summary>
 
             <div class="mt-2 text-xs text-slate-500">
