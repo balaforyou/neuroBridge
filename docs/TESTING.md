@@ -130,7 +130,7 @@ Current browser coverage uses Chromium only and checks:
 
 - SIRAASH Welcome / Activity Hub at 1366 x 768
 - Matching Worksheet at 1366 x 768 and 1024 x 768
-- Matching Worksheet local feedback, completion, and next-round flow at 1366 x 768
+- Matching Worksheet shell-managed launch, local feedback, clean completion panel, and next-round flow at 1366 x 768
 - Attribute Matching Worksheet at 1366 x 768 and 1024 x 768
 - Attribute Explorer at 1366 x 768 and 1024 x 768
 - Attribute Explorer help nudge timing at 1366 x 768

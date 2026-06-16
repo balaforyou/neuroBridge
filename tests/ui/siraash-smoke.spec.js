@@ -79,7 +79,12 @@ test.describe('Matching Worksheet viewport smoke', () => {
         test(`keeps worksheet zones and cards visible at ${viewport.name}`, async ({ page }) => {
             await page.setViewportSize({ width: viewport.width, height: viewport.height });
             await page.goto('/games/matchingWorksheet/');
+            await initializeActivity(page);
 
+            await expect(page.getByRole('button', { name: /Home/ })).toBeVisible();
+            await expect(page.getByLabel('SIRAASH')).toBeVisible();
+            await expect(page.getByText('Activity')).toBeVisible();
+            await expect(page.getByRole('heading', { name: 'Matching Worksheet' })).toBeVisible();
             await expect(page.getByTestId('matching-worksheet')).toBeVisible();
             await expect(page.getByTestId('worksheet-instruction')).toBeVisible();
             await expect(page.getByTestId('worksheet-activity')).toBeVisible();
@@ -88,14 +93,41 @@ test.describe('Matching Worksheet viewport smoke', () => {
             await expect(page.getByTestId('worksheet-celebration')).toHaveAttribute('data-enabled', 'false');
             await expect(page.getByTestId('matching-card-apple-a')).toBeVisible();
             await expect(page.getByTestId('worksheet-hint-button')).toBeVisible();
+            await expect(page.getByText('Back to Dashboard')).toBeHidden();
+            await expect(page.getByText('Activity: Matching Worksheet')).toBeHidden();
             await expectNoPageScrollbar(page);
         });
     }
 
     test.use({ viewport: DESKTOP });
 
+    test('launches from the hub without legacy parent navigation labels', async ({ page }) => {
+        await page.goto('/');
+
+        await page.evaluate(async (learnerName) => {
+            const db = await import('/js/database.js');
+            await db.seedCustomPins('4321', '2580', learnerName);
+        }, LEARNER_NAME);
+
+        await page.getByRole('button', { name: 'Learner Login' }).click();
+        await page.getByPlaceholder('Enter PIN').fill('2580');
+        await page.getByRole('button', { name: 'Enter' }).click();
+        await page.getByRole('button', { name: "Let's Begin" }).click();
+        await page.getByTestId('activity-tile-matching-worksheet').click();
+
+        await expect(page.locator('#game-nav-row')).toBeHidden();
+        await expect(page.getByText('Back to Dashboard')).toBeHidden();
+        await expect(page.getByText('Activity: Matching Worksheet')).toBeHidden();
+
+        const frame = page.frameLocator('#game-frame');
+        await expect(frame.getByRole('button', { name: /Home/ })).toBeVisible();
+        await expect(frame.getByLabel('SIRAASH')).toBeVisible();
+        await expect(frame.getByRole('heading', { name: 'Matching Worksheet' })).toBeVisible();
+    });
+
     test('uses local pair feedback and a next round completion flow', async ({ page }) => {
         await page.goto('/games/matchingWorksheet/');
+        await initializeActivity(page);
 
         await page.getByTestId('matching-card-apple-a').click();
         await page.getByTestId('matching-card-apple-b').click();
@@ -117,14 +149,17 @@ test.describe('Matching Worksheet viewport smoke', () => {
         await page.getByTestId('matching-card-cat-a').click();
         await page.getByTestId('matching-card-cat-b').click();
         await expect(page.getByTestId('matching-completion')).toBeVisible();
-        await expect(page.getByTestId('matching-completion')).toContainText('All done!');
-        await expect(page.getByTestId('matching-completion')).toContainText('Great work!');
+        await expect(page.getByTestId('matching-card-grid')).toBeHidden();
+        await expect(page.getByTestId('matching-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
+        await expect(page.getByTestId('matching-completion-message')).toHaveText('You matched all the pictures.');
         await expect(page.getByTestId('matching-next-round-button')).toBeVisible();
-        await expect(page.getByTestId('worksheet-feedback')).toContainText('Great work!');
+        await expect(page.getByTestId('worksheet-feedback')).toBeEmpty();
+        await expect(page.getByText('You found the answer.')).toBeHidden();
 
         await page.getByTestId('matching-next-round-button').click();
         await expect(page.getByTestId('matching-card-apple-a-check')).toBeHidden();
         await expect(page.getByTestId('matching-completion')).toBeHidden();
+        await expect(page.getByTestId('matching-card-grid')).toBeVisible();
         await expect(page.getByTestId('worksheet-feedback')).toBeEmpty();
     });
 });

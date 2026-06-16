@@ -5,7 +5,7 @@ import { getGameConfiguration, commitScoreLog } from './database.js';
 import { GAME_EVENTS, USER_ROLES } from './constants.js';
 
 const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
-const SHELL_MANAGED_ACTIVITIES = new Set(['attributeExplorer', 'matrixReasoning']);
+const SHELL_MANAGED_ACTIVITIES = new Set(['attributeExplorer', 'matrixReasoning', 'matchingWorksheet']);
 
 export function initRouter() {
     document.addEventListener('click', (e) => {

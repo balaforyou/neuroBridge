@@ -4,6 +4,7 @@ import {
 } from '../../js/worksheetShell.js';
 
 export const MATCHING_WORKSHEET_ACTIVITY_ID = 'matching-worksheet-v1';
+const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
 
 export const DEFAULT_MATCHING_ITEMS = [
     { id: 'apple', label: 'Apple', symbol: '\u{1F34E}' },
@@ -127,11 +128,30 @@ function mountMatchingWorksheet() {
     if (!root) return;
 
     const game = createMatchingWorksheetGame();
+    const pageState = {
+        learnerName: 'Learner',
+        stars: 0
+    };
     let shell = null;
     let activityGrid = null;
     let completionPanel = null;
     let transientMistakeCardIds = [];
     let mistakeClearTimer = null;
+
+    window.addEventListener('message', (event) => {
+        if (event.data?.type !== 'INITIALIZE_GAME_RULES') return;
+
+        pageState.learnerName = normalizeLearnerName(event.data.learnerName);
+        updateHeader();
+        renderCompletion();
+    });
+
+    const homeButton = document.getElementById('home-button');
+    if (homeButton) {
+        homeButton.addEventListener('click', () => {
+            window.parent?.postMessage({ type: ACTIVITY_HOME_EVENT }, '*');
+        });
+    }
 
     function renderActivity() {
         const activityContent = document.createElement('div');
@@ -156,6 +176,7 @@ function mountMatchingWorksheet() {
         if (!activityGrid) return;
 
         const state = game.getState();
+        activityGrid.classList.toggle('hidden', state.completed);
         activityGrid.innerHTML = '';
 
         state.cards.forEach(card => {
@@ -200,13 +221,13 @@ function mountMatchingWorksheet() {
             return;
         }
 
-        completionPanel.className = 'rounded-2xl border-4 border-emerald-300 bg-emerald-50 px-4 py-3 text-center text-slate-950';
+        completionPanel.className = 'rounded-2xl border-4 border-emerald-300 bg-emerald-50 px-5 py-5 text-center text-slate-950 shadow-sm';
         completionPanel.innerHTML = `
-            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-3xl font-black text-white" aria-hidden="true">&#10003;</div>
-            <p class="mt-2 text-xl font-black">All done!</p>
-            <p class="text-sm font-bold text-emerald-900">Great work!</p>
-            <button type="button" data-testid="matching-next-round-button" class="mt-3 min-h-[44px] rounded-full bg-emerald-700 px-5 py-2 text-base font-black text-white shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-300">
-                Next round
+            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-4xl font-black text-white" aria-hidden="true">&#10003;</div>
+            <p data-testid="matching-completion-title" class="mt-3 text-xl sm:text-2xl font-black">Great work, ${pageState.learnerName}! &#127793;</p>
+            <p data-testid="matching-completion-message" class="mt-1 text-base sm:text-lg font-bold text-emerald-900">You matched all the pictures.</p>
+            <button type="button" data-testid="matching-next-round-button" class="mt-4 min-h-[44px] rounded-full bg-emerald-700 px-5 py-2 text-base font-black text-white shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-300">
+                Next Round
             </button>
         `;
         completionPanel.querySelector('[data-testid="matching-next-round-button"]').addEventListener('click', handleNextRound);
@@ -224,7 +245,9 @@ function mountMatchingWorksheet() {
         renderCompletion();
 
         if (result === 'complete') {
-            shell.showFeedback('success');
+            pageState.stars += 1;
+            updateHeader();
+            shell.clearFeedback();
             return;
         }
 
@@ -251,13 +274,26 @@ function mountMatchingWorksheet() {
         transientMistakeCardIds = [];
         game.resetRound();
         shell.clearFeedback();
+        updateHeader();
         renderCards();
         renderCompletion();
     }
 
+    function updateHeader() {
+        const roundEl = document.getElementById('ui-round');
+        if (roundEl) {
+            roundEl.textContent = String(game.getState().roundNumber);
+        }
+
+        const starsEl = document.getElementById('ui-stars');
+        if (starsEl) {
+            starsEl.textContent = String(pageState.stars);
+        }
+    }
+
     shell = createWorksheetShell({
         templateType: WORKSHEET_TEMPLATE_TYPES.MATCHING,
-        title: 'Matching Worksheet',
+        title: 'Match the pictures',
         instruction: 'Match the same pictures.',
         activity: {
             render: renderActivity
@@ -286,8 +322,14 @@ function mountMatchingWorksheet() {
     shell.classList.add('h-full');
     root.innerHTML = '';
     root.appendChild(shell);
+    updateHeader();
 }
 
 if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', mountMatchingWorksheet);
+}
+
+function normalizeLearnerName(learnerName) {
+    const normalized = String(learnerName || '').trim();
+    return normalized || 'Learner';
 }
