@@ -2,7 +2,11 @@ import {
     createWorksheetShell,
     WORKSHEET_TEMPLATE_TYPES
 } from '../../js/worksheetShell.js';
-import { renderSiraashCompletionFeedback } from '../../js/siraashFeedback.js';
+import {
+    applyWorksheetHeaderState,
+    normalizeWorksheetLearnerName,
+    renderWorksheetCompletion
+} from '../../js/worksheetTemplate.js';
 
 export const ATTRIBUTE_MATCHING_ACTIVITY_ID = 'attribute-matching-worksheet-v1';
 const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
@@ -218,7 +222,7 @@ function mountAttributeMatchingWorksheet() {
     window.addEventListener('message', (event) => {
         if (event.data?.type !== 'INITIALIZE_GAME_RULES') return;
 
-        pageState.learnerName = normalizeLearnerName(event.data.learnerName);
+        pageState.learnerName = normalizeWorksheetLearnerName(event.data.learnerName);
         updateHeader();
         renderCompletion();
     });
@@ -296,7 +300,7 @@ function mountAttributeMatchingWorksheet() {
         }
 
         completionPanel.className = 'rounded-2xl text-center text-slate-950';
-        completionPanel.innerHTML = renderSiraashCompletionFeedback({
+        completionPanel.innerHTML = renderWorksheetCompletion({
             learnerName: pageState.learnerName,
             message: 'You found the matching attribute.',
             actionTestId: 'attribute-matching-next-round-button'
@@ -330,15 +334,10 @@ function mountAttributeMatchingWorksheet() {
     }
 
     function updateHeader() {
-        const roundEl = document.getElementById('ui-round');
-        if (roundEl) {
-            roundEl.textContent = String(game.getState().roundNumber);
-        }
-
-        const starsEl = document.getElementById('ui-stars');
-        if (starsEl) {
-            starsEl.textContent = String(pageState.stars);
-        }
+        applyWorksheetHeaderState({
+            roundNumber: game.getState().roundNumber,
+            stars: pageState.stars
+        });
     }
 
     const initialQuestion = game.getState().currentQuestion;
@@ -374,9 +373,4 @@ function mountAttributeMatchingWorksheet() {
 
 if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', mountAttributeMatchingWorksheet);
-}
-
-function normalizeLearnerName(learnerName) {
-    const normalized = String(learnerName || '').trim();
-    return normalized || 'Learner';
 }

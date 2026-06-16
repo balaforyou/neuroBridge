@@ -2,7 +2,11 @@ import {
     createWorksheetShell,
     WORKSHEET_TEMPLATE_TYPES
 } from '../../js/worksheetShell.js';
-import { renderSiraashCompletionFeedback } from '../../js/siraashFeedback.js';
+import {
+    applyWorksheetHeaderState,
+    normalizeWorksheetLearnerName,
+    renderWorksheetCompletion
+} from '../../js/worksheetTemplate.js';
 
 export const MATCHING_WORKSHEET_ACTIVITY_ID = 'matching-worksheet-v1';
 const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
@@ -142,7 +146,7 @@ function mountMatchingWorksheet() {
     window.addEventListener('message', (event) => {
         if (event.data?.type !== 'INITIALIZE_GAME_RULES') return;
 
-        pageState.learnerName = normalizeLearnerName(event.data.learnerName);
+        pageState.learnerName = normalizeWorksheetLearnerName(event.data.learnerName);
         updateHeader();
         renderCompletion();
     });
@@ -223,7 +227,7 @@ function mountMatchingWorksheet() {
         }
 
         completionPanel.className = 'rounded-2xl text-center text-slate-950';
-        completionPanel.innerHTML = renderSiraashCompletionFeedback({
+        completionPanel.innerHTML = renderWorksheetCompletion({
             learnerName: pageState.learnerName,
             message: 'You matched all the pictures.',
             actionTestId: 'matching-next-round-button'
@@ -278,15 +282,10 @@ function mountMatchingWorksheet() {
     }
 
     function updateHeader() {
-        const roundEl = document.getElementById('ui-round');
-        if (roundEl) {
-            roundEl.textContent = String(game.getState().roundNumber);
-        }
-
-        const starsEl = document.getElementById('ui-stars');
-        if (starsEl) {
-            starsEl.textContent = String(pageState.stars);
-        }
+        applyWorksheetHeaderState({
+            roundNumber: game.getState().roundNumber,
+            stars: pageState.stars
+        });
     }
 
     shell = createWorksheetShell({
@@ -325,9 +324,4 @@ function mountMatchingWorksheet() {
 
 if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', mountMatchingWorksheet);
-}
-
-function normalizeLearnerName(learnerName) {
-    const normalized = String(learnerName || '').trim();
-    return normalized || 'Learner';
 }

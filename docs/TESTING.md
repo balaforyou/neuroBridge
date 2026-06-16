@@ -37,6 +37,7 @@ node js/tests/analyticsAggregator.runner.js
 node js/tests/sessionResult.runner.js
 node js/tests/siraashFeedback.runner.js
 node js/tests/worksheetShell.runner.js
+node js/tests/worksheetTemplate.runner.js
 ```
 
 Game tests:
@@ -83,8 +84,9 @@ Expected passing suites:
 
 - SIRAASH Feedback Contract
 - Worksheet Shell Contract
+- Worksheet Template Contract
 
-These verify shared learner feedback wording, reserved level-up celebration contract, worksheet template registration, worksheet zone rendering, progressive hint reveal, feedback mounting, and inactive celebration placeholder behavior.
+These verify shared learner feedback wording, reserved level-up celebration contract, worksheet template registration, worksheet zone rendering, progressive hint reveal, feedback mounting, inactive celebration placeholder behavior, worksheet template metadata, support prompts, header state updates, and completion rendering.
 
 ## Matrix Reasoning Test Suites
 

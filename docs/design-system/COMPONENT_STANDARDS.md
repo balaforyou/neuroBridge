@@ -373,3 +373,23 @@ Accessibility Notes:
 - Use text or icon support alongside color.
 - May use `{learnerName}` for short micro-praise when the name comes from the current session/profile.
 - Must fall back to `Learner` and must not hardcode a specific learner name.
+
+## Worksheet Support Panel
+
+Purpose: Provide the right-side or below-task SIRAASH support region for worksheet-like activities.
+
+Placement:
+
+- Right of the main task on desktop and tablet landscape.
+- Below the main task on mobile.
+
+Behavior:
+
+- Starts with a learner-friendly Need Help / clue prompt.
+- May reveal clues, visual aids, worked examples, or step prompts.
+- Should not push primary answer controls out of view.
+- Should stay visually quieter than the main task.
+
+Standard:
+
+- See `docs/design-system/WORKSHEET_TEMPLATE.md`.

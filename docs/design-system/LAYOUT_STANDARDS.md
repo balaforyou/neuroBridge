@@ -113,6 +113,13 @@ Rules:
 - Keep scaffold content calm and brief.
 - Place optional help after the primary answer action when vertical space is constrained.
 
+For worksheet activities, this region becomes the SIRAASH Support Region:
+
+- Right side on tablet landscape and desktop.
+- Below the main task on mobile.
+- Contains Need Help, clues, visual aids, worked examples, and step prompts.
+- Must not hide the primary answer action.
+
 ### Feedback Area
 
 Shows result feedback after a learner response.
@@ -204,3 +211,19 @@ Rationale:
 Hover states may improve laptop use, but no essential action, instruction, or scaffold may depend on hover.
 
 Learners must be able to complete activities using touch alone.
+
+## Worksheet Layout Pattern
+
+Worksheet-like activities should follow:
+
+```text
+Header
+  |
+Main Task + SIRAASH Support
+  |
+Feedback
+  |
+Completion
+```
+
+See `docs/design-system/WORKSHEET_TEMPLATE.md` for the Worksheet Activity Template v1.0.

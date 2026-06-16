@@ -307,3 +307,5 @@ Future work may add:
 - Regional language variants.
 - Parent preview mode.
 - Completion templates.
+
+Worksheet-specific shell rules are defined in `docs/design-system/WORKSHEET_TEMPLATE.md`.
