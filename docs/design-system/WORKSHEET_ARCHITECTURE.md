@@ -418,6 +418,7 @@ Not part of initial implementation:
 - Telemetry replay.
 - Adaptive difficulty.
 - AI-assisted narration support.
+- SIRAASH Worksheet Intelligence (`NB-AI-WS-001`): future parent workflow for uploading school worksheet images and generating scaffolded Bridge Worksheets through existing worksheet templates. This should focus on scaffold generation and learner independence, not answer generation or custom page layouts.
 
 ## Success Criteria
 

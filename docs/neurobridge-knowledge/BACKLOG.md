@@ -149,6 +149,26 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 
 ## Future Ideas
 
+- Story ID: NB-AI-WS-001
+- Title: SIRAASH Worksheet Intelligence
+- Epic: Worksheet Intelligence
+- Priority: P2
+- Status: Future Backlog
+- Vision: SIRAASH should accept a worksheet image from school and transform it into a personalized NeuroBridge learning experience aligned to the learner's current capabilities.
+- Problem Statement: Traditional worksheets assume a fixed learner capability. Parents currently adapt school worksheets manually by reducing complexity, adding visual support, creating intermediate scaffolds, and guiding discovery.
+- User Story: As a parent, I want to upload a school worksheet and receive a scaffolded NeuroBridge version so that my child can practice at an achievable level and gradually progress toward the original worksheet.
+- High-Level Flow: Worksheet image upload -> worksheet analysis -> skill detection -> difficulty estimation -> scaffold generation -> worksheet shell rendering -> hint and feedback integration -> progress tracking.
+- Phase 1: Worksheet Understanding. Accept photograph, scan, PDF page, or mobile camera capture; detect text, pictures, symbols, layout, and question types.
+- Phase 2: Skill Classification. Potential categories include matching, sorting, pattern recognition, counting, basic arithmetic, reading, comprehension, narration, sequencing, and functional life.
+- Phase 3: Difficulty Estimation. Estimate Too Easy, Appropriate, Stretch, or Too Difficult using observation history, completed activities, hint dependency, and success rates.
+- Phase 4: Scaffold Generation. Create a Bridge Worksheet between the learner's current ability and the target task instead of recreating the original worksheet directly.
+- Phase 5: Worksheet Shell Integration. Generated content should render through existing worksheet templates such as Matching, Guided Discovery, Pattern Builder, Narration, Audio Chain, and Functional Life.
+- Future Capabilities: Adaptive hint generation, dynamic difficulty, and parent-reviewed observation draft generation.
+- Guardrail: SIRAASH should promote independence and confidence. It should not be optimized to complete worksheets for the learner or generate answers in place of learning.
+- Depends On: NB-101.4.5.2 Worksheet Shell; NB-WS-001 Matching Worksheet; NB-AUD-001 Audio Chain Completer; Knowledge Base; Observation Tracking.
+- Potential Telemetry: worksheetType, detectedSkill, scaffoldLevel, promptUsage, completionRate, timeToSuccess, returnToOriginalWorksheet.
+- Notes: This epic transforms SIRAASH from a collection of activities into an adaptive learning companion that can translate real-world educational material into learner-specific scaffolds. Candidate for P1 after the worksheet ecosystem matures.
+
 - Story ID: NB-WS-001
 - Title: Matching Worksheet Template
 - Domain: Executive Function & Cognitive Shifting
