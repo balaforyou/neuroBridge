@@ -377,7 +377,9 @@ test.describe('Number Bridges viewport smoke', () => {
         await expect(page.getByTestId('number-bridges-answer-input-1')).toHaveClass(/shadow-\[/);
         await expect(page.getByTestId('number-bridges-feedback')).toBeEmpty();
         await expect(page.getByTestId('number-bridges-support-text')).toContainText(`You got close, ${LEARNER_NAME}.`);
-        await expect(page.getByTestId('number-bridges-support-text')).toContainText('Think about 2 + 0.');
+        await expect(page.getByTestId('number-bridges-support-text')).toContainText('Start with 2. Count one more.');
+        await expect(page.getByTestId('number-bridges-support-text')).toContainText('2 → 3');
+        await expect(page.getByTestId('number-bridges-support-text')).not.toContainText('+ 0');
 
         for (const [rowIndex, answer] of [[1, 3], [2, 4], [3, 5], [4, 6]]) {
             await answerNumberBridgeRow(page, rowIndex, answer);
@@ -393,7 +395,8 @@ test.describe('Number Bridges viewport smoke', () => {
 
         await page.getByTestId('number-bridges-answer-input').fill('3');
         await page.getByTestId('number-bridges-answer-input').press('Enter');
-        await expect(page.getByTestId('number-bridges-support-text')).toContainText('Think about 1 + 0.');
+        await expect(page.getByTestId('number-bridges-support-text')).toContainText('Start with 1. Count one more.');
+        await expect(page.getByTestId('number-bridges-support-text')).toContainText('1 → 2');
 
         for (const [rowIndex, answer] of [[0, 2], [1, 3], [2, 4], [3, 5], [4, 6]]) {
             await answerNumberBridgeRow(page, rowIndex, answer);
@@ -416,6 +419,27 @@ test.describe('Number Bridges viewport smoke', () => {
         await expect(page.getByTestId('number-bridges-home-button')).toBeVisible();
         await expectNoPageScrollbar(page, { vertical: true });
     });
+
+    for (const viewport of TEST_VIEWPORTS) {
+        test(`shows count-forward +1 scaffold at ${viewport.name}`, async ({ page }) => {
+            await page.setViewportSize({ width: viewport.width, height: viewport.height });
+            await page.goto('/games/kumonQuiz/');
+            await initializeKumonQuiz(page);
+
+            await page.getByTestId('number-bridges-answer-input-2').fill('5');
+            await page.getByTestId('number-bridges-answer-input-2').press('Enter');
+
+            await expect(page.getByTestId('number-bridges-question-2')).toHaveText('3 + 1 =');
+            await expect(page.getByTestId('number-bridges-answer-input-2')).toBeEditable();
+            await expect(page.getByTestId('number-bridges-answer-input-2')).toBeFocused();
+            await expect(page.getByTestId('number-bridges-answer-input-2')).toHaveClass(/border-amber-400/);
+            await expect(page.getByTestId('number-bridges-support-text')).toContainText(`You got close, ${LEARNER_NAME}.`);
+            await expect(page.getByTestId('number-bridges-support-text')).toContainText('Count one more.');
+            await expect(page.getByTestId('number-bridges-support-text')).toContainText('3 → 4');
+            await expect(page.getByTestId('number-bridges-support-text')).not.toContainText('+ 0');
+            await expectNoPageScrollbar(page);
+        });
+    }
 
     test('keeps result page visible and records sane parent dashboard analytics', async ({ page }) => {
         await page.goto('/');

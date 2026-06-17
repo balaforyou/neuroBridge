@@ -4,7 +4,8 @@ import {
     createKumonSessionSummary,
     DEFAULT_KUMON_CONFIG,
     generateKumonQuestions,
-    normalizeKumonConfig
+    normalizeKumonConfig,
+    renderNumberBridgeSupportText
 } from '../game.js';
 
 function assert(condition, message) {
@@ -120,6 +121,7 @@ function testWrongAnswerDoesNotAdvanceAndShowsHint() {
     assert(state.currentQuestionIndex === 0, 'Wrong answer should stay on same question');
     assert(state.supportState?.hintLevel === 1, 'Wrong answer should reveal first hint when enabled');
     assert(state.correctQuestionIds[question.questionId] !== true, 'Wrong answer should not lock row');
+    assert(!state.supportState.text.includes('+ 0'), 'Wrong answer hint should not introduce plus zero');
     console.log('Wrong answer scaffold test passed');
 }
 
@@ -313,14 +315,18 @@ function testHintUsageDoesNotReduceResolvedScore() {
 }
 
 function testHintDisabled() {
-    const game = createKumonQuizGame({ questionCount: 5, hintsEnabled: false });
+    const game = createKumonQuizGame({ questionCount: 5, hintsEnabled: false, learnerName: 'Adarsh' });
     const question = game.getCurrentQuestion();
 
     game.submitAnswer(question.expectedAnswer + 1, { reactionTimeMs: 150, timestamp: '2026-06-16T00:00:00.000Z' });
     const state = game.getState();
+    const supportMessage = renderNumberBridgeSupportText(state, state.learnerName);
 
     assert(state.supportState?.hintLevel === 0, 'Hints disabled should not reveal scaffold level');
     assert(state.supportState?.scaffoldType === 'supportive-retry', 'Hints disabled should show retry support only');
+    assert(supportMessage.includes('You got close, Adarsh.'), 'Support message should include learner name');
+    assert(supportMessage.includes('Try again.'), 'Hints disabled should show supportive retry message');
+    assert(!supportMessage.includes('→'), 'Hints disabled should suppress scaffold path');
     assert(game.requestHint().result === 'ignored', 'Manual hint should be ignored when disabled');
     console.log('Hint disabled test passed');
 }
@@ -416,10 +422,57 @@ function testTrialAnalyticsFields() {
 }
 
 function testHintText() {
-    const hint = createAdditionHint({ operandA: 7, operandB: 5 }, 2);
+    const oneMoreHint = createAdditionHint({ operandA: 3, operandB: 1 }, 1);
+    const twoMoreHint = createAdditionHint({ operandA: 3, operandB: 2 }, 1);
+    const threeMoreHint = createAdditionHint({ operandA: 4, operandB: 3 }, 1);
 
-    assert(hint.text === '7 + 4 = 11. So 7 + 5 is one more.', 'Level 2 hint should scaffold one-more reasoning');
+    assert(!oneMoreHint.text.includes('3 + 0'), '3 + 1 hint should not produce 3 + 0');
+    assert(oneMoreHint.text.includes('Count one more.'), '3 + 1 hint should ask learner to count one more');
+    assert(oneMoreHint.text.includes('3 → 4'), '3 + 1 hint should show path 3 → 4');
+    assert(twoMoreHint.text.includes('Start with 3. Count two more.'), '3 + 2 hint should use bridge value two');
+    assert(twoMoreHint.text.includes('3 → 4 → 5'), '3 + 2 hint should show path 3 → 4 → 5');
+    assert(threeMoreHint.text.includes('Start with 4. Count three more.'), '4 + 3 hint should use bridge value three');
+    assert(threeMoreHint.text.includes('4 → 5 → 6 → 7'), '4 + 3 hint should show path 4 → 5 → 6 → 7');
     console.log('Hint text test passed');
+}
+
+function testWrongAnswerHintContractForRangeBridges() {
+    const game = createKumonQuizGame({
+        firstNumberMin: 3,
+        firstNumberMax: 4,
+        secondNumberMode: 'range',
+        secondNumberMin: 1,
+        secondNumberMax: 3,
+        questionCount: 5,
+        questionsPerScreen: 5,
+        hintsEnabled: true
+    });
+    const visibleQuestions = game.getVisibleQuestions();
+    const question3Plus1 = visibleQuestions[0];
+    const question4Plus2 = visibleQuestions[1];
+
+    const wrongOutcome = game.submitAnswer(5, {
+        questionId: question3Plus1.questionId,
+        reactionTimeMs: 200,
+        timestamp: '2026-06-16T00:00:00.000Z'
+    });
+    const firstState = game.getState();
+
+    assert(wrongOutcome.trial.hintUsed === false, 'Wrong trial before scaffold should preserve existing hintUsed semantics');
+    assert(firstState.supportState.text.includes('3 → 4'), 'Wrong 3 + 1 answer should produce path 3 → 4');
+    assert(!firstState.supportState.text.includes('3 + 0'), 'Wrong 3 + 1 answer should not produce 3 + 0');
+
+    game.requestHint({ questionId: question4Plus2.questionId });
+    const hintedOutcome = game.submitAnswer(question4Plus2.expectedAnswer, {
+        questionId: question4Plus2.questionId,
+        reactionTimeMs: 210,
+        timestamp: '2026-06-16T00:00:01.000Z'
+    });
+
+    assert(hintedOutcome.trial.hintUsed === true, 'Analytics should still capture hintUsed after scaffold is shown');
+    assert(hintedOutcome.trial.hintLevel === 1, 'Analytics should preserve current v1 hint level');
+    assert(hintedOutcome.trial.scaffoldType === 'nearby-fact', 'Analytics should preserve compatible scaffold type values');
+    console.log('Wrong answer hint contract range bridge test passed');
 }
 
 function runAllTests() {
@@ -443,6 +496,7 @@ function runAllTests() {
     testResultSummaryHintsUsed();
     testTrialAnalyticsFields();
     testHintText();
+    testWrongAnswerHintContractForRangeBridges();
     console.log('=== All Kumon Quiz Tests Passed ===');
 }
 

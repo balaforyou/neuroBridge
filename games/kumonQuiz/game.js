@@ -76,14 +76,14 @@ export function generateKumonQuestions(config = DEFAULT_KUMON_CONFIG) {
 }
 
 export function createAdditionHint(question, hintLevel) {
-    const previousAddend = Math.max(0, question.operandB - 1);
-    const previousSum = question.operandA + previousAddend;
+    const stepWord = getStepWord(question.operandB);
+    const countingPath = createCountingPath(question.operandA, question.operandB);
 
     if (hintLevel <= 1) {
         return {
             hintLevel: 1,
             scaffoldType: 'nearby-fact',
-            text: `Think about ${question.operandA} + ${previousAddend}.`
+            text: `Start with ${question.operandA}. Count ${stepWord} more.<br>${countingPath}`
         };
     }
 
@@ -91,14 +91,14 @@ export function createAdditionHint(question, hintLevel) {
         return {
             hintLevel: 2,
             scaffoldType: 'one-more',
-            text: `${question.operandA} + ${previousAddend} = ${previousSum}. So ${question.operandA} + ${question.operandB} is one more.`
+            text: `Start with ${question.operandA}. Count ${stepWord} more.<br>${countingPath}`
         };
     }
 
     return {
         hintLevel: 3,
         scaffoldType: 'number-line',
-        text: `${question.operandA} ... count ${question.operandB} steps forward.`
+        text: `Start with ${question.operandA}. Count ${stepWord} more.<br>${countingPath}`
     };
 }
 
@@ -199,7 +199,7 @@ export function createKumonQuizGame(config = {}) {
             state.supportStateByQuestion[question.questionId] = {
                 hintLevel: 0,
                 scaffoldType: 'supportive-retry',
-                text: 'Try the same number bridge again.'
+                text: 'Try again.'
             };
             state.supportState = state.supportStateByQuestion[question.questionId];
         }
@@ -324,6 +324,14 @@ export function createKumonSessionSummary(state, resultSummary = null) {
 
 export function formatQuestion(question) {
     return `${question.operandA} ${question.operation} ${question.operandB}`;
+}
+
+export function renderNumberBridgeSupportText(state, learnerName = 'Learner') {
+    if (state.lastResult === 'mistake' && state.supportState?.text) {
+        return `<p>&#127793; You got close, ${normalizeWorksheetLearnerName(learnerName)}.</p><p class="mt-3">${state.supportState.text}</p>`;
+    }
+
+    return state.supportState?.text || 'SIRAASH can show a clue after a try.';
 }
 
 function createInitialState(config, roundNumber = 1, learnerName = 'Learner') {
@@ -468,6 +476,28 @@ function getPageIndex(state) {
 
 function getRowIndex(state, question) {
     return Math.max(0, question.questionIndex - state.currentQuestionIndex);
+}
+
+function getStepWord(stepCount) {
+    const words = {
+        0: 'zero',
+        1: 'one',
+        2: 'two',
+        3: 'three',
+        4: 'four',
+        5: 'five',
+        6: 'six',
+        7: 'seven',
+        8: 'eight',
+        9: 'nine',
+        10: 'ten'
+    };
+
+    return words[stepCount] || String(stepCount);
+}
+
+function createCountingPath(start, stepCount) {
+    return Array.from({ length: stepCount + 1 }, (_, index) => start + index).join(' → ');
 }
 
 function buildWrongAnswerReview(wrongAnswers = []) {
@@ -617,11 +647,7 @@ function mountKumonQuiz() {
     }
 
     function renderSupportText(state) {
-        if (state.lastResult === 'mistake' && state.supportState?.text) {
-            return `<p>&#127793; You got close, ${learnerName}.</p><p class="mt-3">${state.supportState.text}</p>`;
-        }
-
-        return state.supportState?.text || 'SIRAASH can show a clue after a try.';
+        return renderNumberBridgeSupportText(state, learnerName);
     }
 
     function submitCurrentAnswer(questionId, answer, source = 'auto') {

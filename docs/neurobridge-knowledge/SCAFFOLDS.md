@@ -176,6 +176,13 @@ Use this file to document scaffold types, when they help, when they should fade,
   * Scaffold should be faded once fact families become familiar.
 * Notes:
 
+  Number Bridges v1 uses count-forward addition scaffolds rather than near-fact shortcuts. For `a + b = ?`, show:
+
+  * Start with `a`. Count `b` more.
+  * Counting path from `a` through the answer, for example `3 → 4 → 5`.
+
+  Hints should not introduce unrelated equations such as `+ 0` unless that strategy is explicitly designed and tested for a future scaffold level.
+
   Example Target:
 
   7 + 5 = ?
@@ -229,6 +236,5 @@ Use this file to document scaffold types, when they help, when they should fade,
   * Working Memory
   * Rapid Retrieval
   * Mathematical Reasoning
-
 
 
