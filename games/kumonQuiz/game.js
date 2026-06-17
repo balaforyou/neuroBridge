@@ -4,9 +4,11 @@ import {
     getWorksheetSupportPrompts,
     normalizeWorksheetLearnerName,
 } from '../../js/worksheetTemplate.js';
+import { playSuccessClap } from '../../js/audio.js';
 
 export const KUMON_QUIZ_ACTIVITY_ID = 'kumonQuiz';
 export const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
+export const NUMBER_BRIDGE_PAGE_TURN_MS = 320;
 
 export const DEFAULT_KUMON_CONFIG = {
     operation: '+',
@@ -321,6 +323,34 @@ export function createKumonSessionSummary(state, resultSummary = null) {
     };
 }
 
+export function getNumberBridgeTransitionDurationMs(prefersReducedMotion = false) {
+    return prefersReducedMotion ? 0 : NUMBER_BRIDGE_PAGE_TURN_MS;
+}
+
+export function shouldPlayNumberBridgeCompletionClap(state = {}) {
+    return state.completed === true && state.completionCelebrationPlayed !== true;
+}
+
+export function markNumberBridgeCompletionClapPlayed(state = {}) {
+    return {
+        ...state,
+        completionCelebrationPlayed: true
+    };
+}
+
+export function playNumberBridgeCompletionClap(playClap = playSuccessClap) {
+    try {
+        if (typeof playClap === 'function') {
+            playClap();
+            return true;
+        }
+    } catch (error) {
+        return false;
+    }
+
+    return false;
+}
+
 export function formatQuestion(question) {
     return `${question.operandA} ${question.operation} ${question.operandB}`;
 }
@@ -336,7 +366,7 @@ export function renderNumberBridgeSupportText(state, learnerName = 'Learner') {
 export function renderNumberBridgeResultMarkup(summary, learnerName = 'Learner') {
     const normalizedLearnerName = normalizeWorksheetLearnerName(learnerName);
     const motivationalLine = summary.accuracy >= 80
-        ? '<p class="text-sm font-black text-emerald-800">&#128079;&#128079;&#128079; Strong work!</p>'
+        ? '<p data-testid="number-bridges-clap-visual" class="text-sm font-black text-emerald-800">&#128079;&#128079;&#128079; Strong work!</p>'
         : '';
     const reviewContent = summary.wrongAnswers.length
         ? `<ul data-testid="number-bridges-wrong-list" class="mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">${summary.wrongAnswers.map(answer => `
@@ -598,12 +628,14 @@ function mountKumonQuiz() {
     let learnerName = 'Learner';
     let advanceTimer = null;
     let selectedQuestionId = null;
+    let completionCelebrationPlayed = false;
 
     window.addEventListener('message', (event) => {
         if (event.data?.type !== GAME_EVENTS.INIT) return;
 
         learnerName = normalizeWorksheetLearnerName(event.data.learnerName);
         game = createKumonQuizGame({ ...event.data.payload, learnerName });
+        completionCelebrationPlayed = false;
         render();
     });
 
@@ -727,6 +759,7 @@ function mountKumonQuiz() {
             selectedQuestionId = null;
             if (game.getState().successPendingAdvance) {
                 if (advanceTimer) clearTimeout(advanceTimer);
+                startPageTurn();
                 advanceTimer = setTimeout(() => {
                     game.advanceAfterCorrect();
                     const state = game.getState();
@@ -734,7 +767,7 @@ function mountKumonQuiz() {
                         submitSession(state);
                     }
                     render();
-                }, 800);
+                }, getNumberBridgeTransitionDurationMs(prefersReducedMotion()));
             }
         } else if (outcome.result === 'mistake') {
             selectedQuestionId = questionId;
@@ -760,9 +793,11 @@ function mountKumonQuiz() {
         });
 
         root.innerHTML = renderNumberBridgeResultMarkup(summary, learnerName);
+        playCompletionCelebrationOnce(state);
 
         root.querySelector('[data-testid="number-bridges-next-round-button"]').addEventListener('click', () => {
             game.resetRound();
+            completionCelebrationPlayed = false;
             render();
         });
         root.querySelector('[data-testid="number-bridges-home-button"]').addEventListener('click', () => {
@@ -776,6 +811,27 @@ function mountKumonQuiz() {
             type: GAME_EVENTS.COMPLETE,
             payload: createKumonSessionSummary(state, summary)
         }, '*');
+    }
+
+    function startPageTurn() {
+        const layout = root.querySelector('[data-testid="number-bridges-layout"]');
+        if (!layout || prefersReducedMotion()) return;
+        layout.classList.add('number-bridges-page-turn');
+    }
+
+    function prefersReducedMotion() {
+        return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+    }
+
+    function playCompletionCelebrationOnce(state) {
+        const celebrationState = {
+            completed: state.completed,
+            completionCelebrationPlayed
+        };
+        if (!shouldPlayNumberBridgeCompletionClap(celebrationState)) return;
+
+        playNumberBridgeCompletionClap();
+        completionCelebrationPlayed = markNumberBridgeCompletionClapPlayed(celebrationState).completionCelebrationPlayed;
     }
 
     render();

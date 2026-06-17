@@ -15,6 +15,12 @@ body {
     animation: number-bridge-pop 520ms ease-out both;
 }
 
+.number-bridges-page-turn {
+    animation: number-bridges-page-turn 320ms ease-in-out both;
+    transform-origin: left center;
+    will-change: opacity, transform;
+}
+
 @keyframes number-bridge-pop {
     0% {
         opacity: 0;
@@ -24,5 +30,34 @@ body {
     100% {
         opacity: 1;
         transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes number-bridges-page-turn {
+    0% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        filter: brightness(1);
+    }
+
+    45% {
+        opacity: 0.86;
+        transform: translateX(-10px) scale(0.995);
+        filter: brightness(0.98);
+    }
+
+    100% {
+        opacity: 0.18;
+        transform: translateX(-22px) scale(0.99);
+        filter: brightness(1.04);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .number-bridge-success,
+    .number-bridges-page-turn {
+        animation-duration: 1ms;
+        animation-iteration-count: 1;
+        transform: none;
     }
 }

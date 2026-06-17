@@ -4,9 +4,14 @@ import {
     createKumonSessionSummary,
     DEFAULT_KUMON_CONFIG,
     generateKumonQuestions,
+    getNumberBridgeTransitionDurationMs,
+    markNumberBridgeCompletionClapPlayed,
     normalizeKumonConfig,
+    NUMBER_BRIDGE_PAGE_TURN_MS,
+    playNumberBridgeCompletionClap,
     renderNumberBridgeResultMarkup,
-    renderNumberBridgeSupportText
+    renderNumberBridgeSupportText,
+    shouldPlayNumberBridgeCompletionClap
 } from '../game.js';
 
 function assert(condition, message) {
@@ -200,6 +205,33 @@ function testFiveRowGroupAdvancesAfterAllVisibleRowsCorrect() {
     console.log('Five-row group advance test passed');
 }
 
+function testPageTransitionTimingDoesNotChangeScoring() {
+    const game = createKumonQuizGame({ questionCount: 10, questionsPerScreen: 5 });
+    const visibleQuestions = game.getVisibleQuestions();
+
+    visibleQuestions.forEach((question, rowIndex) => {
+        game.validateAnswer(question.expectedAnswer, {
+            questionId: question.questionId,
+            reactionTimeMs: 100 + rowIndex,
+            timestamp: `2026-06-16T00:00:0${rowIndex}.000Z`,
+            validationSource: 'enter'
+        });
+    });
+
+    const beforeAdvance = game.getState();
+    assert(beforeAdvance.successPendingAdvance === true, 'Completed group should wait for transition before state advance');
+    assert(beforeAdvance.correctCount === 5, 'Transition wait should not change scoring');
+    assert(getNumberBridgeTransitionDurationMs(false) === NUMBER_BRIDGE_PAGE_TURN_MS, 'Default transition should use calm page-turn duration');
+    assert(getNumberBridgeTransitionDurationMs(true) === 0, 'Reduced motion should skip page-turn delay');
+
+    const advance = game.advanceAfterCorrect();
+    const afterAdvance = game.getState();
+    assert(advance.result === 'advanced', 'Transition-complete advance should still move to next group');
+    assert(afterAdvance.currentQuestionIndex === 5, 'Next group should start at index 5 after transition');
+    assert(afterAdvance.correctCount === 5, 'Advance should not change scoring');
+    console.log('Page transition timing scoring test passed');
+}
+
 function testCompletionProducesResultState() {
     const game = createKumonQuizGame({ questionCount: 5, questionsPerScreen: 5 });
     const visibleQuestions = game.getVisibleQuestions();
@@ -387,6 +419,7 @@ function testResultMarkupCompactSummaryAndReview() {
     assert(markup.includes('data-testid="number-bridges-results"'), 'Result markup should include result container');
     assert(markup.includes('Great work, Adarsh!'), 'Result markup should include learner-aware completion');
     assert(markup.includes('You finished your Number Bridges.'), 'Result markup should include completion message');
+    assert(markup.includes('data-testid="number-bridges-clap-visual"'), 'Result markup should include gentle clap visual marker');
     assert(markup.includes('Questions: 10'), 'Result markup should include questions total');
     assert(markup.includes('Correct / Total: 10 / 10'), 'Result markup should include correct / total');
     assert(!markup.includes('data-testid="number-bridges-score"'), 'Result markup should not duplicate correct score metric');
@@ -400,6 +433,22 @@ function testResultMarkupCompactSummaryAndReview() {
     assert(markup.includes('Correct: 4'), 'Review item should show correct answer');
     assert(!markup.includes('3 + 1 = 5'), 'Review item should not render a misleading equation');
     console.log('Result markup compact summary and review test passed');
+}
+
+function testCompletionClapGuardOnlyPlaysOnce() {
+    let playCount = 0;
+    const completedState = { completed: true, completionCelebrationPlayed: false };
+
+    assert(shouldPlayNumberBridgeCompletionClap(completedState) === true, 'Completed state should allow one clap');
+    assert(playNumberBridgeCompletionClap(() => { playCount += 1; }) === true, 'Playable clap helper should report success');
+
+    const playedState = markNumberBridgeCompletionClapPlayed(completedState);
+    assert(playedState.completionCelebrationPlayed === true, 'Clap guard should mark celebration as played');
+    assert(shouldPlayNumberBridgeCompletionClap(playedState) === false, 'Played completion should not clap again');
+    assert(shouldPlayNumberBridgeCompletionClap({ completed: false, completionCelebrationPlayed: false }) === false, 'Incomplete state should not clap');
+    playNumberBridgeCompletionClap(() => { throw new Error('blocked audio'); });
+    assert(playCount === 1, 'Blocked later audio should not affect prior one-shot count');
+    console.log('Completion clap guard test passed');
 }
 
 function testResultMarkupAllCorrectMessage() {
@@ -539,6 +588,7 @@ function runAllTests() {
     testDuplicateEnterBlurDoesNotDoubleRecordAttempt();
     testFiveRowModeLocksCorrectRowsAndKeepsAnswers();
     testFiveRowGroupAdvancesAfterAllVisibleRowsCorrect();
+    testPageTransitionTimingDoesNotChangeScoring();
     testCompletionProducesResultState();
     testSessionSummaryStoresScoreTotalAndAccuracy();
     testWrongAttemptsDoNotReduceResolvedScore();
@@ -548,6 +598,7 @@ function runAllTests() {
     testResultSummaryHintsUsed();
     testResultMarkupCompactSummaryAndReview();
     testResultMarkupAllCorrectMessage();
+    testCompletionClapGuardOnlyPlaysOnce();
     testTrialAnalyticsFields();
     testHintText();
     testWrongAnswerHintContractForRangeBridges();

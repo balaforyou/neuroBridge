@@ -135,8 +135,11 @@ Uses the shared SIRAASH feedback standard.
 Rules:
 
 - One success event should produce one success marker.
-- Success uses one tick, learner-aware praise, and an activity-specific message when a completion or milestone is shown.
+- Routine correct answers use a local tick only.
+- Page or group completion may use a calm page transition before the next group appears.
+- Activity completion may use learner-aware praise, an activity-specific message, and a one-time gentle celebration.
 - Routine correct answers should not leave overlapping global success cards.
+- Routine correct answers should not play sound.
 - Mistake feedback should remain supportive and non-harsh.
 - Mistake wording should avoid `wrong`, `failed`, and other harsh labels.
 - Mistake feedback should guide the learner toward correction.

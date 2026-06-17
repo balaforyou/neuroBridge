@@ -423,7 +423,10 @@ test.describe('Number Bridges viewport smoke', () => {
             await answerNumberBridgeRow(page, rowIndex, answer);
         }
 
+        await expect(page.getByTestId('number-bridges-layout')).toHaveClass(/number-bridges-page-turn/);
         await expect(page.getByTestId('number-bridges-question')).toHaveText('6 + 1 =', { timeout: 1600 });
+        await expect(page.getByText('1 + 1 =')).toHaveCount(0);
+        await expect(page.getByTestId('number-bridges-answer-input')).toBeFocused();
         await expectNoPageScrollbar(page);
     });
 
@@ -481,9 +484,11 @@ test.describe('Number Bridges viewport smoke', () => {
             }
 
             await expect(page.getByTestId('number-bridges-results')).toBeVisible();
+            await expect(page.getByTestId('number-bridges-results')).toHaveCount(1);
             await expect(page.getByTestId('siraash-completion-feedback')).toBeVisible();
             await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
             await expect(page.getByTestId('siraash-completion-message')).toHaveText('You finished your Number Bridges.');
+            await expect(page.getByTestId('number-bridges-clap-visual')).toContainText('Strong work!');
             await expect(page.getByTestId('number-bridges-metrics')).toBeVisible();
             await expect(page.getByTestId('number-bridges-total')).toHaveText('Questions: 10');
             await expect(page.getByTestId('number-bridges-correct-total')).toHaveText('Correct / Total: 10 / 10');
