@@ -24,6 +24,15 @@ async function expectNoPageScrollbar(page, { vertical = false } = {}) {
     }
 }
 
+async function expectElementFullyInViewport(page, testId) {
+    const box = await page.getByTestId(testId).boundingBox();
+    expect(box, `${testId} should have a bounding box`).not.toBeNull();
+    expect(box.x, `${testId} left edge`).toBeGreaterThanOrEqual(0);
+    expect(box.y, `${testId} top edge`).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width, `${testId} right edge`).toBeLessThanOrEqual(page.viewportSize().width);
+    expect(box.y + box.height, `${testId} bottom edge`).toBeLessThanOrEqual(page.viewportSize().height);
+}
+
 async function initializeActivity(page) {
     await page.evaluate((learnerName) => {
         window.postMessage({
@@ -285,13 +294,17 @@ test.describe('Number Bridges viewport smoke', () => {
             await expect(page.getByTestId('kumon-quiz')).toBeVisible();
             await expect(page.getByTestId('number-bridges-main-task')).toBeVisible();
             await expect(page.getByTestId('number-bridges-row-list')).toBeVisible();
+            await expect(page.locator('[data-testid^="number-bridges-row-"]:not([data-testid="number-bridges-row-list"])')).toHaveCount(5);
             await expect(page.locator('[data-testid="number-bridges-row-0"]')).toBeVisible();
             await expect(page.locator('[data-testid="number-bridges-row-4"]')).toBeVisible();
+            await expect(page.getByText('Number Bridge', { exact: true })).toBeHidden();
             await expect(page.getByTestId('number-bridges-question')).toHaveText('1 + 1 =');
             await expect(page.getByTestId('number-bridges-answer-input')).toBeVisible();
             await expect(page.getByTestId('number-bridges-check-button')).toBeHidden();
             await expect(page.getByTestId('number-bridges-support-panel')).toBeVisible();
             await expect(page.getByTestId('number-bridges-local-tick')).toBeHidden();
+            await expectElementFullyInViewport(page, 'number-bridges-row-4');
+            await expectElementFullyInViewport(page, 'number-bridges-support-panel');
 
             const rowAlignment = await page.evaluate(() => {
                 const row = document.querySelector('[data-testid="number-bridges-row-0"]');

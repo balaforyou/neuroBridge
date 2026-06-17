@@ -549,18 +549,17 @@ function mountKumonQuiz() {
         }
 
         root.innerHTML = `
-            <div class="grid h-full min-h-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_18rem]" data-testid="number-bridges-layout">
-                <section data-testid="number-bridges-main-task" class="flex min-h-0 flex-col justify-start rounded-2xl border-2 border-sky-200 bg-white p-3 pt-6 text-center sm:p-4 sm:pt-8">
-                    <p class="text-sm font-black uppercase tracking-[0.14em] text-sky-800">Number Bridge</p>
-                    <div data-testid="number-bridges-row-list" class="mt-4 flex flex-col gap-2">
+            <div class="grid h-full min-h-0 grid-cols-1 gap-2 lg:grid-cols-[minmax(0,1fr)_17rem]" data-testid="number-bridges-layout">
+                <section data-testid="number-bridges-main-task" class="flex min-h-0 flex-col justify-start rounded-2xl border-2 border-sky-200 bg-white p-2 text-center sm:p-3">
+                    <div data-testid="number-bridges-row-list" class="flex flex-col gap-1.5">
                         ${visibleQuestions.map((question, rowIndex) => renderQuestionRow(question, rowIndex, state)).join('')}
                     </div>
                     <section data-testid="number-bridges-feedback" class="hidden"></section>
                 </section>
-                <aside data-testid="number-bridges-support-panel" class="rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 text-slate-950">
-                    <button data-testid="number-bridges-help-button" type="button" class="min-h-[44px] rounded-full border-2 border-emerald-200 bg-white px-4 py-2 text-sm font-black text-emerald-900 shadow-sm">${getWorksheetSupportPrompts(learnerName).initial}</button>
-                    <div data-testid="number-bridges-support-text" class="mt-4 text-sm font-bold text-amber-950">${renderSupportText(state)}</div>
-                    ${state.supportState?.hintLevel === 3 ? '<div data-testid="number-bridges-number-line" class="mt-3 rounded-xl border border-amber-300 bg-white p-2 text-xs font-black">0 -- 1 -- 2 -- 3 -- 4 -- 5 -- 6 -- 7 -- 8 -- 9 -- 10 -- 11 -- 12</div>' : ''}
+                <aside data-testid="number-bridges-support-panel" class="rounded-2xl border-2 border-amber-200 bg-amber-50 p-3 text-slate-950">
+                    <button data-testid="number-bridges-help-button" type="button" class="min-h-[44px] rounded-full border-2 border-emerald-200 bg-white px-3 py-2 text-sm font-black text-emerald-900 shadow-sm">${getWorksheetSupportPrompts(learnerName).initial}</button>
+                    <div data-testid="number-bridges-support-text" class="mt-3 text-sm font-bold text-amber-950">${renderSupportText(state)}</div>
+                    ${state.supportState?.hintLevel === 3 ? '<div data-testid="number-bridges-number-line" class="mt-2 rounded-xl border border-amber-300 bg-white p-2 text-xs font-black">0 -- 1 -- 2 -- 3 -- 4 -- 5 -- 6 -- 7 -- 8 -- 9 -- 10 -- 11 -- 12</div>' : ''}
                 </aside>
             </div>
         `;
@@ -608,7 +607,7 @@ function mountKumonQuiz() {
                 : 'border-sky-200 bg-white text-slate-950';
 
         return `
-            <div data-testid="number-bridges-row-${rowIndex}" class="grid min-h-[64px] grid-cols-[2rem_auto_6rem_2.5rem] items-center justify-center gap-2 rounded-2xl border-2 ${rowClass} px-3 py-2">
+            <div data-testid="number-bridges-row-${rowIndex}" class="grid min-h-[60px] grid-cols-[2rem_auto_6rem_2.5rem] items-center justify-center gap-2 rounded-2xl border-2 ${rowClass} px-3 py-1.5">
                 <div class="text-base font-black text-sky-900">${question.questionIndex + 1})</div>
                 <label data-testid="${questionTestId}" for="answer-input-${rowIndex}" class="text-left text-3xl font-black text-[#102a43] sm:text-4xl">${formatQuestion(question)} =</label>
                 <input id="answer-input-${rowIndex}" data-testid="${inputTestId}" data-question-id="${questionId}" inputmode="numeric" type="number" value="${answerValue}" ${isCorrect ? 'disabled' : ''} class="min-h-[52px] w-full rounded-2xl border-4 ${inputClass} px-3 text-center text-3xl font-black focus:border-emerald-400 focus:outline-none disabled:opacity-100" autocomplete="off">

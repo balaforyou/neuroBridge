@@ -69,6 +69,19 @@ Rules:
 - Do not show learner-facing `Back to Dashboard`.
 - Do not show `Activity: <name>` outside the activity shell.
 - Home, SIRAASH identity, activity label, and worksheet title must live inside the activity shell.
+- Activity names displayed in the SIRAASH Activity Shell should not be repeated inside worksheet bodies unless the title serves a separate instructional purpose.
+
+Remove repeated activity names from worksheet bodies:
+
+- `NUMBER BRIDGE`
+- `MATCHING WORKSHEET`
+- `ATTRIBUTE MATCHING`
+
+Keep instructional worksheet prompts:
+
+- `LOOK AT COLOR`
+- `LOOK AT SHAPE`
+- `LOOK AT SIZE`
 
 ### B. Main Task Region
 
