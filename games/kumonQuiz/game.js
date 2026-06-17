@@ -339,7 +339,7 @@ export function renderNumberBridgeResultMarkup(summary, learnerName = 'Learner')
         ? '<p class="text-sm font-black text-emerald-800">&#128079;&#128079;&#128079; Strong work!</p>'
         : '';
     const reviewContent = summary.wrongAnswers.length
-        ? `<ul data-testid="number-bridges-wrong-list" class="mt-2 min-h-0 space-y-1.5 overflow-y-auto pr-1">${summary.wrongAnswers.map(answer => `
+        ? `<ul data-testid="number-bridges-wrong-list" class="mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">${summary.wrongAnswers.map(answer => `
                 <li data-testid="number-bridges-review-item" class="rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm font-bold">
                     <div class="text-base font-black text-slate-950">${answer.question}</div>
                     <div class="text-amber-900">Attempted: ${answer.attemptedAnswers.map(formatLearnerAnswer).join(', ')}</div>
@@ -349,38 +349,40 @@ export function renderNumberBridgeResultMarkup(summary, learnerName = 'Learner')
         : '<p data-testid="number-bridges-all-correct" class="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-base font-black text-emerald-800">All answers correct!</p>';
 
     return `
-        <section data-testid="number-bridges-results" class="flex h-full min-h-0 flex-col items-center gap-2 overflow-hidden rounded-2xl border-2 border-emerald-200 bg-white p-3 text-center">
-            <div data-testid="siraash-completion-feedback" class="w-full max-w-2xl shrink-0 rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 text-slate-950 shadow-sm">
-                <div class="flex items-center justify-center gap-3">
-                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-3xl font-black text-white" aria-hidden="true">&#10003;</div>
-                    <div class="text-left">
-                        <p data-testid="siraash-completion-title" class="text-lg font-black leading-tight sm:text-xl">Great work, ${normalizedLearnerName}! &#127793;</p>
-                        <p data-testid="siraash-completion-message" class="text-sm font-bold text-emerald-900 sm:text-base">You finished your Number Bridges.</p>
-                        ${motivationalLine}
+        <section data-testid="number-bridges-results" class="grid h-full min-h-0 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] gap-2 overflow-hidden rounded-2xl border-2 border-emerald-200 bg-white p-3 text-center md:grid-cols-[minmax(0,1fr)_minmax(18rem,0.86fr)] md:grid-rows-1">
+            <div data-testid="number-bridges-result-summary" class="flex min-h-0 flex-col gap-2 md:h-full">
+                <div data-testid="siraash-completion-feedback" class="w-full shrink-0 rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 text-slate-950 shadow-sm">
+                    <div class="flex items-center justify-center gap-3">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-3xl font-black text-white" aria-hidden="true">&#10003;</div>
+                        <div class="text-left">
+                            <p data-testid="siraash-completion-title" class="text-lg font-black leading-tight sm:text-xl">Great work, ${normalizedLearnerName}! &#127793;</p>
+                            <p data-testid="siraash-completion-message" class="text-sm font-bold text-emerald-900 sm:text-base">You finished your Number Bridges.</p>
+                            ${motivationalLine}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div data-testid="number-bridges-metrics" class="w-full max-w-2xl shrink-0 rounded-2xl border-2 border-sky-200 bg-sky-50 p-3">
-                <div class="grid grid-cols-2 gap-2 text-left text-sm font-black text-slate-950 sm:grid-cols-3">
-                    <p data-testid="number-bridges-total">Questions: ${summary.total}</p>
-                    <p data-testid="number-bridges-correct-total">Correct / Total: ${summary.correct} / ${summary.total}</p>
-                    <p data-testid="number-bridges-accuracy">Accuracy: ${summary.accuracy}%</p>
-                    <p data-testid="number-bridges-time-taken">Time Taken: ${summary.timeTakenSeconds} sec</p>
-                    <p data-testid="number-bridges-average-time">Average Time: ${summary.averageTimeSeconds} sec/question</p>
-                    <p data-testid="number-bridges-hints-used">Hints Used: ${summary.hintsUsed}</p>
-                    <p data-testid="number-bridges-mistakes-corrected">Mistakes Corrected: ${summary.mistakeCount}</p>
+                <div data-testid="number-bridges-metrics" class="w-full shrink-0 rounded-2xl border-2 border-sky-200 bg-sky-50 p-3">
+                    <div class="grid grid-cols-2 gap-2 text-left text-sm font-black text-slate-950 lg:grid-cols-3">
+                        <p data-testid="number-bridges-total">Questions: ${summary.total}</p>
+                        <p data-testid="number-bridges-correct-total">Correct / Total: ${summary.correct} / ${summary.total}</p>
+                        <p data-testid="number-bridges-accuracy">Accuracy: ${summary.accuracy}%</p>
+                        <p data-testid="number-bridges-time-taken">Time Taken: ${summary.timeTakenSeconds} sec</p>
+                        <p data-testid="number-bridges-average-time">Average Time: ${summary.averageTimeSeconds} sec/question</p>
+                        <p data-testid="number-bridges-hints-used">Hints Used: ${summary.hintsUsed}</p>
+                        <p data-testid="number-bridges-mistakes-corrected">Mistakes Corrected: ${summary.mistakeCount}</p>
+                    </div>
+                </div>
+
+                <div data-testid="number-bridges-actions" class="flex shrink-0 flex-wrap justify-center gap-3 md:mt-auto">
+                    <button data-testid="number-bridges-next-round-button" type="button" class="min-h-[44px] rounded-full bg-emerald-700 px-5 py-2 text-base font-black text-white shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-300">Try Again</button>
+                    <button data-testid="number-bridges-home-button" type="button" class="min-h-[44px] rounded-full border-2 border-emerald-200 bg-white px-5 py-2 text-base font-black text-emerald-900">Home</button>
                 </div>
             </div>
 
-            <div data-testid="number-bridges-review" class="flex min-h-0 w-full max-w-2xl flex-1 flex-col rounded-2xl border-2 border-amber-100 bg-[#fffaf0] p-3 text-left">
+            <div data-testid="number-bridges-review" class="flex min-h-0 w-full flex-col rounded-2xl border-2 border-amber-100 bg-[#fffaf0] p-3 text-left">
                 <h3 class="shrink-0 text-base font-black text-slate-950">Review</h3>
                 ${reviewContent}
-            </div>
-
-            <div data-testid="number-bridges-actions" class="flex shrink-0 flex-wrap justify-center gap-3">
-                <button data-testid="number-bridges-next-round-button" type="button" class="min-h-[44px] rounded-full bg-emerald-700 px-5 py-2 text-base font-black text-white shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-300">Try Again</button>
-                <button data-testid="number-bridges-home-button" type="button" class="min-h-[44px] rounded-full border-2 border-emerald-200 bg-white px-5 py-2 text-base font-black text-emerald-900">Home</button>
             </div>
         </section>
     `;

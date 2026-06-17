@@ -2,6 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 const DESKTOP = { name: 'desktop 1366x768', width: 1366, height: 768 };
 const TABLET_LANDSCAPE = { name: 'tablet landscape 1024x768', width: 1024, height: 768 };
+const MOBILE = { name: 'mobile 390x844', width: 390, height: 844 };
 const TEST_VIEWPORTS = [DESKTOP, TABLET_LANDSCAPE];
 const LEARNER_NAME = 'Adarsh';
 
@@ -42,6 +43,32 @@ async function expectResultPanelDoesNotScroll(page) {
 
     expect(overflow.overflowY, JSON.stringify(overflow)).toBe('hidden');
     expect(overflow.scrollHeight, JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.clientHeight + 1);
+}
+
+async function expectNumberBridgeResultColumns(page) {
+    const summary = await page.getByTestId('number-bridges-result-summary').boundingBox();
+    const review = await page.getByTestId('number-bridges-review').boundingBox();
+    const actions = await page.getByTestId('number-bridges-actions').boundingBox();
+
+    expect(summary, 'result summary should have a bounding box').not.toBeNull();
+    expect(review, 'result review should have a bounding box').not.toBeNull();
+    expect(actions, 'result actions should have a bounding box').not.toBeNull();
+    expect(summary.x, 'summary should be in the left column').toBeLessThan(review.x);
+    expect(summary.x + summary.width, 'summary should not overlap review column').toBeLessThanOrEqual(review.x);
+    expect(actions.y + actions.height, 'actions should stay visible').toBeLessThanOrEqual(page.viewportSize().height);
+}
+
+async function expectNumberBridgeResultStacks(page) {
+    const summary = await page.getByTestId('number-bridges-result-summary').boundingBox();
+    const review = await page.getByTestId('number-bridges-review').boundingBox();
+    const actions = await page.getByTestId('number-bridges-actions').boundingBox();
+
+    expect(summary, 'result summary should have a bounding box').not.toBeNull();
+    expect(review, 'result review should have a bounding box').not.toBeNull();
+    expect(actions, 'result actions should have a bounding box').not.toBeNull();
+    expect(review.y, 'review should stack below summary on mobile').toBeGreaterThan(summary.y + summary.height - 1);
+    expect(Math.abs(review.x - summary.x), 'stacked panels should align horizontally').toBeLessThanOrEqual(2);
+    expect(actions.y + actions.height, 'actions should stay visible on mobile').toBeLessThanOrEqual(page.viewportSize().height);
 }
 
 async function initializeActivity(page) {
@@ -473,10 +500,34 @@ test.describe('Number Bridges viewport smoke', () => {
             await expect(page.getByTestId('number-bridges-review-item')).not.toContainText('1 + 1 = 3');
             await expect(page.getByTestId('number-bridges-next-round-button')).toBeVisible();
             await expect(page.getByTestId('number-bridges-home-button')).toBeVisible();
+            await expectNumberBridgeResultColumns(page);
             await expectResultPanelDoesNotScroll(page);
             await expectNoPageScrollbar(page);
         });
     }
+
+    test('stacks result summary and review on mobile', async ({ page }) => {
+        await page.setViewportSize({ width: MOBILE.width, height: MOBILE.height });
+        await page.goto('/games/kumonQuiz/');
+        await initializeKumonQuiz(page);
+
+        await page.getByTestId('number-bridges-answer-input').fill('3');
+        await page.getByTestId('number-bridges-answer-input').press('Enter');
+
+        for (const [rowIndex, answer] of [[0, 2], [1, 3], [2, 4], [3, 5], [4, 6]]) {
+            await answerNumberBridgeRow(page, rowIndex, answer);
+        }
+
+        await expect(page.getByTestId('number-bridges-results')).toBeVisible();
+        await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
+        await expect(page.getByTestId('number-bridges-metrics')).toBeVisible();
+        await expect(page.getByTestId('number-bridges-review')).toBeVisible();
+        await expect(page.getByTestId('number-bridges-next-round-button')).toBeVisible();
+        await expect(page.getByTestId('number-bridges-home-button')).toBeVisible();
+        await expectNumberBridgeResultStacks(page);
+        await expectResultPanelDoesNotScroll(page);
+        await expectNoPageScrollbar(page);
+    });
 
     for (const viewport of TEST_VIEWPORTS) {
         test(`shows count-forward +1 scaffold at ${viewport.name}`, async ({ page }) => {
