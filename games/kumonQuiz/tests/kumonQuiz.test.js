@@ -5,6 +5,7 @@ import {
     DEFAULT_KUMON_CONFIG,
     generateKumonQuestions,
     normalizeKumonConfig,
+    renderNumberBridgeResultMarkup,
     renderNumberBridgeSupportText
 } from '../game.js';
 
@@ -367,6 +368,57 @@ function testResultSummaryHintsUsed() {
     console.log('Result summary hints used test passed');
 }
 
+function testResultMarkupCompactSummaryAndReview() {
+    const markup = renderNumberBridgeResultMarkup({
+        correct: 10,
+        total: 10,
+        accuracy: 100,
+        timeTakenSeconds: 294,
+        averageTimeSeconds: 29.4,
+        hintsUsed: 1,
+        mistakeCount: 1,
+        wrongAnswers: [{
+            question: '3 + 1',
+            attemptedAnswers: [5],
+            correctAnswer: 4
+        }]
+    }, 'Adarsh');
+
+    assert(markup.includes('data-testid="number-bridges-results"'), 'Result markup should include result container');
+    assert(markup.includes('Great work, Adarsh!'), 'Result markup should include learner-aware completion');
+    assert(markup.includes('You finished your Number Bridges.'), 'Result markup should include completion message');
+    assert(markup.includes('Questions: 10'), 'Result markup should include questions total');
+    assert(markup.includes('Correct / Total: 10 / 10'), 'Result markup should include correct / total');
+    assert(!markup.includes('data-testid="number-bridges-score"'), 'Result markup should not duplicate correct score metric');
+    assert(markup.includes('Accuracy: 100%'), 'Result markup should include accuracy');
+    assert(markup.includes('Time Taken: 294 sec'), 'Result markup should include time taken');
+    assert(markup.includes('Average Time: 29.4 sec/question'), 'Result markup should include average time');
+    assert(markup.includes('Hints Used: 1'), 'Result markup should include hints used');
+    assert(markup.includes('Mistakes Corrected: 1'), 'Result markup should include mistakes corrected');
+    assert(markup.includes('3 + 1'), 'Review item should show question');
+    assert(markup.includes('Attempted: 5'), 'Review item should show attempted answer');
+    assert(markup.includes('Correct: 4'), 'Review item should show correct answer');
+    assert(!markup.includes('3 + 1 = 5'), 'Review item should not render a misleading equation');
+    console.log('Result markup compact summary and review test passed');
+}
+
+function testResultMarkupAllCorrectMessage() {
+    const markup = renderNumberBridgeResultMarkup({
+        correct: 5,
+        total: 5,
+        accuracy: 100,
+        timeTakenSeconds: 40,
+        averageTimeSeconds: 8,
+        hintsUsed: 0,
+        mistakeCount: 0,
+        wrongAnswers: []
+    }, 'Adarsh');
+
+    assert(markup.includes('All answers correct!'), 'All-correct result should show all-correct review message');
+    assert(!markup.includes('data-testid="number-bridges-wrong-list"'), 'All-correct result should not render wrong list');
+    console.log('Result markup all-correct test passed');
+}
+
 function testTrialAnalyticsFields() {
     const game = createKumonQuizGame({
         questionCount: 5,
@@ -494,6 +546,8 @@ function runAllTests() {
     testHintDisabled();
     testResultSummary();
     testResultSummaryHintsUsed();
+    testResultMarkupCompactSummaryAndReview();
+    testResultMarkupAllCorrectMessage();
     testTrialAnalyticsFields();
     testHintText();
     testWrongAnswerHintContractForRangeBridges();

@@ -33,6 +33,17 @@ async function expectElementFullyInViewport(page, testId) {
     expect(box.y + box.height, `${testId} bottom edge`).toBeLessThanOrEqual(page.viewportSize().height);
 }
 
+async function expectResultPanelDoesNotScroll(page) {
+    const overflow = await page.getByTestId('number-bridges-results').evaluate((element) => ({
+        scrollHeight: element.scrollHeight,
+        clientHeight: element.clientHeight,
+        overflowY: getComputedStyle(element).overflowY
+    }));
+
+    expect(overflow.overflowY, JSON.stringify(overflow)).toBe('hidden');
+    expect(overflow.scrollHeight, JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.clientHeight + 1);
+}
+
 async function initializeActivity(page) {
     await page.evaluate((learnerName) => {
         window.postMessage({
@@ -406,19 +417,66 @@ test.describe('Number Bridges viewport smoke', () => {
         await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
         await expect(page.getByTestId('number-bridges-total')).toHaveText('Questions: 5');
         await expect(page.getByTestId('number-bridges-correct-total')).toHaveText('Correct / Total: 5 / 5');
-        await expect(page.getByTestId('number-bridges-score')).toHaveText('Correct: 5 / 5');
+        await expect(page.getByTestId('number-bridges-score')).toHaveCount(0);
         await expect(page.getByTestId('number-bridges-accuracy')).toHaveText('Accuracy: 100%');
         await expect(page.getByTestId('number-bridges-time-taken')).toContainText(/Time Taken: \d+ sec/);
         await expect(page.getByTestId('number-bridges-average-time')).toContainText(/Average Time: [\d.]+ sec\/question/);
         await expect(page.getByTestId('number-bridges-hints-used')).toHaveText('Hints Used: 1');
+        await expect(page.getByTestId('number-bridges-mistakes-corrected')).toHaveText('Mistakes Corrected: 1');
+        await expect(page.getByTestId('number-bridges-review')).toBeVisible();
         await expect(page.getByTestId('number-bridges-wrong-list')).toContainText('1 + 1');
         await expect(page.getByTestId('number-bridges-wrong-list')).toContainText('Attempted: 3');
         await expect(page.getByTestId('number-bridges-wrong-list')).toContainText('Correct: 2');
+        await expect(page.getByTestId('number-bridges-wrong-list')).not.toContainText('1 + 1 = 3');
+        await expect(page.getByTestId('number-bridges-actions')).toBeVisible();
         await expect(page.getByTestId('number-bridges-next-round-button')).toBeVisible();
         await expect(page.getByTestId('number-bridges-next-round-button')).toHaveText('Try Again');
         await expect(page.getByTestId('number-bridges-home-button')).toBeVisible();
-        await expectNoPageScrollbar(page, { vertical: true });
+        await expectResultPanelDoesNotScroll(page);
+        await expectNoPageScrollbar(page);
     });
+
+    for (const viewport of TEST_VIEWPORTS) {
+        test(`keeps result review layout fit at ${viewport.name}`, async ({ page }) => {
+            await page.setViewportSize({ width: viewport.width, height: viewport.height });
+            await page.goto('/games/kumonQuiz/');
+            await initializeKumonQuiz(page, { firstNumberMax: 10, questionCount: 10 });
+
+            await page.getByTestId('number-bridges-answer-input').fill('3');
+            await page.getByTestId('number-bridges-answer-input').press('Enter');
+            for (const [rowIndex, answer] of [[0, 2], [1, 3], [2, 4], [3, 5], [4, 6]]) {
+                await answerNumberBridgeRow(page, rowIndex, answer);
+            }
+            await expect(page.getByTestId('number-bridges-question')).toHaveText('6 + 1 =', { timeout: 1600 });
+
+            for (const [rowIndex, answer] of [[0, 7], [1, 8], [2, 9], [3, 10], [4, 11]]) {
+                await answerNumberBridgeRow(page, rowIndex, answer);
+            }
+
+            await expect(page.getByTestId('number-bridges-results')).toBeVisible();
+            await expect(page.getByTestId('siraash-completion-feedback')).toBeVisible();
+            await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
+            await expect(page.getByTestId('siraash-completion-message')).toHaveText('You finished your Number Bridges.');
+            await expect(page.getByTestId('number-bridges-metrics')).toBeVisible();
+            await expect(page.getByTestId('number-bridges-total')).toHaveText('Questions: 10');
+            await expect(page.getByTestId('number-bridges-correct-total')).toHaveText('Correct / Total: 10 / 10');
+            await expect(page.getByTestId('number-bridges-score')).toHaveCount(0);
+            await expect(page.getByTestId('number-bridges-accuracy')).toHaveText('Accuracy: 100%');
+            await expect(page.getByTestId('number-bridges-time-taken')).toContainText(/Time Taken: \d+ sec/);
+            await expect(page.getByTestId('number-bridges-average-time')).toContainText(/Average Time: [\d.]+ sec\/question/);
+            await expect(page.getByTestId('number-bridges-hints-used')).toHaveText('Hints Used: 1');
+            await expect(page.getByTestId('number-bridges-mistakes-corrected')).toHaveText('Mistakes Corrected: 1');
+            await expect(page.getByTestId('number-bridges-review')).toBeVisible();
+            await expect(page.getByTestId('number-bridges-review-item')).toContainText('1 + 1');
+            await expect(page.getByTestId('number-bridges-review-item')).toContainText('Attempted: 3');
+            await expect(page.getByTestId('number-bridges-review-item')).toContainText('Correct: 2');
+            await expect(page.getByTestId('number-bridges-review-item')).not.toContainText('1 + 1 = 3');
+            await expect(page.getByTestId('number-bridges-next-round-button')).toBeVisible();
+            await expect(page.getByTestId('number-bridges-home-button')).toBeVisible();
+            await expectResultPanelDoesNotScroll(page);
+            await expectNoPageScrollbar(page);
+        });
+    }
 
     for (const viewport of TEST_VIEWPORTS) {
         test(`shows count-forward +1 scaffold at ${viewport.name}`, async ({ page }) => {
@@ -468,6 +526,7 @@ test.describe('Number Bridges viewport smoke', () => {
 
         await expect(frame.getByTestId('number-bridges-results')).toBeVisible();
         await expect(frame.getByTestId('number-bridges-correct-total')).toHaveText('Correct / Total: 10 / 10');
+        await expect(frame.getByTestId('number-bridges-all-correct')).toHaveText('All answers correct!');
         await expect(frame.getByTestId('number-bridges-accuracy')).toHaveText('Accuracy: 100%');
         await expect(frame.getByTestId('number-bridges-time-taken')).toContainText(/Time Taken: \d+ sec/);
         await expect(frame.getByTestId('number-bridges-next-round-button')).toBeVisible();
