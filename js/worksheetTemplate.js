@@ -61,16 +61,27 @@ export function getWorksheetSupportPrompts(learnerName = 'Learner') {
 export function applyWorksheetHeaderState({
     documentRef = globalThis.document,
     roundNumber = 1,
-    stars = 0
+    stars = 0,
+    levelLabel = null
 } = {}) {
     const roundEl = documentRef?.getElementById?.('ui-round');
     if (roundEl) {
         roundEl.textContent = String(roundNumber);
     }
 
+    const questionEl = documentRef?.getElementById?.('ui-question');
+    if (questionEl) {
+        questionEl.textContent = String(roundNumber);
+    }
+
     const starsEl = documentRef?.getElementById?.('ui-stars');
     if (starsEl) {
         starsEl.textContent = String(stars);
+    }
+
+    const levelEl = documentRef?.getElementById?.('ui-level');
+    if (levelEl && levelLabel) {
+        levelEl.textContent = String(levelLabel);
     }
 }
 

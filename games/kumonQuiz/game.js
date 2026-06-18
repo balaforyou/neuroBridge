@@ -9,9 +9,46 @@ import { playSuccessClap } from '../../js/audio.js';
 export const KUMON_QUIZ_ACTIVITY_ID = 'kumonQuiz';
 export const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
 export const NUMBER_BRIDGE_PAGE_TURN_MS = 320;
+export const NUMBER_BRIDGE_MAX_LEVEL = 5;
+export const NUMBER_BRIDGE_AUTO_PROGRESSION_THRESHOLD = 80;
+export const NUMBER_BRIDGE_OPERATION_PACKS = {
+    '+': {
+        operation: '+',
+        operationName: 'addition',
+        label: 'Addition',
+        skillType: 'Bridges',
+        factors: [1, 2, 3, 4, 5],
+        skillLabelFor: factor => `+${factor} Bridges`
+    },
+    '-': {
+        operation: '-',
+        operationName: 'subtraction',
+        label: 'Subtraction',
+        skillType: 'Bridges',
+        factors: [1, 2, 3, 4, 5],
+        skillLabelFor: factor => `-${factor} Bridges`
+    },
+    '×': {
+        operation: '×',
+        operationName: 'multiplication',
+        label: 'Multiplication',
+        skillType: 'Tables',
+        factors: [2, 3, 4, 5, 10],
+        skillLabelFor: factor => `×${factor} Tables`
+    },
+    '÷': {
+        operation: '÷',
+        operationName: 'division',
+        label: 'Division',
+        skillType: 'Facts',
+        factors: [2, 3, 4, 5, 10],
+        skillLabelFor: factor => `÷${factor} Facts`
+    }
+};
 
 export const DEFAULT_KUMON_CONFIG = {
     operation: '+',
+    level: 1,
     firstNumberMin: 1,
     firstNumberMax: 10,
     secondNumberMode: 'fixed',
@@ -21,15 +58,40 @@ export const DEFAULT_KUMON_CONFIG = {
     questionCount: 10,
     questionsPerScreen: 5,
     hintsEnabled: true,
-    mode: 'practice'
+    mode: 'practice',
+    autoProgression: false,
+    questionOrder: 'sequential'
 };
+
+export function getNumberBridgeLevelModel(level = DEFAULT_KUMON_CONFIG.level, operation = DEFAULT_KUMON_CONFIG.operation) {
+    const normalizedLevel = clampInteger(level, 1, NUMBER_BRIDGE_MAX_LEVEL, DEFAULT_KUMON_CONFIG.level);
+    const operationPack = getNumberBridgeOperationPack(operation);
+    const bridgeValue = operationPack.factors[normalizedLevel - 1] || operationPack.factors[0];
+
+    return {
+        operation: operationPack.operation,
+        operationName: operationPack.operationName,
+        level: normalizedLevel,
+        bridgeValue,
+        levelLabel: `${operationPack.label} L${normalizedLevel}`,
+        skillLabel: operationPack.skillLabelFor(bridgeValue),
+        displayLabel: `${operationPack.label} L${normalizedLevel} (${operationPack.skillLabelFor(bridgeValue)})`
+    };
+}
 
 export function normalizeKumonConfig(config = {}) {
     const merged = { ...DEFAULT_KUMON_CONFIG, ...config };
+    const operationPack = getNumberBridgeOperationPack(merged.operation);
     const firstNumberMin = clampInteger(merged.firstNumberMin, 1, 100, DEFAULT_KUMON_CONFIG.firstNumberMin);
     const firstNumberMax = Math.max(firstNumberMin, clampInteger(merged.firstNumberMax, 1, 100, DEFAULT_KUMON_CONFIG.firstNumberMax));
     const secondNumberMode = merged.secondNumberMode === 'range' ? 'range' : 'fixed';
-    const secondNumberFixedValue = clampInteger(merged.secondNumberFixedValue, 0, 100, DEFAULT_KUMON_CONFIG.secondNumberFixedValue);
+    const levelSource = Object.prototype.hasOwnProperty.call(merged, 'level')
+        ? merged.level
+        : merged.secondNumberFixedValue;
+    const levelModel = getNumberBridgeLevelModel(levelSource, operationPack.operation);
+    const secondNumberFixedValue = secondNumberMode === 'fixed'
+        ? levelModel.bridgeValue
+        : clampInteger(merged.secondNumberFixedValue, 0, 100, DEFAULT_KUMON_CONFIG.secondNumberFixedValue);
     const secondNumberMin = clampInteger(merged.secondNumberMin, 0, 100, DEFAULT_KUMON_CONFIG.secondNumberMin);
     const secondNumberMax = Math.max(secondNumberMin, clampInteger(merged.secondNumberMax, 0, 100, DEFAULT_KUMON_CONFIG.secondNumberMax));
     const requestedCount = Number(merged.questionCount);
@@ -40,7 +102,13 @@ export function normalizeKumonConfig(config = {}) {
         : DEFAULT_KUMON_CONFIG.questionsPerScreen;
 
     return {
-        operation: '+',
+        operation: operationPack.operation,
+        operationName: operationPack.operationName,
+        level: levelModel.level,
+        bridgeValue: levelModel.bridgeValue,
+        levelLabel: levelModel.levelLabel,
+        skillLabel: levelModel.skillLabel,
+        levelDisplayLabel: levelModel.displayLabel,
         firstNumberMin,
         firstNumberMax,
         secondNumberMode,
@@ -50,33 +118,191 @@ export function normalizeKumonConfig(config = {}) {
         questionCount,
         questionsPerScreen,
         hintsEnabled: merged.hintsEnabled !== false,
-        mode: merged.mode === 'assessment' ? 'assessment' : 'practice'
+        mode: merged.mode === 'assessment' ? 'assessment' : 'practice',
+        autoProgression: merged.autoProgression === true,
+        questionOrder: merged.questionOrder === 'random' ? 'random' : 'sequential'
     };
+}
+
+export function getNumberBridgeOperationPack(operation = DEFAULT_KUMON_CONFIG.operation) {
+    if (operation === 'x' || operation === 'X' || operation === '*') {
+        return NUMBER_BRIDGE_OPERATION_PACKS['×'];
+    }
+
+    if (operation === '/') {
+        return NUMBER_BRIDGE_OPERATION_PACKS['÷'];
+    }
+
+    return NUMBER_BRIDGE_OPERATION_PACKS[operation] || NUMBER_BRIDGE_OPERATION_PACKS['+'];
 }
 
 export function generateKumonQuestions(config = DEFAULT_KUMON_CONFIG) {
     const normalized = normalizeKumonConfig(config);
-    const firstSpan = normalized.firstNumberMax - normalized.firstNumberMin + 1;
-    const secondSpan = normalized.secondNumberMax - normalized.secondNumberMin + 1;
+    if (normalized.questionOrder === 'sequential') {
+        return assignQuestionOrderMetadata(createSequentialQuestions(normalized));
+    }
 
-    return Array.from({ length: normalized.questionCount }, (_, index) => {
-        const operandA = normalized.firstNumberMin + (index % firstSpan);
-        const operandB = normalized.secondNumberMode === 'fixed'
-            ? normalized.secondNumberFixedValue
-            : normalized.secondNumberMin + (index % secondSpan);
+    const questionPool = createQuestionPool(normalized);
+    const questions = [];
 
-        return {
-            questionId: `addition-${index + 1}-${operandA}-${operandB}`,
-            questionIndex: index,
-            operandA,
-            operandB,
-            operation: '+',
-            expectedAnswer: operandA + operandB
-        };
+    while (questions.length < normalized.questionCount) {
+        const cycle = shuffleQuestions(questionPool);
+        for (const question of cycle) {
+            if (questions.length >= normalized.questionCount) break;
+            questions.push({ ...question });
+        }
+    }
+
+    return assignQuestionOrderMetadata(questions);
+}
+
+function createSequentialQuestions(config) {
+    if (config.operation !== '+' || config.secondNumberMode !== 'range') {
+        return takeQuestionsFromPool(createQuestionPool(config), config.questionCount);
+    }
+
+    const firstSpan = config.firstNumberMax - config.firstNumberMin + 1;
+    const secondSpan = config.secondNumberMax - config.secondNumberMin + 1;
+
+    return Array.from({ length: config.questionCount }, (_, index) => {
+        const operandA = config.firstNumberMin + (index % firstSpan);
+        const operandB = config.secondNumberMin + (index % secondSpan);
+
+        return createArithmeticQuestion(config.operation, operandA, operandB);
     });
 }
 
+function takeQuestionsFromPool(questionPool, questionCount) {
+    const questions = [];
+
+    while (questions.length < questionCount) {
+        for (const question of questionPool) {
+            if (questions.length >= questionCount) break;
+            questions.push({ ...question });
+        }
+    }
+
+    return questions;
+}
+
+function assignQuestionOrderMetadata(questions) {
+    return questions.map((question, index) => ({
+        ...question,
+        questionId: `addition-${index + 1}-${question.operandA}-${question.operandB}`,
+        questionIndex: index
+    }));
+}
+
+function createQuestionPool(config) {
+    const pool = [];
+    const factorValues = config.secondNumberMode === 'fixed'
+        ? [config.bridgeValue]
+        : createNumberRange(config.secondNumberMin, config.secondNumberMax);
+
+    for (let operandA = config.firstNumberMin; operandA <= config.firstNumberMax; operandA += 1) {
+        for (const factor of factorValues) {
+            const question = createQuestionForOperation(config.operation, operandA, factor);
+            if (question) {
+                pool.push(question);
+            }
+        }
+    }
+
+    return pool.length ? pool : createFallbackQuestionPool(config);
+}
+
+function createFallbackQuestionPool(config) {
+    const factor = config.bridgeValue;
+
+    if (config.operation === '-') {
+        return [createArithmeticQuestion('-', factor, factor)];
+    }
+
+    if (config.operation === '÷') {
+        return [createArithmeticQuestion('÷', factor, factor)];
+    }
+
+    return [createArithmeticQuestion(config.operation, config.firstNumberMin, factor)];
+}
+
+function createQuestionForOperation(operation, baseValue, factor) {
+    if (operation === '-') {
+        if (baseValue < factor) return null;
+        return createArithmeticQuestion(operation, baseValue, factor);
+    }
+
+    if (operation === '×') {
+        return createArithmeticQuestion(operation, baseValue, factor);
+    }
+
+    if (operation === '÷') {
+        if (factor === 0 || baseValue % factor !== 0) return null;
+        return createArithmeticQuestion(operation, baseValue, factor);
+    }
+
+    return createArithmeticQuestion('+', baseValue, factor);
+}
+
+function createArithmeticQuestion(operation, operandA, operandB) {
+    return {
+        operandA,
+        operandB,
+        operation,
+        expectedAnswer: calculateExpectedAnswer(operation, operandA, operandB)
+    };
+}
+
+function calculateExpectedAnswer(operation, operandA, operandB) {
+    if (operation === '-') return operandA - operandB;
+    if (operation === '×') return operandA * operandB;
+    if (operation === '÷') return operandA / operandB;
+    return operandA + operandB;
+}
+
+function createNumberRange(min, max) {
+    return Array.from({ length: max - min + 1 }, (_, index) => min + index);
+}
+
+function shuffleQuestions(questions) {
+    const shuffled = [...questions];
+
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+    }
+
+    return shuffled;
+}
+
 export function createAdditionHint(question, hintLevel) {
+    return createNumberBridgeHint({ ...question, operation: question.operation || '+' }, hintLevel);
+}
+
+export function createNumberBridgeHint(question, hintLevel) {
+    if (question.operation === '-') {
+        return {
+            hintLevel: Math.min(Math.max(hintLevel, 1), 3),
+            scaffoldType: 'take-away',
+            text: `Start with ${question.operandA}. Take away ${question.operandB}.<br>${createCountingPath(question.operandA, -question.operandB)}`
+        };
+    }
+
+    if (question.operation === '×') {
+        return {
+            hintLevel: Math.min(Math.max(hintLevel, 1), 3),
+            scaffoldType: 'equal-groups',
+            text: `Think of ${question.operandA} groups of ${question.operandB}.`
+        };
+    }
+
+    if (question.operation === '÷') {
+        return {
+            hintLevel: Math.min(Math.max(hintLevel, 1), 3),
+            scaffoldType: 'sharing',
+            text: `Share ${question.operandA} into groups of ${question.operandB}. Count the groups.`
+        };
+    }
+
     const stepWord = getStepWord(question.operandB);
     const countingPath = createCountingPath(question.operandA, question.operandB);
 
@@ -193,7 +419,7 @@ export function createKumonQuizGame(config = {}) {
         if (state.config.hintsEnabled) {
             const nextHintLevel = Math.min(hintLevelBefore + 1, 3);
             state.currentHintLevelByQuestion[question.questionId] = nextHintLevel;
-            state.supportStateByQuestion[question.questionId] = createAdditionHint(question, nextHintLevel);
+            state.supportStateByQuestion[question.questionId] = createNumberBridgeHint(question, nextHintLevel);
             state.supportState = state.supportStateByQuestion[question.questionId];
         } else {
             state.currentHintLevelByQuestion[question.questionId] = 0;
@@ -244,7 +470,7 @@ export function createKumonQuizGame(config = {}) {
         const nextHintLevel = Math.min(currentHintLevel + 1, 3);
 
         state.currentHintLevelByQuestion[question.questionId] = nextHintLevel;
-        state.supportStateByQuestion[question.questionId] = createAdditionHint(question, nextHintLevel);
+        state.supportStateByQuestion[question.questionId] = createNumberBridgeHint(question, nextHintLevel);
         state.supportState = state.supportStateByQuestion[question.questionId];
         state.activeQuestionId = question.questionId;
         return { result: 'hint', state: getState() };
@@ -258,9 +484,20 @@ export function createKumonQuizGame(config = {}) {
         const timeTakenSeconds = Math.round(totalReactionTimeMs / 1000);
         const hintsUsed = Object.values(state.currentHintLevelByQuestion).reduce((sum, hintLevel) => sum + Number(hintLevel || 0), 0);
         const mistakeCount = state.wrongAnswers.length;
+        const progressionAccuracy = calculateNumberBridgeProgressionAccuracy(state.correctCount, mistakeCount);
         const wrongAnswerReview = buildWrongAnswerReview(state.wrongAnswers);
 
         return {
+            operation: state.config.operation,
+            level: state.config.level,
+            levelLabel: state.config.levelLabel,
+            skillLabel: state.config.skillLabel,
+            levelDisplayLabel: state.config.levelDisplayLabel,
+            bridgeValue: state.config.bridgeValue,
+            autoProgression: state.config.autoProgression,
+            questionOrderMode: state.config.questionOrder,
+            progressionAccuracy,
+            nextLevelSuggested: getNextNumberBridgeLevel(state.config, progressionAccuracy),
             correct: state.correctCount,
             total,
             accuracy,
@@ -274,7 +511,13 @@ export function createKumonQuizGame(config = {}) {
     }
 
     function resetRound() {
-        const next = createInitialState(state.config, state.roundNumber + 1, state.learnerName);
+        const summary = getResultSummary();
+        const nextLevel = getNextNumberBridgeLevel(state.config, summary.progressionAccuracy);
+        const nextConfig = normalizeKumonConfig({
+            ...state.config,
+            level: nextLevel
+        });
+        const next = createInitialState(nextConfig, state.roundNumber + 1, state.learnerName);
         Object.assign(state, next);
         return getState();
     }
@@ -294,6 +537,13 @@ export function createKumonQuizGame(config = {}) {
 
 export function createKumonSessionSummary(state, resultSummary = null) {
     const summary = resultSummary || {
+        operation: state.config.operation,
+        level: state.config.level,
+        levelLabel: state.config.levelLabel,
+        skillLabel: state.config.skillLabel,
+        levelDisplayLabel: state.config.levelDisplayLabel,
+        bridgeValue: state.config.bridgeValue,
+        autoProgression: state.config.autoProgression,
         correct: state.correctCount,
         total: state.questions.length,
         accuracy: state.questions.length ? Math.round((state.correctCount / state.questions.length) * 100) : 0,
@@ -308,6 +558,17 @@ export function createKumonSessionSummary(state, resultSummary = null) {
         gameId: KUMON_QUIZ_ACTIVITY_ID,
         activityId: KUMON_QUIZ_ACTIVITY_ID,
         activityName: 'Kumon Quiz / Number Bridges',
+        operation: state.config.operation,
+        level: state.config.level,
+        levelLabel: state.config.levelLabel,
+        skillLabel: state.config.skillLabel,
+        levelDisplayLabel: state.config.levelDisplayLabel,
+        bridgeValue: state.config.bridgeValue,
+        autoProgression: state.config.autoProgression,
+        questionOrderMode: state.config.questionOrder,
+        progressionAccuracy: summary.progressionAccuracy ?? calculateNumberBridgeProgressionAccuracy(summary.correct, summary.mistakeCount),
+        nextLevelSuggested: summary.nextLevelSuggested ?? getNextNumberBridgeLevel(state.config, accuracyPercent),
+        nextLevelApplied: summary.nextLevelApplied ?? null,
         score: summary.correct,
         correctCount: summary.correct,
         totalQuestions: summary.total,
@@ -317,10 +578,35 @@ export function createKumonSessionSummary(state, resultSummary = null) {
         averageTimePerQuestion: summary.averageTimeSeconds,
         hintUsageCount: summary.hintsUsed,
         mistakeCount: summary.mistakeCount,
-        highestLevelReached: 1,
+        highestLevelReached: state.config.level,
         sessionLengthSeconds: summary.timeTakenSeconds,
         trials: state.trials
     };
+}
+
+export function getNextNumberBridgeLevel(config = DEFAULT_KUMON_CONFIG, accuracyPercent = 0) {
+    const normalized = normalizeKumonConfig(config);
+    if (!normalized.autoProgression) {
+        return normalized.level;
+    }
+
+    if (Number(accuracyPercent || 0) < NUMBER_BRIDGE_AUTO_PROGRESSION_THRESHOLD) {
+        return normalized.level;
+    }
+
+    return Math.min(NUMBER_BRIDGE_MAX_LEVEL, normalized.level + 1);
+}
+
+export function calculateNumberBridgeProgressionAccuracy(correctCount = 0, mistakeCount = 0) {
+    const correct = Number(correctCount || 0);
+    const mistakes = Number(mistakeCount || 0);
+    const totalSignals = correct + mistakes;
+
+    if (!Number.isFinite(totalSignals) || totalSignals <= 0) {
+        return 0;
+    }
+
+    return Math.round((correct / totalSignals) * 100);
 }
 
 export function getNumberBridgeTransitionDurationMs(prefersReducedMotion = false) {
@@ -390,6 +676,10 @@ export function renderNumberBridgeResultMarkup(summary, learnerName = 'Learner')
                             ${motivationalLine}
                         </div>
                     </div>
+                </div>
+
+                <div data-testid="number-bridges-result-level" class="w-full shrink-0 rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-black text-emerald-900">
+                    ${summary.levelDisplayLabel || `${summary.levelLabel || 'Addition L1'} (${summary.skillLabel || '+1 Bridges'})`}
                 </div>
 
                 <div data-testid="number-bridges-metrics" class="w-full shrink-0 rounded-2xl border-2 border-sky-200 bg-sky-50 p-3">
@@ -471,6 +761,10 @@ function createTrialRecord({
         questionId: question.questionId,
         questionIndex: question.questionIndex,
         operation: question.operation,
+        level: state.config.level,
+        levelLabel: state.config.levelLabel,
+        skillLabel: state.config.skillLabel,
+        bridgeValue: state.config.bridgeValue,
         operandA: question.operandA,
         operandB: question.operandB,
         expectedAnswer: question.expectedAnswer,
@@ -581,7 +875,8 @@ function getStepWord(stepCount) {
 }
 
 function createCountingPath(start, stepCount) {
-    return Array.from({ length: stepCount + 1 }, (_, index) => start + index).join(' → ');
+    const direction = stepCount < 0 ? -1 : 1;
+    return Array.from({ length: Math.abs(stepCount) + 1 }, (_, index) => start + (index * direction)).join(' → ');
 }
 
 function buildWrongAnswerReview(wrongAnswers = []) {
@@ -656,7 +951,8 @@ function mountKumonQuiz() {
 
         applyWorksheetHeaderState({
             roundNumber: `${visibleEnd}/${state.questions.length}`,
-            stars: state.stars
+            stars: state.stars,
+            levelLabel: state.config.levelLabel
         });
 
         if (state.completed) {
@@ -789,7 +1085,8 @@ function mountKumonQuiz() {
         const summary = game.getResultSummary();
         applyWorksheetHeaderState({
             roundNumber: `${summary.total}/${summary.total}`,
-            stars: state.stars
+            stars: state.stars,
+            levelLabel: state.config.levelLabel
         });
 
         root.innerHTML = renderNumberBridgeResultMarkup(summary, learnerName);

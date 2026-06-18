@@ -5,6 +5,8 @@ import {
     DEFAULT_KUMON_CONFIG,
     generateKumonQuestions,
     getNumberBridgeTransitionDurationMs,
+    getNextNumberBridgeLevel,
+    getNumberBridgeLevelModel,
     markNumberBridgeCompletionClapPlayed,
     normalizeKumonConfig,
     NUMBER_BRIDGE_PAGE_TURN_MS,
@@ -28,11 +30,57 @@ function testConfigDefaults() {
     assert(config.firstNumberMax === 10, 'First number max should default to 10');
     assert(config.secondNumberMode === 'fixed', 'Second number mode should default to fixed');
     assert(config.secondNumberFixedValue === 1, 'Fixed second number should default to 1');
+    assert(config.level === 1, 'Level should default to 1');
+    assert(config.bridgeValue === 1, 'Bridge value should default to 1');
+    assert(config.levelLabel === 'Addition L1', 'Level label should default to Addition L1');
+    assert(config.skillLabel === '+1 Bridges', 'Skill label should default to +1 Bridges');
+    assert(config.autoProgression === false, 'Auto progression should default disabled');
     assert(config.questionCount === 10, 'Question count should default to 10');
     assert(config.questionsPerScreen === 5, 'Questions per screen should default to 5');
     assert(config.hintsEnabled === true, 'Hints should default enabled');
+    assert(config.questionOrder === 'sequential', 'Question order should default to sequential');
     assert(config.mode === 'practice', 'Mode should default to practice');
     console.log('Kumon config defaults test passed');
+}
+
+function testNumberBridgeLevelModelDefaults() {
+    const level = getNumberBridgeLevelModel();
+
+    assert(level.operation === '+', 'Level model should use addition operation');
+    assert(level.level === 1, 'Default model should use level 1');
+    assert(level.bridgeValue === 1, 'Default model should use bridge value 1');
+    assert(level.levelLabel === 'Addition L1', 'Default model should label Addition L1');
+    assert(level.skillLabel === '+1 Bridges', 'Default model should label +1 Bridges');
+    assert(level.displayLabel === 'Addition L1 (+1 Bridges)', 'Default display label should combine level and skill');
+    console.log('Number Bridges level model defaults test passed');
+}
+
+function testLevelLabelGeneration() {
+    const level = getNumberBridgeLevelModel(3);
+
+    assert(level.level === 3, 'Level model should normalize requested level');
+    assert(level.bridgeValue === 3, 'Level 3 should use bridge value 3');
+    assert(level.levelLabel === 'Addition L3', 'Level 3 should label Addition L3');
+    assert(level.skillLabel === '+3 Bridges', 'Level 3 should label +3 Bridges');
+    assert(level.displayLabel === 'Addition L3 (+3 Bridges)', 'Level 3 display label should combine level and skill');
+    console.log('Level label generation test passed');
+}
+
+function testOperationPackLabels() {
+    const subtraction = getNumberBridgeLevelModel(3, '-');
+    const multiplication = getNumberBridgeLevelModel(2, '×');
+    const division = getNumberBridgeLevelModel(1, '÷');
+
+    assert(subtraction.levelLabel === 'Subtraction L3', 'Subtraction should label operation and level');
+    assert(subtraction.skillLabel === '-3 Bridges', 'Subtraction L3 should label -3 Bridges');
+    assert(subtraction.displayLabel === 'Subtraction L3 (-3 Bridges)', 'Subtraction display label should combine level and skill');
+    assert(multiplication.levelLabel === 'Multiplication L2', 'Multiplication should label operation and level');
+    assert(multiplication.skillLabel === '×3 Tables', 'Multiplication L2 should label ×3 Tables');
+    assert(multiplication.displayLabel === 'Multiplication L2 (×3 Tables)', 'Multiplication display label should combine level and skill');
+    assert(division.levelLabel === 'Division L1', 'Division should label operation and level');
+    assert(division.skillLabel === '÷2 Facts', 'Division L1 should label ÷2 Facts');
+    assert(division.displayLabel === 'Division L1 (÷2 Facts)', 'Division display label should combine level and skill');
+    console.log('Operation pack label test passed');
 }
 
 function testQuestionsPerScreenConfig() {
@@ -41,6 +89,53 @@ function testQuestionsPerScreenConfig() {
     assert(normalizeKumonConfig({ questionsPerScreen: 5 }).questionsPerScreen === 5, 'Should accept 5 questions per screen');
     assert(normalizeKumonConfig({ questionsPerScreen: 2 }).questionsPerScreen === 5, 'Unsupported row count should fall back to 5');
     console.log('Questions per screen config test passed');
+}
+
+function testQuestionOrderConfig() {
+    const randomConfig = normalizeKumonConfig({ questionOrder: 'random' });
+    const fallbackConfig = normalizeKumonConfig({ questionOrder: 'zigzag' });
+
+    assert(randomConfig.questionOrder === 'random', 'Should accept random question order');
+    assert(fallbackConfig.questionOrder === 'sequential', 'Unsupported question order should fall back to sequential');
+    console.log('Question order config test passed');
+}
+
+function testSequentialQuestionOrder() {
+    const questions = generateKumonQuestions({
+        firstNumberMin: 1,
+        firstNumberMax: 5,
+        level: 1,
+        questionCount: 5,
+        questionOrder: 'sequential'
+    });
+
+    assert(questions.map(question => `${question.operandA} + ${question.operandB}`).join(',') === '1 + 1,2 + 1,3 + 1,4 + 1,5 + 1', 'Sequential mode should preserve predictable question order');
+    console.log('Sequential question order test passed');
+}
+
+function testRandomQuestionOrder() {
+    const originalRandom = Math.random;
+    Math.random = () => 0;
+
+    try {
+        const questions = generateKumonQuestions({
+            firstNumberMin: 1,
+            firstNumberMax: 5,
+            level: 1,
+            questionCount: 5,
+            questionOrder: 'random'
+        });
+        const questionKeys = questions.map(question => `${question.operandA} + ${question.operandB}`);
+
+        assert(questionKeys.join(',') === '2 + 1,3 + 1,4 + 1,5 + 1,1 + 1', 'Random mode should shuffle the available question pool');
+        assert(new Set(questionKeys).size === questionKeys.length, 'Random mode should avoid duplicates when the pool can satisfy the count');
+        assert(questions.every(question => question.operandB === 1), 'Random mode should respect the selected level');
+        assert(questions.length === 5, 'Random mode should respect configured question count');
+    } finally {
+        Math.random = originalRandom;
+    }
+
+    console.log('Random question order test passed');
 }
 
 function testFixedSecondNumberGeneration() {
@@ -57,6 +152,78 @@ function testFixedSecondNumberGeneration() {
     assert(questions[1].operandA === 2 && questions[1].operandB === 1, 'Second fixed question should be 2 + 1');
     assert(questions[2].expectedAnswer === 4, 'Expected answer should be operand sum');
     console.log('Fixed second number generation test passed');
+}
+
+function testAdditionLevelTwoGeneratesPlusTwoQuestions() {
+    const config = normalizeKumonConfig({
+        level: 2,
+        firstNumberMin: 1,
+        firstNumberMax: 3,
+        questionCount: 5
+    });
+    const questions = generateKumonQuestions(config);
+
+    assert(config.levelLabel === 'Addition L2', 'Level 2 config should label Addition L2');
+    assert(config.skillLabel === '+2 Bridges', 'Level 2 config should label +2 Bridges');
+    assert(config.bridgeValue === 2, 'Level 2 bridge value should be 2');
+    assert(questions[0].operandA === 1 && questions[0].operandB === 2, 'First L2 question should be 1 + 2');
+    assert(questions[1].operandA === 2 && questions[1].operandB === 2, 'Second L2 question should be 2 + 2');
+    assert(questions[2].expectedAnswer === 5, 'Expected answer should use +2 bridge');
+    console.log('Addition L2 question generation test passed');
+}
+
+function testSubtractionGeneratesNoNegativeQuestions() {
+    const config = normalizeKumonConfig({
+        operation: '-',
+        level: 3,
+        firstNumberMin: 1,
+        firstNumberMax: 5,
+        questionCount: 5
+    });
+    const questions = generateKumonQuestions(config);
+
+    assert(config.levelLabel === 'Subtraction L3', 'Subtraction level should label Subtraction L3');
+    assert(config.skillLabel === '-3 Bridges', 'Subtraction skill should label -3 Bridges');
+    assert(questions.every(question => question.operation === '-'), 'Subtraction questions should use subtraction operation');
+    assert(questions.every(question => question.expectedAnswer >= 0), 'Subtraction questions should not produce negative answers');
+    assert(questions[0].operandA === 3 && questions[0].operandB === 3 && questions[0].expectedAnswer === 0, 'First valid L3 subtraction should be 3 - 3 = 0');
+    console.log('Subtraction operation pack test passed');
+}
+
+function testMultiplicationGeneratesTableQuestions() {
+    const config = normalizeKumonConfig({
+        operation: '×',
+        level: 2,
+        firstNumberMin: 1,
+        firstNumberMax: 3,
+        questionCount: 3
+    });
+    const questions = generateKumonQuestions(config);
+
+    assert(config.levelLabel === 'Multiplication L2', 'Multiplication level should label Multiplication L2');
+    assert(config.skillLabel === '×3 Tables', 'Multiplication skill should label ×3 Tables');
+    assert(questions[0].operandA === 1 && questions[0].operandB === 3, 'Multiplication L2 should use ×3 facts');
+    assert(questions[2].expectedAnswer === 9, '3 × 3 should equal 9');
+    console.log('Multiplication operation pack test passed');
+}
+
+function testDivisionGeneratesExactIntegerQuestions() {
+    const config = normalizeKumonConfig({
+        operation: '÷',
+        level: 1,
+        firstNumberMin: 1,
+        firstNumberMax: 10,
+        questionCount: 5
+    });
+    const questions = generateKumonQuestions(config);
+
+    assert(config.levelLabel === 'Division L1', 'Division level should label Division L1');
+    assert(config.skillLabel === '÷2 Facts', 'Division skill should label ÷2 Facts');
+    assert(questions.every(question => question.operation === '÷'), 'Division questions should use division operation');
+    assert(questions.every(question => question.operandA % question.operandB === 0), 'Division questions should divide evenly');
+    assert(questions.every(question => Number.isInteger(question.expectedAnswer)), 'Division answers should be integers');
+    assert(questions[0].operandA === 2 && questions[0].operandB === 2 && questions[0].expectedAnswer === 1, 'First valid L1 division should be 2 ÷ 2 = 1');
+    console.log('Division operation pack test passed');
 }
 
 function testRangeSecondNumberGeneration() {
@@ -254,6 +421,84 @@ function testCompletionProducesResultState() {
     console.log('Completion result state test passed');
 }
 
+function completeVisibleRound(game, wrongCount = 0) {
+    const visibleQuestions = game.getVisibleQuestions();
+
+    visibleQuestions.forEach((question, index) => {
+        if (index < wrongCount) {
+            game.validateAnswer(question.expectedAnswer + 9, {
+                questionId: question.questionId,
+                reactionTimeMs: 100,
+                timestamp: `2026-06-16T00:00:0${index}.000Z`
+            });
+        }
+
+        game.validateAnswer(question.expectedAnswer, {
+            questionId: question.questionId,
+            reactionTimeMs: 100,
+            timestamp: `2026-06-16T00:00:1${index}.000Z`
+        });
+    });
+
+    return game.advanceAfterCorrect();
+}
+
+function testAutoProgressionFalseRepeatsSameLevel() {
+    const game = createKumonQuizGame({ level: 1, autoProgression: false, questionCount: 5, questionsPerScreen: 5 });
+
+    completeVisibleRound(game);
+    assert(game.getState().completed === true, 'Round should complete before reset');
+    game.resetRound();
+
+    const state = game.getState();
+    assert(state.config.level === 1, 'Auto progression false should repeat same level');
+    assert(state.config.levelLabel === 'Addition L1', 'Repeated round should keep Addition L1');
+    assert(state.questions[0].operandB === 1, 'Repeated L1 should keep +1 questions');
+    console.log('Auto progression false repeat test passed');
+}
+
+function testAutoProgressionAdvancesOnHighAccuracy() {
+    const game = createKumonQuizGame({ level: 1, autoProgression: true, questionCount: 5, questionsPerScreen: 5 });
+
+    completeVisibleRound(game);
+    game.resetRound();
+
+    const state = game.getState();
+    assert(state.config.level === 2, 'Auto progression true should advance after 100% accuracy');
+    assert(state.config.levelLabel === 'Addition L2', 'Advanced round should label Addition L2');
+    assert(state.questions[0].operandB === 2, 'Advanced L2 should generate +2 questions');
+    console.log('Auto progression high accuracy advance test passed');
+}
+
+function testAutoProgressionRepeatsOnLowAccuracy() {
+    const game = createKumonQuizGame({ level: 2, autoProgression: true, questionCount: 5, questionsPerScreen: 5 });
+
+    completeVisibleRound(game, 2);
+    const summary = game.getResultSummary();
+    assert(summary.accuracy === 100, 'Resolved accuracy should preserve existing corrected-answer contract');
+    assert(summary.progressionAccuracy === 71, 'Two corrections on five correct answers should keep progression accuracy below 80');
+    game.resetRound();
+
+    const state = game.getState();
+    assert(state.config.level === 2, 'Auto progression true should repeat after low accuracy');
+    assert(state.questions[0].operandB === 2, 'Repeated L2 should keep +2 questions');
+    console.log('Auto progression low accuracy repeat test passed');
+}
+
+function testAutoProgressionCapsAtLevelFive() {
+    assert(getNextNumberBridgeLevel({ level: 5, autoProgression: true }, 100) === 5, 'Next level should cap at Addition L5');
+
+    const game = createKumonQuizGame({ level: 5, autoProgression: true, questionCount: 5, questionsPerScreen: 5 });
+    completeVisibleRound(game);
+    game.resetRound();
+
+    const state = game.getState();
+    assert(state.config.level === 5, 'Reset should not advance beyond L5');
+    assert(state.config.levelLabel === 'Addition L5', 'Capped round should remain Addition L5');
+    assert(state.questions[0].operandB === 5, 'Capped L5 should keep +5 questions');
+    console.log('Auto progression cap test passed');
+}
+
 function testSessionSummaryStoresScoreTotalAndAccuracy() {
     const game = createKumonQuizGame({ questionCount: 5, questionsPerScreen: 5, hintsEnabled: true });
     const visibleQuestions = game.getVisibleQuestions();
@@ -277,6 +522,15 @@ function testSessionSummaryStoresScoreTotalAndAccuracy() {
 
     assert(session.gameId === 'kumonQuiz', 'Session summary should store Number Bridges activity id');
     assert(session.activityName === 'Kumon Quiz / Number Bridges', 'Session summary should store activity name');
+    assert(session.operation === '+', 'Session summary should store operation');
+    assert(session.level === 1, 'Session summary should store level');
+    assert(session.levelLabel === 'Addition L1', 'Session summary should store level label');
+    assert(session.skillLabel === '+1 Bridges', 'Session summary should store skill label');
+    assert(session.levelDisplayLabel === 'Addition L1 (+1 Bridges)', 'Session summary should store combined level display');
+    assert(session.bridgeValue === 1, 'Session summary should store bridge value');
+    assert(session.autoProgression === false, 'Session summary should store auto progression flag');
+    assert(session.questionOrderMode === 'sequential', 'Session summary should store question order mode');
+    assert(Number.isFinite(session.progressionAccuracy), 'Session summary should store progression accuracy metadata');
     assert(session.score === 4, 'Session score should be correct count');
     assert(session.correctCount === 4, 'Session should store correct count');
     assert(session.totalQuestions === 5, 'Session should store total questions');
@@ -287,6 +541,47 @@ function testSessionSummaryStoresScoreTotalAndAccuracy() {
     assert(session.hintUsageCount === summary.hintsUsed, 'Session should store hint usage');
     assert(session.mistakeCount === summary.mistakeCount, 'Session should store mistake count');
     console.log('Session summary analytics test passed');
+}
+
+function testOperationMetadataForResultAndSession() {
+    const game = createKumonQuizGame({
+        operation: '÷',
+        level: 1,
+        firstNumberMin: 1,
+        firstNumberMax: 10,
+        questionCount: 5,
+        questionsPerScreen: 5
+    });
+
+    completeVisibleRound(game);
+    const summary = game.getResultSummary();
+    const session = createKumonSessionSummary(game.getState(), summary);
+    const markup = renderNumberBridgeResultMarkup(summary, 'Adarsh');
+
+    assert(summary.operation === '÷', 'Result summary should store division operation');
+    assert(summary.levelLabel === 'Division L1', 'Result summary should store division level label');
+    assert(summary.skillLabel === '÷2 Facts', 'Result summary should store division skill label');
+    assert(markup.includes('Division L1 (÷2 Facts)'), 'Result page should render division level context');
+    assert(session.operation === '÷', 'Session summary should store division operation');
+    assert(session.levelLabel === 'Division L1', 'Session summary should store division level label');
+    assert(session.skillLabel === '÷2 Facts', 'Session summary should store division skill label');
+    console.log('Operation metadata result and session test passed');
+}
+
+function testTrialTableDoesNotRequirePerTrialLevel() {
+    const game = createKumonQuizGame({ level: 2, questionCount: 5, questionsPerScreen: 1 });
+    const question = game.getCurrentQuestion();
+    const outcome = game.validateAnswer(question.expectedAnswer, {
+        reactionTimeMs: 200,
+        timestamp: '2026-06-16T00:00:00.000Z'
+    });
+    const session = createKumonSessionSummary(game.getState(), game.getResultSummary());
+
+    assert(session.level === 2, 'Session should carry the authoritative Number Bridges level');
+    assert(session.levelLabel === 'Addition L2', 'Session should carry the authoritative Number Bridges level label');
+    assert(outcome.trial.level === 2, 'Trial may include convenient level metadata');
+    assert(!Object.prototype.hasOwnProperty.call(outcome.trial, 'stage'), 'Number Bridges trial rows should not require stage/level table data');
+    console.log('Trial table level metadata source test passed');
 }
 
 function testWrongAttemptsDoNotReduceResolvedScore() {
@@ -402,6 +697,7 @@ function testResultSummaryHintsUsed() {
 
 function testResultMarkupCompactSummaryAndReview() {
     const markup = renderNumberBridgeResultMarkup({
+        levelDisplayLabel: 'Addition L1 (+1 Bridges)',
         correct: 10,
         total: 10,
         accuracy: 100,
@@ -419,6 +715,7 @@ function testResultMarkupCompactSummaryAndReview() {
     assert(markup.includes('data-testid="number-bridges-results"'), 'Result markup should include result container');
     assert(markup.includes('Great work, Adarsh!'), 'Result markup should include learner-aware completion');
     assert(markup.includes('You finished your Number Bridges.'), 'Result markup should include completion message');
+    assert(markup.includes('Addition L1 (+1 Bridges)'), 'Result markup should include level context');
     assert(markup.includes('data-testid="number-bridges-clap-visual"'), 'Result markup should include gentle clap visual marker');
     assert(markup.includes('Questions: 10'), 'Result markup should include questions total');
     assert(markup.includes('Correct / Total: 10 / 10'), 'Result markup should include correct / total');
@@ -579,8 +876,18 @@ function testWrongAnswerHintContractForRangeBridges() {
 function runAllTests() {
     console.log('=== Kumon Quiz Unit Tests ===');
     testConfigDefaults();
+    testNumberBridgeLevelModelDefaults();
+    testLevelLabelGeneration();
+    testOperationPackLabels();
     testQuestionsPerScreenConfig();
+    testQuestionOrderConfig();
+    testSequentialQuestionOrder();
+    testRandomQuestionOrder();
     testFixedSecondNumberGeneration();
+    testAdditionLevelTwoGeneratesPlusTwoQuestions();
+    testSubtractionGeneratesNoNegativeQuestions();
+    testMultiplicationGeneratesTableQuestions();
+    testDivisionGeneratesExactIntegerQuestions();
     testRangeSecondNumberGeneration();
     testCorrectAnswerAdvances();
     testBlurValidationAcceptsCorrectAnswer();
@@ -590,7 +897,13 @@ function runAllTests() {
     testFiveRowGroupAdvancesAfterAllVisibleRowsCorrect();
     testPageTransitionTimingDoesNotChangeScoring();
     testCompletionProducesResultState();
+    testAutoProgressionFalseRepeatsSameLevel();
+    testAutoProgressionAdvancesOnHighAccuracy();
+    testAutoProgressionRepeatsOnLowAccuracy();
+    testAutoProgressionCapsAtLevelFive();
     testSessionSummaryStoresScoreTotalAndAccuracy();
+    testOperationMetadataForResultAndSession();
+    testTrialTableDoesNotRequirePerTrialLevel();
     testWrongAttemptsDoNotReduceResolvedScore();
     testHintUsageDoesNotReduceResolvedScore();
     testHintDisabled();
