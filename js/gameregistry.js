@@ -4,6 +4,11 @@ import { GAME_IDS } from './constants.js';
 import { isValidDomain } from './domainRegistry.js';
 import { isValidSkill } from './skillRegistry.js';
 
+export const DASHBOARD_VIEW_TYPES = {
+    SUMMARY_WITH_CORRECTIONS: 'summaryWithCorrections',
+    TRIAL_BREAKDOWN: 'trialBreakdown'
+};
+
 export const GAME_REGISTRY = [
     {
         gameId: GAME_IDS.MATRIX_REASONING,
@@ -24,6 +29,7 @@ export const GAME_REGISTRY = [
         maxDifficulty: 5,
         supportsScaffolds: true,
         supportsDifficulty: true,
+        dashboardViewType: DASHBOARD_VIEW_TYPES.TRIAL_BREAKDOWN,
         version: '1.0.0'
     },
     {
@@ -45,6 +51,7 @@ export const GAME_REGISTRY = [
         maxDifficulty: 5,
         supportsScaffolds: true,
         supportsDifficulty: true,
+        dashboardViewType: DASHBOARD_VIEW_TYPES.TRIAL_BREAKDOWN,
         version: '1.0.0'
     },
     {
@@ -65,6 +72,7 @@ export const GAME_REGISTRY = [
         maxDifficulty: 1,
         supportsScaffolds: true,
         supportsDifficulty: false,
+        dashboardViewType: DASHBOARD_VIEW_TYPES.SUMMARY_WITH_CORRECTIONS,
         version: '1.0.0'
     }
 ];
@@ -104,6 +112,10 @@ export function validateGameRegistry(registry = GAME_REGISTRY) {
         }
 
         if (!Array.isArray(game.skills)) {
+            return false;
+        }
+
+        if (!Object.values(DASHBOARD_VIEW_TYPES).includes(game.dashboardViewType)) {
             return false;
         }
 

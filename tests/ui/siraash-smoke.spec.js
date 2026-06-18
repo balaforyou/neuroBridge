@@ -329,6 +329,7 @@ test.describe('Number Bridges viewport smoke', () => {
             await expect(page.getByRole('button', { name: /Home/ })).toBeVisible();
             await expect(page.getByLabel('SIRAASH')).toBeVisible();
             await expect(page.getByRole('heading', { name: 'Number Bridges' })).toBeVisible();
+            await expect(page.getByTestId('number-bridges-header-level')).toHaveText('Addition L1');
             await expect(page.getByTestId('kumon-quiz')).toBeVisible();
             await expect(page.getByTestId('number-bridges-main-task')).toBeVisible();
             await expect(page.getByTestId('number-bridges-row-list')).toBeVisible();
@@ -445,6 +446,7 @@ test.describe('Number Bridges viewport smoke', () => {
 
         await expect(page.getByTestId('number-bridges-results')).toBeVisible();
         await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
+        await expect(page.getByTestId('number-bridges-result-level')).toHaveText('Addition L1 (+1 Bridges)');
         await expect(page.getByTestId('number-bridges-total')).toHaveText('Questions: 5');
         await expect(page.getByTestId('number-bridges-correct-total')).toHaveText('Correct / Total: 5 / 5');
         await expect(page.getByTestId('number-bridges-score')).toHaveCount(0);
@@ -463,6 +465,29 @@ test.describe('Number Bridges viewport smoke', () => {
         await expect(page.getByTestId('number-bridges-next-round-button')).toHaveText('Try Again');
         await expect(page.getByTestId('number-bridges-home-button')).toBeVisible();
         await expectResultPanelDoesNotScroll(page);
+        await expectNoPageScrollbar(page);
+
+        await page.getByTestId('number-bridges-next-round-button').click();
+        await expect(page.getByTestId('number-bridges-header-level')).toHaveText('Addition L1');
+        await expect(page.getByTestId('number-bridges-question')).toHaveText('1 + 1 =');
+    });
+
+    test('advances from Addition L1 to L2 when auto progression is enabled', async ({ page }) => {
+        await page.goto('/games/kumonQuiz/');
+        await initializeKumonQuiz(page, { autoProgression: true });
+
+        await expect(page.getByTestId('number-bridges-header-level')).toHaveText('Addition L1');
+
+        for (const [rowIndex, answer] of [[0, 2], [1, 3], [2, 4], [3, 5], [4, 6]]) {
+            await answerNumberBridgeRow(page, rowIndex, answer);
+        }
+
+        await expect(page.getByTestId('number-bridges-results')).toBeVisible();
+        await expect(page.getByTestId('number-bridges-result-level')).toHaveText('Addition L1 (+1 Bridges)');
+
+        await page.getByTestId('number-bridges-next-round-button').click();
+        await expect(page.getByTestId('number-bridges-header-level')).toHaveText('Addition L2');
+        await expect(page.getByTestId('number-bridges-question')).toHaveText('1 + 2 =');
         await expectNoPageScrollbar(page);
     });
 
@@ -488,6 +513,7 @@ test.describe('Number Bridges viewport smoke', () => {
             await expect(page.getByTestId('siraash-completion-feedback')).toBeVisible();
             await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
             await expect(page.getByTestId('siraash-completion-message')).toHaveText('You finished your Number Bridges.');
+            await expect(page.getByTestId('number-bridges-result-level')).toHaveText('Addition L1 (+1 Bridges)');
             await expect(page.getByTestId('number-bridges-clap-visual')).toContainText('Strong work!');
             await expect(page.getByTestId('number-bridges-metrics')).toBeVisible();
             await expect(page.getByTestId('number-bridges-total')).toHaveText('Questions: 10');
@@ -598,27 +624,130 @@ test.describe('Number Bridges viewport smoke', () => {
         await page.getByRole('button', { name: 'Enter' }).click();
 
         const parentReport = page.locator('#parent-report-view');
-        await expect(page.getByTestId('parent-dashboard-section')).toBeVisible();
-        await expect(page.getByTestId('parent-administration-section')).toBeVisible();
-        await expect(page.getByTestId('parent-testing-section')).toBeVisible();
+        await expect(page.getByTestId('parent-tab-dashboard')).toBeVisible();
+        await expect(page.getByTestId('parent-tab-administration')).toBeVisible();
+        await expect(page.getByTestId('parent-tab-testing')).toBeVisible();
+        await expect(page.getByTestId('parent-tab-dashboard')).toHaveAttribute('aria-selected', 'true');
+        await expect(page.getByTestId('parent-tab-administration')).toHaveAttribute('aria-selected', 'false');
+        await expect(page.getByTestId('parent-tab-testing')).toHaveAttribute('aria-selected', 'false');
+        await expect(page.getByTestId('parent-panel-dashboard')).toBeVisible();
+        await expect(page.getByTestId('parent-panel-administration')).toBeHidden();
+        await expect(page.getByTestId('parent-panel-testing')).toBeHidden();
         await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
-        await expect(page.getByRole('heading', { name: 'Administration' })).toBeVisible();
-        await expect(page.getByRole('heading', { name: 'Testing' })).toBeVisible();
         await expect(parentReport).toContainText('Recent Learning Sessions');
         await expect(parentReport).not.toContainText('Session Trial Breakdown');
         await expect(parentReport).toContainText('Kumon Quiz / Number Bridges');
         await expect(parentReport).toContainText('When:');
-        await expect(parentReport).toContainText('Level: 1');
+        await expect(parentReport).toContainText('Addition L1 (+1 Bridges)');
+        await expect(parentReport).toContainText('Level: Addition L1 (+1 Bridges)');
         await expect(parentReport).toContainText('Score: 10 / 10');
         await expect(parentReport).toContainText('100%');
         await expect(parentReport).toContainText('Duration:');
+        await expect(parentReport).toContainText('Average Time:');
+        await expect(parentReport).toContainText('Question Order: Sequential');
         await expect(parentReport).toContainText('Hints: 0');
         await expect(parentReport).toContainText('Corrections: 0');
+        await expect(parentReport).toContainText('No corrections needed.');
         await expect(parentReport).toContainText('Future: Cognitive Snapshot');
         await expect(parentReport).toContainText('Future: Learning Signals');
         await expect(parentReport).not.toContainText('10000%');
+        await expect(parentReport).not.toContainText('Level: --');
+        await expect(parentReport).not.toContainText('Trial-level details remain available');
+        await expect(parentReport.locator('table')).toHaveCount(0);
+        await expect(page.getByRole('button', { name: 'Test Number Bridges' })).toBeHidden();
+
+        await page.getByTestId('parent-tab-administration').click();
+        await expect(page.getByTestId('parent-tab-administration')).toHaveAttribute('aria-selected', 'true');
+        await expect(page.getByTestId('parent-panel-dashboard')).toBeHidden();
+        await expect(page.getByTestId('parent-panel-administration')).toBeVisible();
+        await expect(page.getByTestId('parent-panel-testing')).toBeHidden();
+        await expect(page.getByRole('heading', { name: 'Administration' })).toBeVisible();
+        await expect(page.locator('#parent-controls-form')).toContainText('Max Level Ceiling');
+        await expect(page.getByTestId('number-bridges-config-panel')).toBeVisible();
+        await expect(page.locator('#parent-controls-form .setting-input')).toHaveCount(15);
+
+        await page.getByTestId('parent-tab-testing').click();
+        await expect(page.getByTestId('parent-tab-testing')).toHaveAttribute('aria-selected', 'true');
+        await expect(page.getByTestId('parent-panel-dashboard')).toBeHidden();
+        await expect(page.getByTestId('parent-panel-administration')).toBeHidden();
+        await expect(page.getByTestId('parent-panel-testing')).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Testing' })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Test Number Bridges' })).toBeVisible();
         await expectNoPageScrollbar(page, { vertical: true });
+    });
+
+    test('persists Number Bridges parent configuration and launches with saved settings', async ({ page }) => {
+        await page.setViewportSize({ width: DESKTOP.width, height: DESKTOP.height });
+        await page.goto('/');
+
+        await page.evaluate(async (learnerName) => {
+            const db = await import('/js/database.js');
+            await db.clearAllScores();
+            await db.seedCustomPins('4321', '2580', learnerName);
+            await db.saveGameConfiguration('kumonQuiz', {
+                operation: '+',
+                level: 1,
+                questionCount: 10,
+                questionsPerScreen: 5,
+                hintsEnabled: true,
+                autoProgression: false,
+                questionOrder: 'sequential'
+            });
+        }, LEARNER_NAME);
+
+        await page.locator('#btn-login-parent').click();
+        await page.getByPlaceholder('Enter PIN').fill('4321');
+        await page.getByRole('button', { name: 'Enter' }).click();
+
+        await expect(page.getByTestId('number-bridges-active-config')).toContainText('Addition L1 (+1 Bridges)');
+        await expect(page.getByTestId('number-bridges-active-config')).toContainText('10 Questions');
+        await expect(page.getByTestId('number-bridges-active-config')).toContainText('5 Per Screen');
+        await expect(page.getByTestId('number-bridges-active-config')).toContainText('Hints On');
+        await expect(page.getByTestId('number-bridges-active-config')).toContainText('Question Order: Sequential');
+
+        await page.getByTestId('parent-tab-administration').click();
+        await page.getByTestId('number-bridges-config-operation').selectOption('×');
+        await page.getByTestId('number-bridges-config-level').selectOption('2');
+        await page.getByTestId('number-bridges-config-question-count').selectOption('20');
+        await page.getByTestId('number-bridges-config-questions-per-screen').selectOption('1');
+        await page.getByTestId('number-bridges-config-hints').selectOption('false');
+        await page.getByTestId('number-bridges-config-auto-progression').selectOption('true');
+        await page.getByTestId('number-bridges-config-question-order').selectOption('random');
+
+        await expect(page.getByTestId('number-bridges-config-summary')).toContainText('Multiplication L2 (×3 Tables)');
+        await expect(page.getByTestId('number-bridges-config-summary')).toContainText('20 Questions');
+        await expect(page.getByTestId('number-bridges-config-summary')).toContainText('1 Per Screen');
+        await expect(page.getByTestId('number-bridges-config-summary')).toContainText('Hints Off');
+        await expect(page.getByTestId('number-bridges-config-summary')).toContainText('Question Order: Random');
+
+        await page.reload();
+        await page.locator('#btn-login-parent').click();
+        await page.getByPlaceholder('Enter PIN').fill('4321');
+        await page.getByRole('button', { name: 'Enter' }).click();
+
+        await expect(page.getByTestId('number-bridges-active-config')).toContainText('Multiplication L2 (×3 Tables)');
+        await expect(page.getByTestId('number-bridges-active-config')).toContainText('20 Questions');
+        await expect(page.getByTestId('number-bridges-active-config')).toContainText('1 Per Screen');
+        await expect(page.getByTestId('number-bridges-active-config')).toContainText('Hints Off');
+        await expect(page.getByTestId('number-bridges-active-config')).toContainText('Question Order: Random');
+
+        await page.getByTestId('parent-tab-administration').click();
+        await expect(page.getByTestId('number-bridges-config-operation')).toHaveValue('×');
+        await expect(page.getByTestId('number-bridges-config-level')).toHaveValue('2');
+        await expect(page.getByTestId('number-bridges-config-question-count')).toHaveValue('20');
+        await expect(page.getByTestId('number-bridges-config-questions-per-screen')).toHaveValue('1');
+        await expect(page.getByTestId('number-bridges-config-hints')).toHaveValue('false');
+        await expect(page.getByTestId('number-bridges-config-auto-progression')).toHaveValue('true');
+        await expect(page.getByTestId('number-bridges-config-question-order')).toHaveValue('random');
+
+        await page.getByTestId('parent-tab-testing').click();
+        await page.getByRole('button', { name: 'Test Number Bridges' }).click();
+
+        const frame = page.frameLocator('#game-frame');
+        await expect(frame.getByTestId('number-bridges-header-level')).toHaveText('Multiplication L2');
+        await expect(frame.locator('#ui-question')).toHaveText('1/20');
+        await expect(frame.getByTestId('number-bridges-question')).toContainText('× 3');
+        await expect(frame.locator('[data-testid^="number-bridges-answer-input"]')).toHaveCount(1);
     });
 });
 

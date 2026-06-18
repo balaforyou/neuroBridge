@@ -107,7 +107,42 @@
             </div>
 
             <div class="space-y-6">
-                <section data-testid="parent-dashboard-section" class="bg-slate-900 border border-slate-800 p-5 sm:p-6 rounded-xl">
+                <nav class="flex flex-col sm:flex-row gap-2 rounded-xl bg-slate-900 border border-slate-800 p-2" aria-label="Parent workspace" role="tablist">
+                    <button
+                        type="button"
+                        role="tab"
+                        aria-controls="parent-panel-dashboard"
+                        data-parent-tab="dashboard"
+                        data-testid="parent-tab-dashboard"
+                        class="parent-workspace-tab min-h-[44px] px-4 py-2 rounded-lg text-sm font-bold transition">
+                        Dashboard
+                    </button>
+                    <button
+                        type="button"
+                        role="tab"
+                        aria-controls="parent-panel-administration"
+                        data-parent-tab="administration"
+                        data-testid="parent-tab-administration"
+                        class="parent-workspace-tab min-h-[44px] px-4 py-2 rounded-lg text-sm font-bold transition">
+                        Administration
+                    </button>
+                    <button
+                        type="button"
+                        role="tab"
+                        aria-controls="parent-panel-testing"
+                        data-parent-tab="testing"
+                        data-testid="parent-tab-testing"
+                        class="parent-workspace-tab min-h-[44px] px-4 py-2 rounded-lg text-sm font-bold transition">
+                        Testing
+                    </button>
+                </nav>
+
+                <section
+                    id="parent-panel-dashboard"
+                    role="tabpanel"
+                    data-parent-panel="dashboard"
+                    data-testid="parent-panel-dashboard"
+                    class="parent-workspace-panel bg-slate-900 border border-slate-800 p-5 sm:p-6 rounded-xl">
                     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 mb-4">
                         <div>
                             <h3 class="text-xl font-bold text-emerald-300">Dashboard</h3>
@@ -117,23 +152,31 @@
                     <div id="parent-report-view" class="text-slate-400 text-sm">Awaiting database entries...</div>
                 </section>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <section data-testid="parent-administration-section" class="bg-slate-900 border border-slate-800 p-5 sm:p-6 rounded-xl">
-                        <h3 class="text-xl font-bold text-indigo-300">Administration</h3>
-                        <p class="mt-1 text-sm text-slate-400">Configure activity limits and scaffold settings.</p>
-                        <div id="parent-controls-form" class="space-y-4 mt-4">
-                            <!-- Controls logic injected here via dashboard.js -->
-                            <p class="text-xs text-slate-500">Database hooks configured for individual game limits.</p>
-                        </div>
-                    </section>
+                <section
+                    id="parent-panel-administration"
+                    role="tabpanel"
+                    data-parent-panel="administration"
+                    data-testid="parent-panel-administration"
+                    class="parent-workspace-panel hidden bg-slate-900 border border-slate-800 p-5 sm:p-6 rounded-xl">
+                    <h3 class="text-xl font-bold text-indigo-300">Administration</h3>
+                    <p class="mt-1 text-sm text-slate-400">Configure activity limits and scaffold settings.</p>
+                    <div id="parent-controls-form" class="space-y-4 mt-4">
+                        <!-- Controls logic injected here via dashboard.js -->
+                        <p class="text-xs text-slate-500">Database hooks configured for individual game limits.</p>
+                    </div>
+                </section>
 
-                    <section data-testid="parent-testing-section" class="bg-slate-900 border border-slate-800 p-5 sm:p-6 rounded-xl">
-                        <h3 class="text-xl font-bold text-amber-300">Testing</h3>
-                        <p class="mt-1 text-sm text-slate-400">Sandbox launchers and local data tools for verification.</p>
-                        <div id="developer-tools-panel" class="space-y-3 mt-4">
-                        </div>
-                    </section>
-                </div>
+                <section
+                    id="parent-panel-testing"
+                    role="tabpanel"
+                    data-parent-panel="testing"
+                    data-testid="parent-panel-testing"
+                    class="parent-workspace-panel hidden bg-slate-900 border border-slate-800 p-5 sm:p-6 rounded-xl">
+                    <h3 class="text-xl font-bold text-amber-300">Testing</h3>
+                    <p class="mt-1 text-sm text-slate-400">Sandbox launchers and local data tools for verification.</p>
+                    <div id="developer-tools-panel" class="space-y-3 mt-4">
+                    </div>
+                </section>
             </div>
         </section>
 

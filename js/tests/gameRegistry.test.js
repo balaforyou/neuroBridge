@@ -3,6 +3,7 @@
  */
 
 import {
+    DASHBOARD_VIEW_TYPES,
     GAME_REGISTRY,
     getAllGames,
     getGameById,
@@ -46,6 +47,32 @@ function testValidDomainMapping() {
     assert(getGameById('kumonQuiz').domain === 'numeracy', 'Kumon Quiz should map to numeracy');
 
     console.log('Valid domain mapping test passed');
+}
+
+function testDashboardViewTypeContract() {
+    const allowedViewTypes = Object.values(DASHBOARD_VIEW_TYPES);
+
+    for (const game of GAME_REGISTRY) {
+        assert(
+            allowedViewTypes.includes(game.dashboardViewType),
+            `Game ${game.gameId} should declare a valid dashboardViewType`
+        );
+    }
+
+    assert(
+        getGameById('kumonQuiz').dashboardViewType === DASHBOARD_VIEW_TYPES.SUMMARY_WITH_CORRECTIONS,
+        'Number Bridges should use summaryWithCorrections'
+    );
+    assert(
+        getGameById('matrixReasoning').dashboardViewType === DASHBOARD_VIEW_TYPES.TRIAL_BREAKDOWN,
+        'Matrix Reasoning should use trialBreakdown'
+    );
+    assert(
+        getGameById('attributeExplorer').dashboardViewType === DASHBOARD_VIEW_TYPES.TRIAL_BREAKDOWN,
+        'Attribute Explorer should use trialBreakdown until reviewed'
+    );
+
+    console.log('Dashboard view type contract test passed');
 }
 
 function testAllGameSkillsExistInSkillRegistry() {
@@ -167,6 +194,7 @@ function runAllTests() {
     console.log('=== Game Registry Unit Tests ===');
     testGamesExist();
     testValidDomainMapping();
+    testDashboardViewTypeContract();
     testAllGameSkillsExistInSkillRegistry();
     testEveryGameSkillHasOntologyMapping();
     testGetGameById();

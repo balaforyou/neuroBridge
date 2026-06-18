@@ -21,5 +21,12 @@ export const DEFAULT_GAME_CONFIG = {
     maxDifficultyCeiling: 5,
     timeLimitSeconds: 45,
     trialsPerBlock: 10,
-    forcedStageOverride: 0
+    forcedStageOverride: 0,
+    operation: '+',
+    level: 1,
+    questionCount: 10,
+    questionsPerScreen: 5,
+    hintsEnabled: true,
+    autoProgression: false,
+    questionOrder: 'sequential'
 };

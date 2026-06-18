@@ -8,16 +8,70 @@ import {
     clearGameScores
 } from './database.js';
 
-import { getGameById, getRegisteredGames } from './gameRegistry.js';
+import { GAME_IDS } from './constants.js';
+import {
+    DASHBOARD_VIEW_TYPES,
+    getGameById,
+    getRegisteredGames
+} from './gameRegistry.js';
+
+const PARENT_WORKSPACE_TABS = ['dashboard', 'administration', 'testing'];
+const DEFAULT_PARENT_WORKSPACE_TAB = 'dashboard';
+const NUMBER_BRIDGE_LEVEL_OPTIONS = [1, 2, 3, 4, 5];
+const NUMBER_BRIDGE_QUESTION_COUNT_OPTIONS = [5, 10, 20];
+const NUMBER_BRIDGE_QUESTIONS_PER_SCREEN_OPTIONS = [1, 3, 5];
+const NUMBER_BRIDGE_OPERATION_OPTIONS = [
+    { value: '+', label: 'Addition', factors: [1, 2, 3, 4, 5], skillLabelFor: factor => `+${factor} Bridges` },
+    { value: '-', label: 'Subtraction', factors: [1, 2, 3, 4, 5], skillLabelFor: factor => `-${factor} Bridges` },
+    { value: '×', label: 'Multiplication', factors: [2, 3, 4, 5, 10], skillLabelFor: factor => `×${factor} Tables` },
+    { value: '÷', label: 'Division', factors: [2, 3, 4, 5, 10], skillLabelFor: factor => `÷${factor} Facts` }
+];
+let settingsSaveQueue = Promise.resolve();
 
 export function initDashboard() {
     console.log('Dashboard UI Controller Hooks Injected.');
 
+    initParentWorkspaceTabs();
     renderParentProgressReport();
     renderDeveloperTools();
 }
 
+function initParentWorkspaceTabs() {
+    document.querySelectorAll('[data-parent-tab]').forEach(tab => {
+        tab.addEventListener('click', () => {
+            activateParentWorkspaceTab(tab.getAttribute('data-parent-tab'));
+        });
+    });
+
+    activateParentWorkspaceTab(DEFAULT_PARENT_WORKSPACE_TAB);
+}
+
+export function activateParentWorkspaceTab(tabId = DEFAULT_PARENT_WORKSPACE_TAB) {
+    const activeTab = PARENT_WORKSPACE_TABS.includes(tabId)
+        ? tabId
+        : DEFAULT_PARENT_WORKSPACE_TAB;
+
+    document.querySelectorAll('[data-parent-tab]').forEach(tab => {
+        const isActive = tab.getAttribute('data-parent-tab') === activeTab;
+        tab.setAttribute('aria-selected', String(isActive));
+        tab.classList.toggle('bg-emerald-600', isActive);
+        tab.classList.toggle('text-white', isActive);
+        tab.classList.toggle('shadow', isActive);
+        tab.classList.toggle('bg-slate-950', !isActive);
+        tab.classList.toggle('text-slate-300', !isActive);
+        tab.classList.toggle('hover:bg-slate-800', !isActive);
+    });
+
+    document.querySelectorAll('[data-parent-panel]').forEach(panel => {
+        const isActive = panel.getAttribute('data-parent-panel') === activeTab;
+        panel.classList.toggle('hidden', !isActive);
+        panel.setAttribute('aria-hidden', String(!isActive));
+    });
+}
+
 export async function renderParentControls() {
+    activateParentWorkspaceTab(DEFAULT_PARENT_WORKSPACE_TAB);
+
     const container = document.getElementById('parent-controls-form');
     if (!container) return;
 
@@ -26,6 +80,12 @@ export async function renderParentControls() {
 
     for (const game of gamesList) {
         const config = await getGameConfiguration(game.id);
+
+        if (game.id === GAME_IDS.KUMON_QUIZ) {
+            container.appendChild(createNumberBridgeControlCard(game, config));
+            continue;
+        }
+
         const forcedStageOptions = Array.from(
             { length: game.maxLevel || 10 },
             (_, index) => index + 1
@@ -107,6 +167,140 @@ export async function renderParentControls() {
     });
 }
 
+function createNumberBridgeControlCard(game, config) {
+    const controlCard = document.createElement('div');
+    controlCard.className = 'p-4 bg-slate-950 border border-emerald-900 rounded-xl space-y-4';
+    controlCard.setAttribute('data-testid', 'number-bridges-config-panel');
+
+    controlCard.innerHTML = `
+        <div class="border-b border-slate-800 pb-2">
+            <h4 class="text-md font-bold text-emerald-300">${game.title}</h4>
+            <p class="text-xs text-slate-500 mt-1">Parent configuration for arithmetic Number Bridges.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            ${renderSelectSetting({
+                label: 'Operation',
+                gameId: game.id,
+                setting: 'operation',
+                testId: 'number-bridges-config-operation',
+                value: config.operation || '+',
+                options: NUMBER_BRIDGE_OPERATION_OPTIONS.map(operation => ({
+                    value: operation.value,
+                    label: operation.label
+                }))
+            })}
+            ${renderSelectSetting({
+                label: 'Level',
+                gameId: game.id,
+                setting: 'level',
+                type: 'number',
+                testId: 'number-bridges-config-level',
+                value: Number(config.level || 1),
+                options: NUMBER_BRIDGE_LEVEL_OPTIONS.map(level => ({
+                    value: level,
+                    label: formatNumberBridgeLevelDisplay({ ...config, level })
+                }))
+            })}
+            ${renderSelectSetting({
+                label: 'Questions',
+                gameId: game.id,
+                setting: 'questionCount',
+                type: 'number',
+                testId: 'number-bridges-config-question-count',
+                value: Number(config.questionCount || 10),
+                options: NUMBER_BRIDGE_QUESTION_COUNT_OPTIONS.map(count => ({
+                    value: count,
+                    label: String(count)
+                }))
+            })}
+            ${renderSelectSetting({
+                label: 'Questions Per Screen',
+                gameId: game.id,
+                setting: 'questionsPerScreen',
+                type: 'number',
+                testId: 'number-bridges-config-questions-per-screen',
+                value: Number(config.questionsPerScreen || 5),
+                options: NUMBER_BRIDGE_QUESTIONS_PER_SCREEN_OPTIONS.map(count => ({
+                    value: count,
+                    label: String(count)
+                }))
+            })}
+            ${renderSelectSetting({
+                label: 'Hints',
+                gameId: game.id,
+                setting: 'hintsEnabled',
+                type: 'boolean',
+                testId: 'number-bridges-config-hints',
+                value: config.hintsEnabled !== false,
+                options: [
+                    { value: true, label: 'On' },
+                    { value: false, label: 'Off' }
+                ]
+            })}
+            ${renderSelectSetting({
+                label: 'Auto Progression',
+                gameId: game.id,
+                setting: 'autoProgression',
+                type: 'boolean',
+                testId: 'number-bridges-config-auto-progression',
+                value: config.autoProgression === true,
+                options: [
+                    { value: true, label: 'On' },
+                    { value: false, label: 'Off' }
+                ]
+            })}
+            ${renderSelectSetting({
+                label: 'Question Order',
+                gameId: game.id,
+                setting: 'questionOrder',
+                testId: 'number-bridges-config-question-order',
+                value: config.questionOrder === 'random' ? 'random' : 'sequential',
+                options: [
+                    { value: 'sequential', label: 'Sequential' },
+                    { value: 'random', label: 'Random' }
+                ]
+            })}
+        </div>
+
+        <div data-testid="number-bridges-config-summary" class="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-300">
+            ${formatNumberBridgeConfigurationSummary(config)}
+        </div>
+
+        <p data-status="${game.id}" class="text-[11px] text-slate-500 min-h-[16px]"></p>
+    `;
+
+    return controlCard;
+}
+
+function renderSelectSetting({
+    label,
+    gameId,
+    setting,
+    testId,
+    value,
+    options,
+    type = 'string'
+}) {
+    const normalizedValue = String(value);
+
+    return `
+        <label class="block">
+            <span class="block text-xs text-slate-400 mb-1">${label}</span>
+            <select
+                data-game="${gameId}"
+                data-setting="${setting}"
+                data-setting-type="${type}"
+                data-testid="${testId}"
+                class="setting-input w-full p-2 bg-slate-900 border border-slate-700 rounded text-sm">
+                ${options.map(option => `
+                    <option value="${option.value}" ${String(option.value) === normalizedValue ? 'selected' : ''}>${option.label}</option>
+                `).join('')}
+            </select>
+        </label>
+    `;
+}
+
 export async function renderStudentMetrics() {
     const container = document.getElementById('student-metrics-chart');
     if (!container) return;
@@ -155,25 +349,32 @@ export async function renderStudentMetrics() {
     `;
 }
 
-async function handleSettingModification(event) {
+function handleSettingModification(event) {
     const input = event.target;
+    settingsSaveQueue = settingsSaveQueue.then(() => persistSettingModification(input));
+}
+
+async function persistSettingModification(input) {
     const gameId = input.getAttribute('data-game');
     const settingKey = input.getAttribute('data-setting');
-    const targetValue = parseInt(input.value, 10);
+    const targetValue = parseSettingValue(input);
 
-    if (!gameId || !settingKey || Number.isNaN(targetValue)) return;
+    if (!gameId || !settingKey || targetValue === null) return;
 
     const statusEl = document.querySelector(`[data-status="${gameId}"]`);
+    const updates = createSettingUpdate(gameId, settingKey, targetValue);
 
     try {
-        await saveGameConfiguration(gameId, {
-            [settingKey]: targetValue
-        });
+        const savedConfig = await saveGameConfiguration(gameId, updates);
 
         if (statusEl) {
             statusEl.innerText = 'Saved';
             statusEl.className = 'text-[11px] text-emerald-400 min-h-[16px]';
         }
+
+        updateNumberBridgeConfigurationSummary(gameId, savedConfig);
+        updateNumberBridgeLevelOptions(gameId, savedConfig);
+        await renderParentProgressReport();
 
         setTimeout(() => {
             if (statusEl) statusEl.innerText = '';
@@ -190,6 +391,53 @@ async function handleSettingModification(event) {
     }
 }
 
+function parseSettingValue(input) {
+    const settingType = input.getAttribute('data-setting-type') || 'number';
+
+    if (settingType === 'boolean') {
+        return input.value === 'true';
+    }
+
+    if (settingType === 'string') {
+        return input.value;
+    }
+
+    const numericValue = parseInt(input.value, 10);
+    return Number.isNaN(numericValue) ? null : numericValue;
+}
+
+function createSettingUpdate(gameId, settingKey, targetValue) {
+    const updates = { [settingKey]: targetValue };
+
+    if (gameId === GAME_IDS.KUMON_QUIZ && settingKey === 'level') {
+        updates.secondNumberMode = 'fixed';
+        updates.secondNumberFixedValue = targetValue;
+    }
+
+    return updates;
+}
+
+function updateNumberBridgeConfigurationSummary(gameId, config) {
+    if (gameId !== GAME_IDS.KUMON_QUIZ) return;
+
+    const summaryEl = document.querySelector('[data-testid="number-bridges-config-summary"]');
+    if (summaryEl) {
+        summaryEl.textContent = formatNumberBridgeConfigurationSummary(config);
+    }
+}
+
+function updateNumberBridgeLevelOptions(gameId, config) {
+    if (gameId !== GAME_IDS.KUMON_QUIZ) return;
+
+    const levelSelect = document.querySelector('[data-testid="number-bridges-config-level"]');
+    if (!levelSelect) return;
+
+    const selectedLevel = clampInteger(config.level, 1, 5, 1);
+    levelSelect.innerHTML = NUMBER_BRIDGE_LEVEL_OPTIONS.map(level => `
+        <option value="${level}" ${level === selectedLevel ? 'selected' : ''}>${formatNumberBridgeLevelDisplay({ ...config, level })}</option>
+    `).join('');
+}
+
 function formatGameName(gameId) {
     if (!gameId) return 'Unknown Game';
 
@@ -203,6 +451,56 @@ function formatGameName(gameId) {
     return gameId
         .replace(/([A-Z])/g, ' $1')
         .replace(/^./, char => char.toUpperCase());
+}
+
+function formatNumberBridgeLevelDisplay(config = {}) {
+    const level = clampInteger(config.level, 1, 5, 1);
+    const operationPack = getNumberBridgeDashboardOperationPack(config.operation);
+    const factor = operationPack.factors[level - 1] || operationPack.factors[0];
+    return `${operationPack.label} L${level} (${operationPack.skillLabelFor(factor)})`;
+}
+
+function getNumberBridgeDashboardOperationPack(operation = '+') {
+    if (operation === 'x' || operation === 'X' || operation === '*') {
+        return NUMBER_BRIDGE_OPERATION_OPTIONS.find(option => option.value === '×');
+    }
+
+    if (operation === '/') {
+        return NUMBER_BRIDGE_OPERATION_OPTIONS.find(option => option.value === '÷');
+    }
+
+    return NUMBER_BRIDGE_OPERATION_OPTIONS.find(option => option.value === operation) || NUMBER_BRIDGE_OPERATION_OPTIONS[0];
+}
+
+function formatNumberBridgeQuestionOrder(config = {}) {
+    return (config.questionOrder || config.questionOrderMode) === 'random' ? 'Random' : 'Sequential';
+}
+
+export function formatNumberBridgeConfigurationSummary(config = {}) {
+    const questionCount = [5, 10, 20].includes(Number(config.questionCount))
+        ? Number(config.questionCount)
+        : 10;
+    const questionsPerScreen = [1, 3, 5].includes(Number(config.questionsPerScreen))
+        ? Number(config.questionsPerScreen)
+        : 5;
+    const hintsLabel = config.hintsEnabled === false ? 'Hints Off' : 'Hints On';
+
+    return [
+        formatNumberBridgeLevelDisplay(config),
+        `${questionCount} Questions`,
+        `${questionsPerScreen} Per Screen`,
+        hintsLabel,
+        `Question Order: ${formatNumberBridgeQuestionOrder(config)}`
+    ].join(' | ');
+}
+
+function renderNumberBridgeActiveConfiguration(config = {}) {
+    return `
+        <section data-testid="number-bridges-active-config" class="mb-4 rounded-xl border border-emerald-900 bg-slate-950 p-3">
+            <div class="text-[11px] uppercase tracking-wide text-emerald-300 font-black">Number Bridges Active Configuration</div>
+            <div class="mt-1 text-sm font-bold text-slate-100">${formatNumberBridgeConfigurationSummary(config)}</div>
+        </section>
+    `;
 }
 
 function formatScore(log) {
@@ -240,6 +538,18 @@ function formatSessionDuration(log) {
         : '--';
 }
 
+function formatAverageTimePerQuestion(log) {
+    const averageTime = Number(log.averageTimePerQuestion || 0);
+    if (averageTime > 0) {
+        return `${averageTime} sec/question`;
+    }
+
+    const averageReactionTimeMs = Number(log.averageReactionTimeMs || 0);
+    return averageReactionTimeMs > 0
+        ? `${Math.round(averageReactionTimeMs / 100) / 10} sec/question`
+        : '--';
+}
+
 function formatHints(log) {
     return `Hints: ${Number(log.hintUsageCount || 0)}`;
 }
@@ -253,9 +563,146 @@ function formatSessionLevel(log) {
     return Number.isFinite(level) && level > 0 ? String(level) : '--';
 }
 
+function formatSessionLevelContext(log) {
+    if (getDashboardViewType(log) === DASHBOARD_VIEW_TYPES.SUMMARY_WITH_CORRECTIONS) {
+        const levelLabel = String(log.levelLabel || '').trim();
+        const skillLabel = String(log.skillLabel || '').trim();
+
+        if (levelLabel && skillLabel) {
+            return `${levelLabel} (${skillLabel})`;
+        }
+
+        if (levelLabel) return levelLabel;
+    }
+
+    const level = formatSessionLevel(log);
+    return level === '--' ? '--' : `Level ${level}`;
+}
+
+export function getDashboardViewType(log = {}) {
+    const game = getGameById(log.gameId);
+    return game?.dashboardViewType || DASHBOARD_VIEW_TYPES.TRIAL_BREAKDOWN;
+}
+
+export function renderNumberBridgeCorrectionReview(log = {}) {
+    const correctionRows = (log.trials || [])
+        .filter(trial => trial.isCorrect === false || trial.correct === false)
+        .map(trial => {
+            const question = Number.isFinite(Number(trial.operandA)) && Number.isFinite(Number(trial.operandB))
+                ? `${trial.operandA} ${trial.operation || '+'} ${trial.operandB}`
+                : (trial.question || trial.prompt || 'Question');
+
+            return `
+                <li class="rounded-xl border border-amber-800 bg-slate-900 px-3 py-2">
+                    <div class="font-black text-slate-100">${question}</div>
+                    <div class="text-amber-300">Attempted: ${trial.learnerAnswer ?? trial.selectedAnswer ?? '--'}</div>
+                    <div class="text-emerald-300">Correct: ${trial.expectedAnswer ?? trial.correctAnswer ?? '--'}</div>
+                </li>
+            `;
+        })
+        .join('');
+
+    if (!correctionRows) {
+        return `
+            <div data-testid="parent-number-bridges-corrections" class="mt-3 rounded-xl border border-emerald-900 bg-slate-900 px-3 py-2 text-sm font-bold text-emerald-300">
+                No corrections needed.
+            </div>
+        `;
+    }
+
+    return `
+        <div data-testid="parent-number-bridges-corrections" class="mt-3">
+            <h5 class="text-xs font-black uppercase tracking-wide text-amber-300">Review Corrections</h5>
+            <ul class="mt-2 space-y-2 text-xs text-slate-300">
+                ${correctionRows}
+            </ul>
+        </div>
+    `;
+}
+
+export function renderParentSessionDetails(log = {}) {
+    const usesSummaryWithCorrections =
+        getDashboardViewType(log) === DASHBOARD_VIEW_TYPES.SUMMARY_WITH_CORRECTIONS;
+
+    if (usesSummaryWithCorrections) {
+        return `
+            <div data-testid="parent-number-bridges-summary" class="mt-3 rounded-xl border border-slate-800 bg-slate-900 p-3 text-xs text-slate-400">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    <span><span class="text-slate-500">Average Time:</span> ${formatAverageTimePerQuestion(log)}</span>
+                    <span><span class="text-slate-500">Question Order:</span> ${formatNumberBridgeQuestionOrder(log)}</span>
+                    <span><span class="text-slate-500">${formatHints(log)}</span></span>
+                    <span><span class="text-slate-500">${formatMistakes(log)}</span></span>
+                </div>
+                ${renderNumberBridgeCorrectionReview(log)}
+            </div>
+        `;
+    }
+
+    const trialRows = (log.trials || []).map((trial, idx) => `
+        <tr class="border-t border-slate-800">
+            <td class="p-2">${idx + 1}</td>
+            <td class="p-2">${trial.stage || '--'}</td>
+            <td class="p-2 ${(trial.correct === true || trial.isCorrect === true) ? 'text-emerald-400' : 'text-amber-400'}">
+                ${(trial.correct === true || trial.isCorrect === true) ? 'âœ“' : 'âœ—'}
+            </td>
+            <td class="p-2">${trial.reactionTimeMs || '--'} ms</td>
+        </tr>
+    `).join('');
+
+    return `
+        <div class="mt-3 text-xs text-slate-500">
+            Trial-level details remain available for troubleshooting and progress review.
+        </div>
+
+        <table class="mt-3 w-full text-xs">
+            <thead>
+                <tr class="text-slate-400 border-b border-slate-800">
+                    <th class="p-2 text-left">Trial</th>
+                    <th class="p-2 text-left">Level</th>
+                    <th class="p-2 text-left">Result</th>
+                    <th class="p-2 text-left">Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${trialRows}
+            </tbody>
+        </table>
+    `;
+}
+
+export function renderParentSessionRow(log = {}) {
+    const usesSummaryWithCorrections =
+        getDashboardViewType(log) === DASHBOARD_VIEW_TYPES.SUMMARY_WITH_CORRECTIONS;
+
+    return `
+        <details class="bg-slate-950 border border-slate-800 rounded-xl p-3" data-testid="parent-session-row" ${usesSummaryWithCorrections ? 'open' : ''}>
+            <summary class="cursor-pointer text-slate-200 font-semibold">
+                <span class="block text-sm text-slate-100">${formatGameName(log.gameId)}</span>
+                <span class="mt-1 block text-xs font-black text-emerald-300">${formatSessionLevelContext(log)}</span>
+                <span class="mt-2 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 text-xs font-medium text-slate-400">
+                    <span><span class="text-slate-500">When:</span> ${formatDate(log.timestamp)}</span>
+                    <span><span class="text-slate-500">Level:</span> ${formatSessionLevelContext(log)}</span>
+                    <span><span class="text-slate-500">Score:</span> ${formatScore(log)}</span>
+                    <span><span class="text-slate-500">Accuracy:</span> ${formatAccuracy(log)}</span>
+                    <span><span class="text-slate-500">Duration:</span> ${formatSessionDuration(log)}</span>
+                    <span><span class="text-slate-500">${formatHints(log)}</span> / <span class="text-slate-500">${formatMistakes(log)}</span></span>
+                </span>
+            </summary>
+
+            ${renderParentSessionDetails(log)}
+        </details>
+    `;
+}
+
 function clampRatio(value) {
     if (!Number.isFinite(value)) return 0;
     return Math.min(1, Math.max(0, value));
+}
+
+function clampInteger(value, min, max, fallback) {
+    const numericValue = parseInt(value, 10);
+    if (!Number.isFinite(numericValue)) return fallback;
+    return Math.min(max, Math.max(min, numericValue));
 }
 
 function formatDate(timestamp) {
@@ -268,10 +715,13 @@ export async function renderParentProgressReport() {
     const container = document.getElementById('parent-report-view');
     if (!container) return;
 
+    const numberBridgeConfig = await getGameConfiguration(GAME_IDS.KUMON_QUIZ);
+    const activeConfiguration = renderNumberBridgeActiveConfiguration(numberBridgeConfig);
     const logs = await getScoreLogs(null, 50);
 
     if (!logs.length) {
         container.innerHTML = `
+            ${activeConfiguration}
             <div class="text-slate-400 text-sm">No student performance records yet.</div>
             ${renderFutureDashboardPlaceholders()}
         `;
@@ -294,55 +744,10 @@ export async function renderParentProgressReport() {
         ...logs.map(log => Number(log.score || 0))
     );
 
-    const recentRows = logs.slice(0, 5).map(log => {
+    const recentRows = logs.slice(0, 5).map(renderParentSessionRow).join('');
 
-    const trialRows = (log.trials || []).map((trial, idx) => `
-        <tr class="border-t border-slate-800">
-            <td class="p-2">${idx + 1}</td>
-            <td class="p-2">${trial.stage || '--'}</td>
-            <td class="p-2 ${(trial.correct === true || trial.isCorrect === true) ? 'text-emerald-400' : 'text-amber-400'}">
-                ${(trial.correct === true || trial.isCorrect === true) ? '✓' : '✗'}
-            </td>
-            <td class="p-2">${trial.reactionTimeMs || '--'} ms</td>
-        </tr>
-    `).join('');
-
-    return `
-        <details class="bg-slate-950 border border-slate-800 rounded-xl p-3" data-testid="parent-session-row">
-            <summary class="cursor-pointer text-slate-200 font-semibold">
-                <span class="block text-sm text-slate-100">${formatGameName(log.gameId)}</span>
-                <span class="mt-2 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 text-xs font-medium text-slate-400">
-                    <span><span class="text-slate-500">When:</span> ${formatDate(log.timestamp)}</span>
-                    <span><span class="text-slate-500">Level:</span> ${formatSessionLevel(log)}</span>
-                    <span><span class="text-slate-500">Score:</span> ${formatScore(log)}</span>
-                    <span><span class="text-slate-500">Accuracy:</span> ${formatAccuracy(log)}</span>
-                    <span><span class="text-slate-500">Duration:</span> ${formatSessionDuration(log)}</span>
-                    <span><span class="text-slate-500">${formatHints(log)}</span> / <span class="text-slate-500">${formatMistakes(log)}</span></span>
-                </span>
-            </summary>
-
-            <div class="mt-3 text-xs text-slate-500">
-                Trial-level details remain available for troubleshooting and progress review.
-            </div>
-
-            <table class="mt-3 w-full text-xs">
-                <thead>
-                    <tr class="text-slate-400 border-b border-slate-800">
-                        <th class="p-2 text-left">Trial</th>
-                        <th class="p-2 text-left">Level</th>
-                        <th class="p-2 text-left">Result</th>
-                        <th class="p-2 text-left">Time</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${trialRows}
-                </tbody>
-            </table>
-        </details>
-    `;
-}).join('');
-
-container.innerHTML = `
+    container.innerHTML = `
+    ${activeConfiguration}
     <div class="grid grid-cols-2 gap-3">
         <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl">
             <div class="text-[11px] text-slate-500 uppercase tracking-wide">Sessions</div>
