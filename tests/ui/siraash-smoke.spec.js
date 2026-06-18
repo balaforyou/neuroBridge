@@ -146,7 +146,7 @@ test.describe('SIRAASH Activity Hub', () => {
         await expect(page.getByTestId('activity-tile-pattern-detective')).toBeVisible();
         await expect(page.getByTestId('activity-tile-look-closely')).toBeVisible();
         await expect(page.getByTestId('activity-tile-number-bridges')).toBeVisible();
-        await expect(page.getByText('Number Bridges')).toBeVisible();
+        await expect(page.getByTestId('activity-tile-number-bridges')).toContainText('Number Bridges');
         await expect(page.getByText('Coming Soon').first()).toBeVisible();
         await expect(page.getByText('Coming Soon')).toHaveCount(2);
         await expectNoPageScrollbar(page, { vertical: true });
@@ -598,10 +598,27 @@ test.describe('Number Bridges viewport smoke', () => {
         await page.getByRole('button', { name: 'Enter' }).click();
 
         const parentReport = page.locator('#parent-report-view');
+        await expect(page.getByTestId('parent-dashboard-section')).toBeVisible();
+        await expect(page.getByTestId('parent-administration-section')).toBeVisible();
+        await expect(page.getByTestId('parent-testing-section')).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Administration' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Testing' })).toBeVisible();
+        await expect(parentReport).toContainText('Recent Learning Sessions');
+        await expect(parentReport).not.toContainText('Session Trial Breakdown');
         await expect(parentReport).toContainText('Kumon Quiz / Number Bridges');
-        await expect(parentReport).toContainText('Score 10 / 10');
+        await expect(parentReport).toContainText('When:');
+        await expect(parentReport).toContainText('Level: 1');
+        await expect(parentReport).toContainText('Score: 10 / 10');
         await expect(parentReport).toContainText('100%');
+        await expect(parentReport).toContainText('Duration:');
+        await expect(parentReport).toContainText('Hints: 0');
+        await expect(parentReport).toContainText('Corrections: 0');
+        await expect(parentReport).toContainText('Future: Cognitive Snapshot');
+        await expect(parentReport).toContainText('Future: Learning Signals');
         await expect(parentReport).not.toContainText('10000%');
+        await expect(page.getByRole('button', { name: 'Test Number Bridges' })).toBeVisible();
+        await expectNoPageScrollbar(page, { vertical: true });
     });
 });
 

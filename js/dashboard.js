@@ -37,14 +37,9 @@ export async function renderParentControls() {
         controlCard.className = 'p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-4';
 
         controlCard.innerHTML = `
-            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+            <div class="border-b border-slate-800 pb-2">
                 <h4 class="text-md font-bold text-indigo-400">${game.title}</h4>
-
-                <button 
-                    data-game="${game.id}" 
-                    class="btn-launch-game bg-emerald-600 hover:bg-emerald-500 text-xs px-2.5 py-1 rounded font-semibold text-white transition shadow">
-                    Test Game
-                </button>
+                <p class="text-xs text-slate-500 mt-1">${game.description || 'Activity settings'}</p>
             </div>
 
             <div class="space-y-3">
@@ -239,12 +234,23 @@ function formatTime(log) {
     return log.averageReactionTimeMs ? `${Math.round(Number(log.averageReactionTimeMs))} ms avg` : '--';
 }
 
+function formatSessionDuration(log) {
+    return Number(log.sessionLengthSeconds || 0) > 0
+        ? `${Math.round(Number(log.sessionLengthSeconds))} sec`
+        : '--';
+}
+
 function formatHints(log) {
     return `Hints: ${Number(log.hintUsageCount || 0)}`;
 }
 
 function formatMistakes(log) {
-    return `Mistakes Corrected: ${Number(log.mistakeCount || 0)}`;
+    return `Corrections: ${Number(log.mistakeCount || 0)}`;
+}
+
+function formatSessionLevel(log) {
+    const level = Number(log.highestLevelReached);
+    return Number.isFinite(level) && level > 0 ? String(level) : '--';
 }
 
 function clampRatio(value) {
@@ -266,9 +272,8 @@ export async function renderParentProgressReport() {
 
     if (!logs.length) {
         container.innerHTML = `
-            <div class="text-slate-400 text-sm">
-                No student performance records yet.
-            </div>
+            <div class="text-slate-400 text-sm">No student performance records yet.</div>
+            ${renderFutureDashboardPlaceholders()}
         `;
         return;
     }
@@ -303,18 +308,21 @@ export async function renderParentProgressReport() {
     `).join('');
 
     return `
-        <details class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+        <details class="bg-slate-950 border border-slate-800 rounded-xl p-3" data-testid="parent-session-row">
             <summary class="cursor-pointer text-slate-200 font-semibold">
-                ${formatGameName(log.gameId)}
-                - Score ${formatScore(log)}
-                - ${formatAccuracy(log)}
-                ${Number(log.sessionLengthSeconds || 0) ? `- Time ${Math.round(Number(log.sessionLengthSeconds))} sec` : ''}
-                - ${formatHints(log)}
-                - ${formatMistakes(log)}
+                <span class="block text-sm text-slate-100">${formatGameName(log.gameId)}</span>
+                <span class="mt-2 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 text-xs font-medium text-slate-400">
+                    <span><span class="text-slate-500">When:</span> ${formatDate(log.timestamp)}</span>
+                    <span><span class="text-slate-500">Level:</span> ${formatSessionLevel(log)}</span>
+                    <span><span class="text-slate-500">Score:</span> ${formatScore(log)}</span>
+                    <span><span class="text-slate-500">Accuracy:</span> ${formatAccuracy(log)}</span>
+                    <span><span class="text-slate-500">Duration:</span> ${formatSessionDuration(log)}</span>
+                    <span><span class="text-slate-500">${formatHints(log)}</span> / <span class="text-slate-500">${formatMistakes(log)}</span></span>
+                </span>
             </summary>
 
-            <div class="mt-2 text-xs text-slate-500">
-                ${formatDate(log.timestamp)}
+            <div class="mt-3 text-xs text-slate-500">
+                Trial-level details remain available for troubleshooting and progress review.
             </div>
 
             <table class="mt-3 w-full text-xs">
@@ -364,14 +372,32 @@ container.innerHTML = `
 
     <div class="mt-5">
         <h4 class="text-sm font-bold text-slate-300 mb-3">
-            Session Trial Breakdown
+            Recent Learning Sessions
         </h4>
 
         <div class="space-y-3">
             ${recentRows}
         </div>
     </div>
+
+    ${renderFutureDashboardPlaceholders()}
 `;
+}
+
+function renderFutureDashboardPlaceholders() {
+    return `
+        <div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="p-3 bg-slate-950 border border-dashed border-slate-700 rounded-xl">
+                <div class="text-xs text-slate-500 uppercase tracking-wide">Future: Cognitive Snapshot</div>
+                <div class="mt-1 text-sm text-slate-400">Reserved for NB-PARENT-001.1.</div>
+            </div>
+
+            <div class="p-3 bg-slate-950 border border-dashed border-slate-700 rounded-xl">
+                <div class="text-xs text-slate-500 uppercase tracking-wide">Future: Learning Signals</div>
+                <div class="mt-1 text-sm text-slate-400">Reserved for NB-PARENT-001.2.</div>
+            </div>
+        </div>
+    `;
 }
 
 export function renderDeveloperTools() {
@@ -381,7 +407,21 @@ export function renderDeveloperTools() {
 
     if (!container) return;
 
+    const launchButtons = getRegisteredGames().map(game => `
+        <button
+            data-game="${game.id}"
+            class="btn-launch-game w-full bg-emerald-700 hover:bg-emerald-600 px-3 py-2 rounded-lg text-sm font-semibold text-white">
+            Test ${game.title}
+        </button>
+    `).join('');
+
     container.innerHTML = `
+        <div class="space-y-2">
+            ${launchButtons}
+        </div>
+
+        <hr class="border-slate-800 my-4">
+
         <button id="dev-reset-matrix"
             class="w-full bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg text-sm">
             Reset Matrix Scores

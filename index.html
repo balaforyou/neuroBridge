@@ -97,30 +97,42 @@
 
         <!-- View 3: Parent Dashboard -->
         <section id="view-parent" class="view-section hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-emerald-400">Parent Administration</h2>
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
+                <div>
+                    <p class="text-sm font-black uppercase tracking-[0.16em] text-emerald-300">Parent Dashboard</p>
+                    <h2 class="text-3xl font-black text-slate-100">Learning Insights</h2>
+                    <p class="mt-2 text-sm text-slate-400">Review recent learning, adjust activity settings, and use sandbox tools separately.</p>
+                </div>
                 <button class="btn-logout text-sm text-slate-400 hover:text-red-400 underline">Switch User</button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="md:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-xl">
-                    <h3 class="text-lg font-bold mb-3">Overall Progress Report</h3>
+
+            <div class="space-y-6">
+                <section data-testid="parent-dashboard-section" class="bg-slate-900 border border-slate-800 p-5 sm:p-6 rounded-xl">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-emerald-300">Dashboard</h3>
+                            <p class="text-sm text-slate-400">A parent-friendly view of recent learning sessions.</p>
+                        </div>
+                    </div>
                     <div id="parent-report-view" class="text-slate-400 text-sm">Awaiting database entries...</div>
-                </div>
-                <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-                    <h3 class="text-lg font-bold mb-3 text-indigo-400">Granular Rule Controls</h3>
-<div id="parent-controls-form" class="space-y-4">
-    <!-- Controls logic injected here via dashboard.js -->
-    <p class="text-xs text-slate-500">Database hooks configured for individual game limits.</p>
-</div>
+                </section>
 
-<hr class="border-slate-800 my-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <section data-testid="parent-administration-section" class="bg-slate-900 border border-slate-800 p-5 sm:p-6 rounded-xl">
+                        <h3 class="text-xl font-bold text-indigo-300">Administration</h3>
+                        <p class="mt-1 text-sm text-slate-400">Configure activity limits and scaffold settings.</p>
+                        <div id="parent-controls-form" class="space-y-4 mt-4">
+                            <!-- Controls logic injected here via dashboard.js -->
+                            <p class="text-xs text-slate-500">Database hooks configured for individual game limits.</p>
+                        </div>
+                    </section>
 
-<h4 class="text-sm font-bold text-amber-400">
-    Developer Tools
-</h4>
-
-<div id="developer-tools-panel" class="space-y-2 mt-3">
-</div>
+                    <section data-testid="parent-testing-section" class="bg-slate-900 border border-slate-800 p-5 sm:p-6 rounded-xl">
+                        <h3 class="text-xl font-bold text-amber-300">Testing</h3>
+                        <p class="mt-1 text-sm text-slate-400">Sandbox launchers and local data tools for verification.</p>
+                        <div id="developer-tools-panel" class="space-y-3 mt-4">
+                        </div>
+                    </section>
                 </div>
             </div>
         </section>
