@@ -17,14 +17,16 @@ import {
 
 const PARENT_WORKSPACE_TABS = ['dashboard', 'administration', 'testing'];
 const DEFAULT_PARENT_WORKSPACE_TAB = 'dashboard';
-const NUMBER_BRIDGE_LEVEL_OPTIONS = [1, 2, 3, 4, 5];
+const NUMBER_BRIDGE_MAX_LEVEL = 9;
+export const NUMBER_BRIDGE_LEVEL_OPTIONS = Array.from({ length: NUMBER_BRIDGE_MAX_LEVEL }, (_, index) => index + 1);
+const NUMBER_BRIDGE_TABLE_LEVEL_OPTIONS = [1, 2, 3, 4, 5];
 const NUMBER_BRIDGE_QUESTION_COUNT_OPTIONS = [5, 10, 20];
 const NUMBER_BRIDGE_QUESTIONS_PER_SCREEN_OPTIONS = [1, 3, 5];
 const NUMBER_BRIDGE_OPERATION_OPTIONS = [
-    { value: '+', label: 'Addition', factors: [1, 2, 3, 4, 5], skillLabelFor: factor => `+${factor} Bridges` },
-    { value: '-', label: 'Subtraction', factors: [1, 2, 3, 4, 5], skillLabelFor: factor => `-${factor} Bridges` },
-    { value: '×', label: 'Multiplication', factors: [2, 3, 4, 5, 10], skillLabelFor: factor => `×${factor} Tables` },
-    { value: '÷', label: 'Division', factors: [2, 3, 4, 5, 10], skillLabelFor: factor => `÷${factor} Facts` }
+    { value: '+', label: 'Addition', factors: NUMBER_BRIDGE_LEVEL_OPTIONS, skillLabelFor: factor => `+${factor} Bridges` },
+    { value: '-', label: 'Subtraction', factors: NUMBER_BRIDGE_LEVEL_OPTIONS, skillLabelFor: factor => `-${factor} Bridges` },
+    { value: '×', label: 'Multiplication', factors: [2, 3, 4, 5, 6, 7, 8, 9, 10], levels: NUMBER_BRIDGE_LEVEL_OPTIONS, skillLabelFor: factor => `×${factor} Tables` },
+    { value: '÷', label: 'Division', factors: [2, 3, 4, 5, 10], levels: NUMBER_BRIDGE_TABLE_LEVEL_OPTIONS, skillLabelFor: factor => `÷${factor} Facts` }
 ];
 let settingsSaveQueue = Promise.resolve();
 
@@ -197,7 +199,7 @@ function createNumberBridgeControlCard(game, config) {
                 type: 'number',
                 testId: 'number-bridges-config-level',
                 value: Number(config.level || 1),
-                options: NUMBER_BRIDGE_LEVEL_OPTIONS.map(level => ({
+                options: getNumberBridgeLevelOptionsForOperation(config.operation).map(level => ({
                     value: level,
                     label: formatNumberBridgeLevelDisplay({ ...config, level })
                 }))
@@ -411,7 +413,11 @@ function createSettingUpdate(gameId, settingKey, targetValue) {
 
     if (gameId === GAME_IDS.KUMON_QUIZ && settingKey === 'level') {
         updates.secondNumberMode = 'fixed';
-        updates.secondNumberFixedValue = targetValue;
+        updates.secondNumberFixedValue = getNumberBridgeFactorForLevel(getCurrentNumberBridgeOperation(), targetValue);
+    }
+
+    if (gameId === GAME_IDS.KUMON_QUIZ && settingKey === 'operation') {
+        Object.assign(updates, createNumberBridgeOperationUpdate(targetValue, getCurrentNumberBridgeLevel()));
     }
 
     return updates;
@@ -432,8 +438,9 @@ function updateNumberBridgeLevelOptions(gameId, config) {
     const levelSelect = document.querySelector('[data-testid="number-bridges-config-level"]');
     if (!levelSelect) return;
 
-    const selectedLevel = clampInteger(config.level, 1, 5, 1);
-    levelSelect.innerHTML = NUMBER_BRIDGE_LEVEL_OPTIONS.map(level => `
+    const levelOptions = getNumberBridgeLevelOptionsForOperation(config.operation);
+    const selectedLevel = clampInteger(config.level, 1, getNumberBridgeMaxLevelForOperation(config.operation), 1);
+    levelSelect.innerHTML = levelOptions.map(level => `
         <option value="${level}" ${level === selectedLevel ? 'selected' : ''}>${formatNumberBridgeLevelDisplay({ ...config, level })}</option>
     `).join('');
 }
@@ -454,10 +461,45 @@ function formatGameName(gameId) {
 }
 
 function formatNumberBridgeLevelDisplay(config = {}) {
-    const level = clampInteger(config.level, 1, 5, 1);
     const operationPack = getNumberBridgeDashboardOperationPack(config.operation);
+    const level = clampInteger(config.level, 1, getNumberBridgeMaxLevelForOperation(operationPack.value), 1);
     const factor = operationPack.factors[level - 1] || operationPack.factors[0];
     return `${operationPack.label} L${level} (${operationPack.skillLabelFor(factor)})`;
+}
+
+export function getNumberBridgeLevelOptionsForOperation(operation = '+') {
+    const operationPack = getNumberBridgeDashboardOperationPack(operation);
+    return operationPack.levels || operationPack.factors.map((_, index) => index + 1);
+}
+
+export function createNumberBridgeOperationUpdate(operation = '+', currentLevel = 1) {
+    const clampedLevel = clampInteger(currentLevel, 1, getNumberBridgeMaxLevelForOperation(operation), 1);
+    return {
+        operation,
+        level: clampedLevel,
+        secondNumberMode: 'fixed',
+        secondNumberFixedValue: getNumberBridgeFactorForLevel(operation, clampedLevel)
+    };
+}
+
+function getNumberBridgeMaxLevelForOperation(operation = '+') {
+    const options = getNumberBridgeLevelOptionsForOperation(operation);
+    return options[options.length - 1] || 1;
+}
+
+function getNumberBridgeFactorForLevel(operation = '+', level = 1) {
+    const operationPack = getNumberBridgeDashboardOperationPack(operation);
+    const clampedLevel = clampInteger(level, 1, getNumberBridgeMaxLevelForOperation(operation), 1);
+    return operationPack.factors[clampedLevel - 1] || operationPack.factors[0];
+}
+
+function getCurrentNumberBridgeOperation() {
+    return document.querySelector('[data-testid="number-bridges-config-operation"]')?.value || '+';
+}
+
+function getCurrentNumberBridgeLevel() {
+    const levelValue = document.querySelector('[data-testid="number-bridges-config-level"]')?.value;
+    return clampInteger(levelValue, 1, NUMBER_BRIDGE_MAX_LEVEL, 1);
 }
 
 function getNumberBridgeDashboardOperationPack(operation = '+') {

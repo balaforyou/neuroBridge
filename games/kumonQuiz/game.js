@@ -9,7 +9,7 @@ import { playSuccessClap } from '../../js/audio.js';
 export const KUMON_QUIZ_ACTIVITY_ID = 'kumonQuiz';
 export const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
 export const NUMBER_BRIDGE_PAGE_TURN_MS = 320;
-export const NUMBER_BRIDGE_MAX_LEVEL = 5;
+export const NUMBER_BRIDGE_MAX_LEVEL = 9;
 export const NUMBER_BRIDGE_AUTO_PROGRESSION_THRESHOLD = 80;
 export const NUMBER_BRIDGE_OPERATION_PACKS = {
     '+': {
@@ -17,7 +17,7 @@ export const NUMBER_BRIDGE_OPERATION_PACKS = {
         operationName: 'addition',
         label: 'Addition',
         skillType: 'Bridges',
-        factors: [1, 2, 3, 4, 5],
+        factors: [1, 2, 3, 4, 5, 6, 7, 8, 9],
         skillLabelFor: factor => `+${factor} Bridges`
     },
     '-': {
@@ -25,7 +25,7 @@ export const NUMBER_BRIDGE_OPERATION_PACKS = {
         operationName: 'subtraction',
         label: 'Subtraction',
         skillType: 'Bridges',
-        factors: [1, 2, 3, 4, 5],
+        factors: [1, 2, 3, 4, 5, 6, 7, 8, 9],
         skillLabelFor: factor => `-${factor} Bridges`
     },
     '×': {
@@ -33,7 +33,7 @@ export const NUMBER_BRIDGE_OPERATION_PACKS = {
         operationName: 'multiplication',
         label: 'Multiplication',
         skillType: 'Tables',
-        factors: [2, 3, 4, 5, 10],
+        factors: [2, 3, 4, 5, 6, 7, 8, 9, 10],
         skillLabelFor: factor => `×${factor} Tables`
     },
     '÷': {
@@ -64,8 +64,8 @@ export const DEFAULT_KUMON_CONFIG = {
 };
 
 export function getNumberBridgeLevelModel(level = DEFAULT_KUMON_CONFIG.level, operation = DEFAULT_KUMON_CONFIG.operation) {
-    const normalizedLevel = clampInteger(level, 1, NUMBER_BRIDGE_MAX_LEVEL, DEFAULT_KUMON_CONFIG.level);
     const operationPack = getNumberBridgeOperationPack(operation);
+    const normalizedLevel = clampInteger(level, 1, operationPack.factors.length, DEFAULT_KUMON_CONFIG.level);
     const bridgeValue = operationPack.factors[normalizedLevel - 1] || operationPack.factors[0];
 
     return {
@@ -198,8 +198,11 @@ function createQuestionPool(config) {
     const factorValues = config.secondNumberMode === 'fixed'
         ? [config.bridgeValue]
         : createNumberRange(config.secondNumberMin, config.secondNumberMax);
+    const operandAValues = config.operation === '-' && config.secondNumberMode === 'fixed'
+        ? createNumberRange(config.bridgeValue, config.bridgeValue + 9)
+        : createNumberRange(config.firstNumberMin, config.firstNumberMax);
 
-    for (let operandA = config.firstNumberMin; operandA <= config.firstNumberMax; operandA += 1) {
+    for (const operandA of operandAValues) {
         for (const factor of factorValues) {
             const question = createQuestionForOperation(config.operation, operandA, factor);
             if (question) {

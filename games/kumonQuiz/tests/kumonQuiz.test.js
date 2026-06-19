@@ -9,6 +9,7 @@ import {
     getNumberBridgeLevelModel,
     markNumberBridgeCompletionClapPlayed,
     normalizeKumonConfig,
+    NUMBER_BRIDGE_MAX_LEVEL,
     NUMBER_BRIDGE_PAGE_TURN_MS,
     playNumberBridgeCompletionClap,
     renderNumberBridgeResultMarkup,
@@ -69,7 +70,9 @@ function testLevelLabelGeneration() {
 function testOperationPackLabels() {
     const subtraction = getNumberBridgeLevelModel(3, '-');
     const multiplication = getNumberBridgeLevelModel(2, '×');
+    const multiplicationL9 = getNumberBridgeLevelModel(9, '×');
     const division = getNumberBridgeLevelModel(1, '÷');
+    const divisionClamped = getNumberBridgeLevelModel(9, '÷');
 
     assert(subtraction.levelLabel === 'Subtraction L3', 'Subtraction should label operation and level');
     assert(subtraction.skillLabel === '-3 Bridges', 'Subtraction L3 should label -3 Bridges');
@@ -77,9 +80,13 @@ function testOperationPackLabels() {
     assert(multiplication.levelLabel === 'Multiplication L2', 'Multiplication should label operation and level');
     assert(multiplication.skillLabel === '×3 Tables', 'Multiplication L2 should label ×3 Tables');
     assert(multiplication.displayLabel === 'Multiplication L2 (×3 Tables)', 'Multiplication display label should combine level and skill');
+    assert(multiplicationL9.level === 9, 'Multiplication should support L9');
+    assert(multiplicationL9.skillLabel === '×10 Tables', 'Multiplication L9 should use ×10 Tables');
     assert(division.levelLabel === 'Division L1', 'Division should label operation and level');
     assert(division.skillLabel === '÷2 Facts', 'Division L1 should label ÷2 Facts');
     assert(division.displayLabel === 'Division L1 (÷2 Facts)', 'Division display label should combine level and skill');
+    assert(divisionClamped.level === 5, 'Division should clamp unsupported L9 to L5');
+    assert(divisionClamped.skillLabel === '÷10 Facts', 'Clamped division should use the highest defined fact set');
     console.log('Operation pack label test passed');
 }
 
@@ -172,6 +179,24 @@ function testAdditionLevelTwoGeneratesPlusTwoQuestions() {
     console.log('Addition L2 question generation test passed');
 }
 
+function testAdditionLevelNineGeneratesPlusNineQuestions() {
+    const config = normalizeKumonConfig({
+        level: 9,
+        firstNumberMin: 1,
+        firstNumberMax: 3,
+        questionCount: 5
+    });
+    const questions = generateKumonQuestions(config);
+
+    assert(config.level === 9, 'Level 9 config should preserve Addition L9');
+    assert(config.levelLabel === 'Addition L9', 'Level 9 config should label Addition L9');
+    assert(config.skillLabel === '+9 Bridges', 'Level 9 config should label +9 Bridges');
+    assert(config.bridgeValue === 9, 'Level 9 bridge value should be 9');
+    assert(questions[0].operandA === 1 && questions[0].operandB === 9, 'First L9 question should be 1 + 9');
+    assert(questions[2].expectedAnswer === 12, 'Expected answer should use +9 bridge');
+    console.log('Addition L9 question generation test passed');
+}
+
 function testSubtractionGeneratesNoNegativeQuestions() {
     const config = normalizeKumonConfig({
         operation: '-',
@@ -190,20 +215,75 @@ function testSubtractionGeneratesNoNegativeQuestions() {
     console.log('Subtraction operation pack test passed');
 }
 
-function testMultiplicationGeneratesTableQuestions() {
+function testSubtractionLevelNineGeneratesMinusNineQuestions() {
     const config = normalizeKumonConfig({
-        operation: '×',
-        level: 2,
-        firstNumberMin: 1,
-        firstNumberMax: 3,
-        questionCount: 3
+        operation: '-',
+        level: 9,
+        questionCount: 10
     });
     const questions = generateKumonQuestions(config);
+    const questionForms = questions.map(question => `${question.operandA} - ${question.operandB}`);
 
-    assert(config.levelLabel === 'Multiplication L2', 'Multiplication level should label Multiplication L2');
-    assert(config.skillLabel === '×3 Tables', 'Multiplication skill should label ×3 Tables');
-    assert(questions[0].operandA === 1 && questions[0].operandB === 3, 'Multiplication L2 should use ×3 facts');
-    assert(questions[2].expectedAnswer === 9, '3 × 3 should equal 9');
+    assert(config.level === 9, 'Subtraction config should preserve L9');
+    assert(config.levelLabel === 'Subtraction L9', 'Subtraction level should label Subtraction L9');
+    assert(config.skillLabel === '-9 Bridges', 'Subtraction skill should label -9 Bridges');
+    assert(config.bridgeValue === 9, 'Subtraction L9 bridge value should be 9');
+    assert(questions.every(question => question.operation === '-'), 'Subtraction L9 questions should use subtraction operation');
+    assert(questions.every(question => question.operandB === 9), 'Subtraction L9 questions should subtract 9');
+    assert(new Set(questionForms).size > 2, 'Subtraction L9 should generate more than two unique question forms');
+    assert(questionForms.join(',') === '9 - 9,10 - 9,11 - 9,12 - 9,13 - 9,14 - 9,15 - 9,16 - 9,17 - 9,18 - 9', 'Subtraction L9 should generate 9 - 9 through 18 - 9');
+    assert(questions.map(question => question.expectedAnswer).join(',') === '0,1,2,3,4,5,6,7,8,9', 'Subtraction L9 answers should span 0 through 9');
+    assert(questions[0].operandA === 9 && questions[0].expectedAnswer === 0, 'First valid L9 subtraction should be 9 - 9 = 0');
+    console.log('Subtraction L9 question generation test passed');
+}
+
+function testSubtractionBridgeLevelsUseTenAnswerRange() {
+    for (let level = 1; level <= NUMBER_BRIDGE_MAX_LEVEL; level += 1) {
+        const questions = generateKumonQuestions({
+            operation: '-',
+            level,
+            questionCount: 10
+        });
+        const operandsA = questions.map(question => question.operandA);
+        const answers = questions.map(question => question.expectedAnswer);
+
+        assert(operandsA[0] === level, `Subtraction L${level} should start at ${level} - ${level}`);
+        assert(operandsA[9] === level + 9, `Subtraction L${level} should end at ${level + 9} - ${level}`);
+        assert(questions.every(question => question.operandB === level), `Subtraction L${level} should subtract bridge value ${level}`);
+        assert(answers.join(',') === '0,1,2,3,4,5,6,7,8,9', `Subtraction L${level} answers should span 0 through 9`);
+        assert(questions.every(question => question.expectedAnswer >= 0), `Subtraction L${level} should not generate negative answers`);
+    }
+
+    console.log('Subtraction L1-L9 bridge range test passed');
+}
+
+function testMultiplicationGeneratesTableQuestions() {
+    [
+        { level: 1, factor: 2 },
+        { level: 5, factor: 6 },
+        { level: 9, factor: 10 }
+    ].forEach(({ level, factor }) => {
+        const config = normalizeKumonConfig({
+            operation: '×',
+            level,
+            firstNumberMin: 1,
+            firstNumberMax: 3,
+            questionCount: 3
+        });
+        const questions = generateKumonQuestions(config);
+
+        assert(config.level === level, `Multiplication should preserve L${level}`);
+        assert(config.levelLabel === `Multiplication L${level}`, `Multiplication level should label L${level}`);
+        assert(config.skillLabel === `×${factor} Tables`, `Multiplication L${level} should label ×${factor} Tables`);
+        assert(questions.every(question => question.operandB === factor), `Multiplication L${level} should use factor ${factor}`);
+        assert(questions[2].expectedAnswer === 3 * factor, `3 × ${factor} should equal ${3 * factor}`);
+    });
+
+    for (let level = 6; level <= NUMBER_BRIDGE_MAX_LEVEL; level += 1) {
+        const config = normalizeKumonConfig({ operation: '×', level, questionCount: 1 });
+        assert(config.bridgeValue !== 2, `Multiplication L${level} should not fall back to ×2 Tables`);
+    }
+
     console.log('Multiplication operation pack test passed');
 }
 
@@ -485,17 +565,17 @@ function testAutoProgressionRepeatsOnLowAccuracy() {
     console.log('Auto progression low accuracy repeat test passed');
 }
 
-function testAutoProgressionCapsAtLevelFive() {
-    assert(getNextNumberBridgeLevel({ level: 5, autoProgression: true }, 100) === 5, 'Next level should cap at Addition L5');
+function testAutoProgressionCapsAtLevelNine() {
+    assert(getNextNumberBridgeLevel({ level: NUMBER_BRIDGE_MAX_LEVEL, autoProgression: true }, 100) === NUMBER_BRIDGE_MAX_LEVEL, 'Next level should cap at Addition L9');
 
-    const game = createKumonQuizGame({ level: 5, autoProgression: true, questionCount: 5, questionsPerScreen: 5 });
+    const game = createKumonQuizGame({ level: NUMBER_BRIDGE_MAX_LEVEL, autoProgression: true, questionCount: 5, questionsPerScreen: 5 });
     completeVisibleRound(game);
     game.resetRound();
 
     const state = game.getState();
-    assert(state.config.level === 5, 'Reset should not advance beyond L5');
-    assert(state.config.levelLabel === 'Addition L5', 'Capped round should remain Addition L5');
-    assert(state.questions[0].operandB === 5, 'Capped L5 should keep +5 questions');
+    assert(state.config.level === NUMBER_BRIDGE_MAX_LEVEL, 'Reset should not advance beyond L9');
+    assert(state.config.levelLabel === 'Addition L9', 'Capped round should remain Addition L9');
+    assert(state.questions[0].operandB === 9, 'Capped L9 should keep +9 questions');
     console.log('Auto progression cap test passed');
 }
 
@@ -885,7 +965,10 @@ function runAllTests() {
     testRandomQuestionOrder();
     testFixedSecondNumberGeneration();
     testAdditionLevelTwoGeneratesPlusTwoQuestions();
+    testAdditionLevelNineGeneratesPlusNineQuestions();
     testSubtractionGeneratesNoNegativeQuestions();
+    testSubtractionLevelNineGeneratesMinusNineQuestions();
+    testSubtractionBridgeLevelsUseTenAnswerRange();
     testMultiplicationGeneratesTableQuestions();
     testDivisionGeneratesExactIntegerQuestions();
     testRangeSecondNumberGeneration();
@@ -900,7 +983,7 @@ function runAllTests() {
     testAutoProgressionFalseRepeatsSameLevel();
     testAutoProgressionAdvancesOnHighAccuracy();
     testAutoProgressionRepeatsOnLowAccuracy();
-    testAutoProgressionCapsAtLevelFive();
+    testAutoProgressionCapsAtLevelNine();
     testSessionSummaryStoresScoreTotalAndAccuracy();
     testOperationMetadataForResultAndSession();
     testTrialTableDoesNotRequirePerTrialLevel();

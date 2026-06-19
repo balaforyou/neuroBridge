@@ -1,6 +1,9 @@
 import {
+    createNumberBridgeOperationUpdate,
     formatNumberBridgeConfigurationSummary,
     getDashboardViewType,
+    getNumberBridgeLevelOptionsForOperation,
+    NUMBER_BRIDGE_LEVEL_OPTIONS,
     renderNumberBridgeCorrectionReview,
     renderParentSessionDetails,
     renderParentSessionRow
@@ -69,9 +72,84 @@ function testNumberBridgeConfigurationSummary() {
         'Custom Number Bridges configuration summary should reflect saved settings'
     );
     assert(subtractionMarkup.includes('Subtraction L3 (-3 Bridges)'), 'Configuration summary should support subtraction labels');
+    assert(
+        formatNumberBridgeConfigurationSummary({ operation: '+', level: 9 }).includes('Addition L9 (+9 Bridges)'),
+        'Configuration summary should support Addition L9 labels'
+    );
+    assert(
+        formatNumberBridgeConfigurationSummary({ operation: '-', level: 9 }).includes('Subtraction L9 (-9 Bridges)'),
+        'Configuration summary should support Subtraction L9 labels'
+    );
     assert(multiplicationMarkup.includes('Multiplication L2 (×3 Tables)'), 'Configuration summary should support multiplication labels');
     assert(divisionMarkup.includes('Division L1 (÷2 Facts)'), 'Configuration summary should support division labels');
     console.log('Number Bridges configuration summary test passed');
+}
+
+function testNumberBridgeLevelOptionsExposeL1ThroughL9() {
+    assert(
+        NUMBER_BRIDGE_LEVEL_OPTIONS.join(',') === '1,2,3,4,5,6,7,8,9',
+        'Addition and subtraction bridge level source should expose L1 through L9'
+    );
+    assert(getNumberBridgeLevelOptionsForOperation('+').join(',') === '1,2,3,4,5,6,7,8,9', 'Addition level dropdown should expose L1 through L9');
+    assert(getNumberBridgeLevelOptionsForOperation('-').join(',') === '1,2,3,4,5,6,7,8,9', 'Subtraction level dropdown should expose L1 through L9');
+    console.log('Number Bridges level options test passed');
+}
+
+function testNumberBridgeLevelOptionsAreOperationSpecific() {
+    assert(
+        getNumberBridgeLevelOptionsForOperation('×').join(',') === '1,2,3,4,5,6,7,8,9',
+        'Multiplication level dropdown should expose L1 through L9 levels'
+    );
+    assert(
+        getNumberBridgeLevelOptionsForOperation('÷').join(',') === '1,2,3,4,5',
+        'Division level dropdown should expose only defined L1 through L5 levels'
+    );
+    assert(
+        formatNumberBridgeConfigurationSummary({ operation: '×', level: 9 }).includes('Multiplication L9 (×10 Tables)'),
+        'Multiplication should display L9 as ×10 Tables'
+    );
+    assert(
+        formatNumberBridgeConfigurationSummary({ operation: '÷', level: 9 }).includes('Division L5 (÷10 Facts)'),
+        'Division should keep current L5 clamp behavior'
+    );
+    console.log('Number Bridges operation-specific level options test passed');
+}
+
+function testMultiplicationLevelLabelsMapL1ThroughL9() {
+    const expectedLabels = [
+        'Multiplication L1 (×2 Tables)',
+        'Multiplication L2 (×3 Tables)',
+        'Multiplication L3 (×4 Tables)',
+        'Multiplication L4 (×5 Tables)',
+        'Multiplication L5 (×6 Tables)',
+        'Multiplication L6 (×7 Tables)',
+        'Multiplication L7 (×8 Tables)',
+        'Multiplication L8 (×9 Tables)',
+        'Multiplication L9 (×10 Tables)'
+    ];
+
+    expectedLabels.forEach((label, index) => {
+        const level = index + 1;
+        assert(
+            formatNumberBridgeConfigurationSummary({ operation: '×', level }).includes(label),
+            `Multiplication L${level} should display ${label}`
+        );
+    });
+
+    console.log('Number Bridges multiplication label mapping test passed');
+}
+
+function testOperationSwitchPreservesValidL9Levels() {
+    const additionToMultiplication = createNumberBridgeOperationUpdate('×', 9);
+    const multiplicationToAddition = createNumberBridgeOperationUpdate('+', 9);
+    const multiplicationToSubtraction = createNumberBridgeOperationUpdate('-', 9);
+    const multiplicationToDivision = createNumberBridgeOperationUpdate('÷', 9);
+
+    assert(additionToMultiplication.level === 9 && additionToMultiplication.secondNumberFixedValue === 10, 'Addition L9 to Multiplication should preserve L9 as ×10 Tables');
+    assert(multiplicationToAddition.level === 9 && multiplicationToAddition.secondNumberFixedValue === 9, 'Multiplication L9 to Addition should preserve Addition L9');
+    assert(multiplicationToSubtraction.level === 9 && multiplicationToSubtraction.secondNumberFixedValue === 9, 'Multiplication L9 to Subtraction should preserve Subtraction L9');
+    assert(multiplicationToDivision.level === 5 && multiplicationToDivision.secondNumberFixedValue === 10, 'Multiplication L9 to Division should clamp to current Division L5');
+    console.log('Number Bridges operation switch test passed');
 }
 
 function testDashboardViewTypeUsesActivityMetadata() {
@@ -175,6 +253,10 @@ function runAllTests() {
     console.log('=== Dashboard Rendering Unit Tests ===');
     testNumberBridgeSummaryUsesSessionLevelAndAverageTime();
     testNumberBridgeConfigurationSummary();
+    testNumberBridgeLevelOptionsExposeL1ThroughL9();
+    testNumberBridgeLevelOptionsAreOperationSpecific();
+    testMultiplicationLevelLabelsMapL1ThroughL9();
+    testOperationSwitchPreservesValidL9Levels();
     testDashboardViewTypeUsesActivityMetadata();
     testMatrixReasoningKeepsPlainLevelLabel();
     testNumberBridgeHidesFullTrialTableAndLevelDash();
