@@ -181,6 +181,87 @@ Example:
 }
 ```
 
+## Dashboard Interpretation Contract v1.0
+
+Purpose: Define how parent dashboard components interpret activity analytics without changing analytics storage.
+
+Every activity must declare:
+
+```json
+{
+  "activityId": "...",
+  "dashboardViewType": "summaryWithCorrections"
+}
+```
+
+Allowed `dashboardViewType` values:
+
+- `summaryWithCorrections`
+- `trialBreakdown`
+
+### summaryWithCorrections
+
+Use for worksheet-style activities where the parent primarily needs session summary, accuracy, time, hints, corrections, and wrong answer review.
+
+Display expectations:
+
+- Session title and meaningful level or worksheet context.
+- Score.
+- Accuracy.
+- Average time when available.
+- Duration.
+- Hints.
+- Corrections.
+- Review Corrections only when mistakes exist.
+- `No corrections needed.` when no correction review is needed.
+
+Do not show detailed trial tables by default for this view.
+
+Examples:
+
+- Number Bridges.
+- Shopping Cart.
+- Arithmetic worksheets.
+- Picture worksheets.
+- Sequencing worksheets.
+- Measurement worksheets.
+
+### trialBreakdown
+
+Use for activities where trial-by-trial timing, outcomes, stage progression, or error patterns help parents and clinicians understand performance.
+
+Display expectations:
+
+- Session summary.
+- Trial table.
+- Reaction times.
+- Trial outcomes.
+- Stage or level progression.
+
+Examples:
+
+- Matrix Reasoning.
+- Stroop.
+- Direction Following.
+- Grid Vision.
+- Pattern Memory.
+- Future executive-function activities.
+
+### Rendering Rule
+
+Analytics storage remains unchanged. All attempt analytics may continue to be stored.
+
+Parent dashboard presentation must be determined by `dashboardViewType`, not by guessing from the underlying analytics shape.
+
+Current assignments:
+
+| Activity | dashboardViewType |
+| --- | --- |
+| Number Bridges | `summaryWithCorrections` |
+| Matrix Reasoning | `trialBreakdown` |
+| Attribute Explorer | `trialBreakdown` until reviewed |
+| Future worksheet activities | `summaryWithCorrections` by default |
+
 ### Learner Naming Standard
 
 Principle: Children learn skills before terminology.

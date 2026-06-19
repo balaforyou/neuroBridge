@@ -266,7 +266,7 @@ Use this file for lightweight capture of architecture, UI, analytics, assessment
 - Status: Done
 - Purpose: Implement the first arithmetic worksheet-style activity using Worksheet Activity Template v1.0.
 - Acceptance Criteria: Uses frozen Worksheet Activity Template v1.0; includes SIRAASH Activity Shell header; main task and support panel follow the template; uses shared SIRAASH feedback and completion helper; preserves analytics/session contracts; includes Node and Playwright coverage.
-- Notes: Implemented as `games/kumonQuiz/` with learner-facing Number Bridges tile, addition-only v1, configurable defaults, scaffolded hints, smooth correct-answer advance, completion summary, wrong-answer list, per-attempt trial analytics, Node tests, and Playwright viewport coverage.
+- Notes: Implemented as `games/kumonQuiz/` with learner-facing Number Bridges tile, addition-only v1, configurable defaults, scaffolded hints, smooth correct-answer advance, completion summary, wrong-answer list, per-attempt trial analytics, Node tests, and Playwright viewport coverage. NB-KQ-001.6A adds a session-level Addition L1-L5 level model, default Addition L1 (+1 Bridges), optional auto-progression disabled by default, and parent dashboard cleanup so Number Bridges trial rows do not invent per-trial level values. NB-KQ-001.6B refines the parent dashboard display for Number Bridges into a summary plus corrections view, preserving detailed attempt data internally while keeping trial tables for cognitive timing activities.
 
 - Story ID: NB-101.4.5.1
 - Title: Worksheet Architecture Specification

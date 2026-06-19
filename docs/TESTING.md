@@ -34,6 +34,7 @@ node js/tests/skillRegistry.runner.js
 node js/tests/cognitiveOntology.runner.js
 node js/tests/gameRegistry.runner.js
 node js/tests/analyticsAggregator.runner.js
+node js/tests/dashboard.runner.js
 node js/tests/sessionResult.runner.js
 node js/tests/siraashFeedback.runner.js
 node js/tests/worksheetShell.runner.js
@@ -68,7 +69,7 @@ Expected passing suites:
 - Cognitive Ontology
 - Game Registry
 
-These verify valid ids, mapping integrity, uniqueness, and lookup behavior.
+These verify valid ids, mapping integrity, uniqueness, lookup behavior, and the `dashboardViewType` interpretation contract for registered activities.
 
 ## Analytics Test Suites
 
@@ -76,8 +77,9 @@ Expected passing suites:
 
 - Session Result
 - Analytics Aggregator
+- Dashboard Rendering
 
-These verify aggregation of independent, scaffolded, and failed trials, accuracy, reaction time, hint counts, domain metrics, skill metrics, and ontology-derived cognitive target metrics.
+These verify aggregation of independent, scaffolded, and failed trials, accuracy, reaction time, hint counts, domain metrics, skill metrics, ontology-derived cognitive target metrics, and parent dashboard rendering contracts. Dashboard rendering coverage protects metadata-driven dashboard view selection, Number Bridges summary-only parent display, correction review behavior, average-time display, and continued trial-table behavior for non-worksheet activities.
 
 ## Shared UI Contract Test Suites
 
@@ -129,7 +131,7 @@ Expected passing suite:
 
 - Kumon Quiz
 
-These verify default parent configuration, configurable 1/3/5 questions-per-screen modes, fixed and ranged addition question generation, Enter and blur answer validation, duplicate auto-validation guards, correct-answer local tick and row locking behavior, group-only auto-advance behavior, wrong-answer retry behavior, hint behavior, result summaries, wrong-answer lists, and trial analytics fields.
+These verify default parent configuration, Number Bridges session-level level metadata, Addition L1-L5 bridge labels, configurable 1/3/5 questions-per-screen modes, fixed and ranged addition question generation, auto-progression repeat/advance/cap behavior, Enter and blur answer validation, duplicate auto-validation guards, correct-answer local tick and row locking behavior, group-only auto-advance behavior, wrong-answer retry behavior, hint behavior, result summaries, wrong-answer lists, session summary metadata, and trial analytics fields. Number Bridges level is session-level metadata; trial rows should not invent per-trial level values.
 
 ## Browser Viewport Smoke Tests
 
@@ -145,7 +147,7 @@ Current browser coverage uses Chromium only and checks:
 - Attribute Matching Worksheet at 1366 x 768 and 1024 x 768
 - Attribute Matching Worksheet shell-managed launch, shared completion panel, and next-round flow at 1366 x 768
 - Number Bridges / Kumon Quiz at 1366 x 768 and 1024 x 768
-- Number Bridges tile launch, default five-row layout, Check-free Enter validation, local correct tick, orange wrong-answer emphasis, support-panel-owned scaffold guidance, group advancement, and completion metrics/review at 1366 x 768
+- Number Bridges tile launch, default five-row layout, session-level Addition L1 header/result/dashboard display, Check-free Enter validation, local correct tick, orange wrong-answer emphasis, support-panel-owned scaffold guidance, group advancement, auto-progression from Addition L1 to L2 when enabled, parent dashboard summary-only display with average time and correction status, and completion metrics/review at 1366 x 768
 - Attribute Explorer at 1366 x 768 and 1024 x 768
 - Attribute Explorer help nudge timing at 1366 x 768
 - Matrix Reasoning at 1366 x 768 and 1024 x 768

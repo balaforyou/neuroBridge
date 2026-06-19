@@ -201,6 +201,45 @@ Field notes:
 - `feedbackState`: Current feedback state.
 - `completionState`: Round or worksheet completion state.
 
+## Dashboard Interpretation Contract v1.0
+
+Worksheet-style activities should declare:
+
+```js
+{
+  activityId: "...",
+  dashboardViewType: "summaryWithCorrections"
+}
+```
+
+Purpose:
+
+- Parent dashboards should show a readable session summary first.
+- Detailed attempt analytics should still be stored.
+- Trial-level tables should not be shown by default for worksheet quiz experiences.
+
+The `summaryWithCorrections` view should show:
+
+- Session level or worksheet context where available.
+- Score.
+- Accuracy.
+- Average time or duration.
+- Hints.
+- Corrections.
+- Wrong answer review when mistakes exist.
+- `No corrections needed.` when the session is all correct.
+
+Worksheet examples that should default to `summaryWithCorrections`:
+
+- Number Bridges.
+- Shopping Cart.
+- Arithmetic worksheets.
+- Picture worksheets.
+- Sequencing worksheets.
+- Measurement worksheets.
+
+Dashboard rendering must use `dashboardViewType`, not the shape of stored trial analytics. Worksheet activities may keep detailed trial records internally without exposing a full trial table to parents by default.
+
 ## Helper Module
 
 Current lightweight helper:

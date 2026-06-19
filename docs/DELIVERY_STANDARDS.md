@@ -42,6 +42,27 @@ Purpose: Set consistent expectations for NeuroBridge / SIRAASH story delivery.
 - Update backlog, architecture, ADR, or observation docs when the story changes product direction or learning assumptions.
 - Keep documentation concise and linked to story IDs where possible.
 
+## Observation-Driven Stories
+
+When a story originates from learner observations:
+
+- Preserve links to Observation IDs when applicable.
+- Preserve links to Foundation signals when applicable.
+- Preserve links to related backlog items and epics.
+    Example
+        OBS-AUD-20260615-001
+        #selfContinuation
+        NB-AUD-001
+
+## Future Refinement Capture
+
+When meaningful future work emerges during story design or implementation:
+
+- Capture near-term refinements in backlog items.
+- Capture architectural observations when they influence multiple future stories.
+- Capture future implementation ideas without expanding current story scope.
+- Prefer documented refinement stories over undocumented assumptions.        
+
 ## Output Format
 
 Final delivery should include:

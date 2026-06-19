@@ -310,6 +310,93 @@ Activities should avoid:
 - Duplicate shell headers.
 - Fixed-size content that breaks on smaller screens.
 
+## Dashboard Interpretation Contract v1.0
+
+Activity analytics storage remains unchanged during migration into SIRAASH. Detailed attempt analytics may continue to be collected for every activity.
+
+Parent dashboard presentation is determined by activity metadata:
+
+```js
+{
+  activityId: "...",
+  dashboardViewType: "trialBreakdown"
+}
+```
+
+Allowed values:
+
+- `summaryWithCorrections`
+- `trialBreakdown`
+
+### summaryWithCorrections
+
+Use for worksheet-style or functional-practice activities where parents primarily need:
+
+- Session summary.
+- Accuracy.
+- Time.
+- Hints.
+- Corrections.
+- Wrong answer review.
+
+Detailed trial tables should not be shown by default.
+
+Examples:
+
+- Number Bridges.
+- Shopping Cart.
+- Arithmetic worksheets.
+- Picture worksheets.
+- Sequencing worksheets.
+- Measurement worksheets.
+
+### trialBreakdown
+
+Use for activities where trial-by-trial timing and error patterns help interpretation.
+
+Display:
+
+- Session summary.
+- Trial table.
+- Reaction times.
+- Trial outcomes.
+- Stage progression.
+
+Examples:
+
+- Matrix Reasoning.
+- Stroop.
+- Direction Following.
+- Schulte Table / Grid Vision.
+- Pattern Memory.
+- Future executive-function activities.
+
+### Architecture Rule
+
+The dashboard must not infer presentation from the existence of trials, timing fields, or worksheet metadata. It must read `dashboardViewType` from activity metadata and render the matching view.
+
+Current platform assignments:
+
+| Activity | dashboardViewType | Notes |
+| --- | --- | --- |
+| Number Bridges | `summaryWithCorrections` | Worksheet quiz summary with correction review. |
+| Matrix Reasoning | `trialBreakdown` | Trial table remains useful for reasoning progression. |
+| Attribute Explorer | `trialBreakdown` | Interim assignment until reviewed. |
+| Future worksheet activities | `summaryWithCorrections` | Default for worksheet family unless an ADR says otherwise. |
+
+Initial Activity Family interpretation guidance:
+
+| ID | Activity | Suggested dashboardViewType |
+| --- | --- | --- |
+| `NB-ACT-001` | Stroop | `trialBreakdown` |
+| `NB-ACT-002` | Directions | `trialBreakdown` |
+| `NB-ACT-003` | Schulte Table | `trialBreakdown` |
+| `NB-ACT-004` | Grid Vision | `trialBreakdown` |
+| `NB-ACT-005` | Pattern Matching | `trialBreakdown` until reviewed |
+| `NB-ACT-006` | Number Memory | `trialBreakdown` until reviewed |
+| `NB-ACT-007` | Shopping Cart | `summaryWithCorrections` |
+| `NB-ACT-008` | Neural Bonds | `summaryWithCorrections` until reviewed |
+
 ## Activity Registry Draft
 
 | ID | Activity | Family | Porting Tier | Migration Status |
