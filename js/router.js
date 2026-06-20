@@ -6,7 +6,7 @@ import { GAME_EVENTS, USER_ROLES } from './constants.js';
 import { renderStudentMetrics } from './dashboard.js';
 
 const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
-const SHELL_MANAGED_ACTIVITIES = new Set(['attributeExplorer', 'matrixReasoning', 'matchingWorksheet', 'attributeMatchingWorksheet', 'kumonQuiz']);
+const SHELL_MANAGED_ACTIVITIES = new Set(['attributeExplorer', 'matrixReasoning', 'matchingWorksheet', 'attributeMatchingWorksheet', 'kumonQuiz', 'schulte']);
 
 export function initRouter() {
     document.addEventListener('click', (e) => {
@@ -128,6 +128,7 @@ console.log('Trials received:', payload.trials);
 function formatActivityName(gameId) {
     if (gameId === 'attributeExplorer') return 'Attribute Explorer';
     if (gameId === 'matrixReasoning') return 'Matrix Reasoning';
+    if (gameId === 'schulte') return 'Grid Vision';
 
     return gameId
         .replace(/([A-Z])/g, ' $1')

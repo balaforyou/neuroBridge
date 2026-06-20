@@ -1,4 +1,4 @@
-const ACTIVITY_TILE_GROUPS = [
+export const ACTIVITY_TILE_GROUPS = [
     {
         category: 'Recommended',
         title: 'Start here',
@@ -74,14 +74,15 @@ const ACTIVITY_TILE_GROUPS = [
                 skills: ['same-different', 'attribute-comparison', 'visual-attention']
             },
             {
-                activityId: 'gridVision',
+                activityId: 'schulte',
                 parentName: 'Schulte Table',
                 learnerName: 'Grid Vision',
                 icon: '🎯',
                 description: 'Train your eyes to find things faster.',
-                status: 'coming-soon',
-                identityClass: 'from-sky-50 via-cyan-50 to-emerald-50 border-cyan-200',
-                iconClass: 'from-sky-200 via-cyan-100 to-emerald-100',
+                status: 'available',
+                identityClass: 'from-sky-100 via-cyan-50 to-emerald-50 border-cyan-300',
+                iconClass: 'from-sky-300 via-cyan-200 to-emerald-200',
+                actionClass: 'bg-cyan-600 group-hover:bg-cyan-500',
                 domain: 'visual-search',
                 skills: ['visual-search', 'visual-attention']
             }
@@ -192,7 +193,7 @@ function renderReservedPanel(group) {
     `;
 }
 
-function renderActivityTile(tile) {
+export function renderActivityTile(tile) {
     return tile.status === 'available'
         ? renderAvailableTile(tile)
         : renderComingSoonTile(tile);
@@ -245,13 +246,14 @@ function renderComingSoonTile(tile) {
     `;
 }
 
-function getActivityTileTestId(tile) {
+export function getActivityTileTestId(tile) {
     const explicitIds = {
         matrixReasoning: 'activity-tile-pattern-detective',
         attributeExplorer: 'activity-tile-look-closely',
         matchingWorksheet: 'activity-tile-matching-worksheet',
         attributeMatchingWorksheet: 'activity-tile-attribute-matching',
-        kumonQuiz: 'activity-tile-number-bridges'
+        kumonQuiz: 'activity-tile-number-bridges',
+        schulte: 'activity-tile-grid-vision'
     };
 
     return explicitIds[tile.activityId] || `activity-tile-${tile.activityId}`;

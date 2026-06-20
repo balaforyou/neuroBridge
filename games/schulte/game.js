@@ -265,6 +265,120 @@ export function renderSchulteGridMarkup(stateOrBoard) {
     `;
 }
 
+function mountSchulteActivity() {
+    const root = document.getElementById('schulte-root');
+    if (!root) return;
+
+    const pageState = {
+        learnerName: 'Learner',
+        transientPulseCellId: null,
+        feedbackText: 'Find 1'
+    };
+    const session = createSchulteAscendingSession({
+        onFeedback: handleFeedback
+    });
+    const homeButton = document.getElementById('home-button');
+
+    if (homeButton) {
+        homeButton.addEventListener('click', () => {
+            window.parent?.postMessage({ type: 'SIRAASH_ACTIVITY_HOME' }, '*');
+        });
+    }
+
+    window.addEventListener('message', (event) => {
+        if (event.data?.type !== 'INITIALIZE_GAME_RULES') return;
+        pageState.learnerName = normalizeLearnerName(event.data.learnerName);
+        render();
+    });
+
+    render();
+
+    function handleFeedback(event) {
+        if (event.type === SCHULTE_FEEDBACK.ORANGE_PULSE) {
+            pageState.transientPulseCellId = event.cellId;
+            pageState.feedbackText = `Find ${event.expectedNumber}`;
+        } else if (event.type === SCHULTE_FEEDBACK.SUCCESS) {
+            pageState.feedbackText = 'Perfect board!';
+        } else if (event.type === SCHULTE_FEEDBACK.CELEBRATION) {
+            pageState.feedbackText = event.scope === 'session'
+                ? 'Great work!'
+                : 'Next board';
+        } else if (event.type === SCHULTE_FEEDBACK.CLICK) {
+            pageState.feedbackText = `Find ${session.getState().expectedNumber}`;
+        }
+    }
+
+    function render() {
+        const state = session.getState();
+        root.innerHTML = `
+            <section data-testid="schulte-activity" class="flex h-full min-h-0 flex-col gap-3">
+                <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-cyan-200 bg-white px-4 py-3 shadow-sm">
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-[0.14em] text-cyan-700">Grid Vision</p>
+                        <h2 class="text-xl font-black text-slate-950">Find the numbers in order, ${pageState.learnerName}</h2>
+                    </div>
+                    <div class="flex gap-2 text-sm font-black text-slate-800">
+                        <span data-testid="schulte-board-counter" class="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5">Board ${state.boardNumber} / ${state.boardCount}</span>
+                        <span data-testid="schulte-target" class="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5">Find ${state.expectedNumber}</span>
+                    </div>
+                </div>
+
+                <div data-testid="schulte-feedback" class="min-h-[40px] rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-center text-base font-black text-amber-900">
+                    ${pageState.feedbackText}
+                </div>
+
+                <div data-testid="schulte-grid" class="grid flex-1 min-h-0 gap-2" style="grid-template-columns: repeat(${state.currentBoard.gridSize}, minmax(0, 1fr));">
+                    ${state.currentBoard.cells.map(cell => renderCell(cell, state.completed)).join('')}
+                </div>
+
+                ${state.completed ? `
+                    <div data-testid="schulte-completion" class="rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 text-center text-xl font-black text-emerald-900">
+                        Great work! You finished Grid Vision.
+                    </div>
+                ` : ''}
+            </section>
+        `;
+
+        root.querySelectorAll('[data-schulte-cell-id]').forEach(button => {
+            button.addEventListener('click', () => {
+                const outcome = session.selectCell(button.getAttribute('data-schulte-cell-id'));
+                pageState.transientPulseCellId = outcome.result === 'incorrect'
+                    ? outcome.cell.cellId
+                    : null;
+                render();
+            });
+        });
+    }
+
+    function renderCell(cell, sessionComplete) {
+        const isPulse = pageState.transientPulseCellId === cell.cellId;
+        const selectedClass = cell.selected
+            ? 'border-emerald-400 bg-emerald-50 text-emerald-950'
+            : 'border-cyan-200 bg-white text-slate-950';
+        const pulseClass = isPulse
+            ? 'border-orange-400 bg-orange-50 text-orange-950 ring-4 ring-orange-200'
+            : selectedClass;
+
+        return `
+            <button
+                type="button"
+                data-testid="${cell.cellId}"
+                data-schulte-cell-id="${cell.cellId}"
+                data-schulte-number="${cell.value}"
+                ${sessionComplete || cell.selected ? 'disabled' : ''}
+                class="min-h-[72px] rounded-xl border-4 ${pulseClass} text-3xl font-black shadow-sm transition focus:outline-none focus:ring-4 focus:ring-cyan-300 disabled:opacity-100"
+                aria-label="Schulte number ${cell.value}">
+                ${cell.value}
+            </button>
+        `;
+    }
+}
+
+function normalizeLearnerName(learnerName) {
+    const trimmed = String(learnerName || 'Learner').trim();
+    return trimmed || 'Learner';
+}
+
 function createAscendingSessionBoards(config) {
     if (Array.isArray(config.boards) && config.boards.length >= SCHULTE_ASCENDING_BOARD_COUNT) {
         return config.boards.slice(0, SCHULTE_ASCENDING_BOARD_COUNT).map(cloneBoard);
@@ -325,4 +439,12 @@ function cloneState(state) {
 
 function cloneFeedbackState(feedbackState) {
     return feedbackState ? { ...feedbackState } : null;
+}
+
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', mountSchulteActivity);
+    } else {
+        mountSchulteActivity();
+    }
 }

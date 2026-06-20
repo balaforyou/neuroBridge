@@ -171,6 +171,16 @@ Depends On:
 
 Closure note: Added Schulte feedback event state and hooks for correct click feedback, wrong-selection orange pulse, perfect-board success, and board/session celebration exposure without adding sound assets or audio mode behavior.
 
+### SCH-003.1 Add Schulte Tile and Launch Route
+
+Status: Done  
+Depends On:  
+- `SCH-001`
+- `SCH-002`
+- `SCH-003`
+
+Closure note: Added available Grid Vision tile to the post-login activity hub, wired it to the `schulte` route, added a playable Schulte iframe page for the existing 3x3 ascending session, and covered tile launch markup with focused tests.
+
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
 Status: Done  
