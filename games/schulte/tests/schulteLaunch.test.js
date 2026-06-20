@@ -42,6 +42,25 @@ async function testAutomaticAscendingToDescendingFlow() {
     const server = await ensureStaticServer();
     const browser = await chromium.launch({ headless: true });
     const page = await browser.newPage({ viewport: { width: 1000, height: 800 } });
+    await page.addInitScript(() => {
+        window.__schulteListenFindSpeechRequests = [];
+        class MockSpeechSynthesisUtterance {
+            constructor(text) {
+                this.text = text;
+            }
+        }
+        Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+            configurable: true,
+            value: MockSpeechSynthesisUtterance
+        });
+        Object.defineProperty(window, 'speechSynthesis', {
+            configurable: true,
+            value: {
+                cancel: () => {},
+                speak: utterance => window.__schulteListenFindSpeechRequests.push(utterance.text)
+            }
+        });
+    });
 
     try {
         await page.goto('http://127.0.0.1:5501/games/schulte/index.html');
@@ -55,6 +74,7 @@ async function testAutomaticAscendingToDescendingFlow() {
         assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 1 / 2', 'Header should show board context');
         assert(!(await page.getByTestId('schulte-activity').innerText()).includes('Find the numbers'), 'Header should not include a second Find instruction');
         await assertSingleFindPrompt(page, 'Find 1');
+        assert((await getListenFindSpeechRequests(page)).length === 0, 'Ascending prompt should not trigger Listen & Find speech');
 
         const oneCell = page.locator('[data-schulte-number="1"]');
         const twoCell = page.locator('[data-schulte-number="2"]');
@@ -98,6 +118,7 @@ async function testAutomaticAscendingToDescendingFlow() {
         assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Descending', 'Continue should move to Descending mode');
         assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 1 / 2', 'Descending should restart board context');
         await assertSingleFindPrompt(page, 'Find 9');
+        assert((await getListenFindSpeechRequests(page)).length === 0, 'Descending prompt should not trigger Listen & Find speech');
 
         await page.locator('[data-schulte-number="8"]').click();
         await assertSingleFindPrompt(page, 'Find 9');
@@ -124,19 +145,23 @@ async function testAutomaticAscendingToDescendingFlow() {
             'Transition should explain ordered Listen & Find prompts'
         );
 
+        assert((await getListenFindSpeechRequests(page)).length === 0, 'Listen & Find speech should wait until Listen & Find mode starts');
         await page.getByTestId('schulte-start-next-mode').click();
         assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Listen & Find', 'Continue should move to Listen & Find mode');
         assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 1 / 2', 'Listen & Find should restart board context');
         assert(await page.getByTestId('schulte-completion').count() === 0, 'Listen & Find should not show completion when it starts');
         assert(await page.getByTestId('schulte-grid').count() === 1, 'Listen & Find should render a playable grid');
         await assertSingleFindPrompt(page, 'Find 1');
+        assertSpeechRequests(await getListenFindSpeechRequests(page), ['Find 1'], 'Listen & Find should speak the first target when mode starts');
 
         await page.locator('[data-schulte-number="2"]').click();
         await assertSingleFindPrompt(page, 'Find 1');
+        assertSpeechRequests(await getListenFindSpeechRequests(page), ['Find 1'], 'Wrong Listen & Find selection should not repeat the same target speech');
 
         await page.locator('[data-schulte-number="1"]').click();
         await assertSingleFindPrompt(page, 'Find 2');
         assert(await page.getByTestId('schulte-completion').count() === 0, 'Listen & Find should stay active after its first correct selection');
+        assertSpeechRequests(await getListenFindSpeechRequests(page), ['Find 1', 'Find 2'], 'Correct Listen & Find selection should speak the next target');
 
         for (let board = 0; board < 2; board += 1) {
             const startValue = board === 0 ? 2 : 1;
@@ -149,10 +174,20 @@ async function testAutomaticAscendingToDescendingFlow() {
                 assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 2 / 2', 'Listen & Find should advance to second board');
                 assert(await page.getByTestId('schulte-completion').count() === 0, 'Listen & Find should not complete after Board 1');
                 await assertSingleFindPrompt(page, 'Find 1');
+                assertSpeechRequests(
+                    await getListenFindSpeechRequests(page),
+                    [...createExpectedListenFindSpeechRequests(1), 'Find 1'],
+                    'Listen & Find Board 2 should restart spoken prompts at Find 1'
+                );
             }
         }
 
         await page.getByTestId('schulte-completion').waitFor();
+        assertSpeechRequests(
+            await getListenFindSpeechRequests(page),
+            createExpectedListenFindSpeechRequests(2),
+            'Listen & Find should speak Find 1 through Find 9 on both boards'
+        );
         assert(
             (await page.getByTestId('schulte-completion').innerText()).includes('Great work! You finished Schulte Table.'),
             'Final completion should show Schulte Table after ascending, descending, and Listen & Find sessions complete'
@@ -176,6 +211,27 @@ async function assertSingleFindPrompt(page, expectedText) {
         return isVisible && /^Find \d+$/.test(element.textContent.trim());
     }).length);
     assert(visibleFindPromptCount === 1, 'Only one visible Find instruction should appear');
+}
+
+async function getListenFindSpeechRequests(page) {
+    return page.evaluate(() => window.__schulteListenFindSpeechRequests.slice());
+}
+
+function createExpectedListenFindSpeechRequests(boardCount) {
+    const requests = [];
+    for (let board = 0; board < boardCount; board += 1) {
+        for (let target = 1; target <= 9; target += 1) {
+            requests.push(`Find ${target}`);
+        }
+    }
+    return requests;
+}
+
+function assertSpeechRequests(actual, expected, message) {
+    assert(
+        actual.join('|') === expected.join('|'),
+        `${message}. Expected ${expected.join(', ')} but received ${actual.join(', ')}`
+    );
 }
 
 async function runAllTests() {

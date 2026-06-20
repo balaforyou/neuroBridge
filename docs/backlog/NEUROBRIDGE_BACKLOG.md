@@ -83,18 +83,6 @@ Notes:
 - Current SCH-006 preparation rule: learner path is system-controlled, session uses 2 boards, prompt order is ordered 1->9 first, random prompts are deferred, and speech recognition is out of scope.
 - Do not implement behavior in this documentation item.
 
-### SCH-006.3 Reusable Listen & Find TTS Support
-
-Priority: Unassigned  
-Status: Backlog  
-Depends On:  
-- `SCH-006`
-Notes:  
-- SCH-006 discovered that Schulte does not currently have reusable browser TTS/audio infrastructure.
-- Define and reuse an approved TTS prompt service before adding spoken Listen & Find prompts.
-- Do not add speech recognition or microphone input.
-- Do not implement now.
-
 ### NB-ARCH-001 Adaptive Progression Framework
 
 Priority: Unassigned  
@@ -308,6 +296,15 @@ Depends On:
 - `SCH-002`
 
 Closure note: Implemented learner-path Listen & Find Ordered Mode after the existing Memory Mode ascending and descending progression, using two ordered 1->9 visual-prompt boards with the existing grid, validation, feedback, and completion flow. Reusable TTS/audio support was deferred to `SCH-006.3`.
+
+### SCH-006.3 Reusable Listen & Find TTS Support
+
+Priority: Unassigned
+Status: Done
+Depends On:
+- `SCH-006`
+
+Closure note: Added reusable browser speech synthesis support for Listen & Find prompts, wired Schulte Table to speak each ordered target during Listen & Find only, and preserved visual-only behavior when speech synthesis is unavailable.
 
 ### SCH-006.4 Listen & Find Flow Activation Fix
 

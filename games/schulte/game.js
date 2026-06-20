@@ -1,3 +1,5 @@
+import { createListenFindSpeaker } from '../../js/listenFindSpeech.js';
+
 export const SCHULTE_ACTIVITY_ID = 'schulte-v1';
 export const SCHULTE_CORE_GRID_SIZE = 3;
 export const SCHULTE_CORE_CELL_COUNT = SCHULTE_CORE_GRID_SIZE * SCHULTE_CORE_GRID_SIZE;
@@ -302,9 +304,11 @@ function mountSchulteActivity() {
         memoryMode: true,
         awaitingTransitionStart: false,
         transitionTargetMode: null,
-        transientPulseCellId: null
+        transientPulseCellId: null,
+        lastSpokenListenFindKey: null
     };
     let session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, handleFeedback);
+    const listenFindSpeaker = createListenFindSpeaker();
     const homeButton = document.getElementById('home-button');
 
     if (homeButton) {
@@ -375,6 +379,8 @@ function mountSchulteActivity() {
             startNextMode();
             render();
         });
+
+        speakListenFindPromptIfNeeded(state, showTransition);
     }
 
     function prepareModeTransitionIfNeeded(outcome) {
@@ -406,6 +412,26 @@ function mountSchulteActivity() {
         pageState.awaitingTransitionStart = false;
         pageState.transitionTargetMode = null;
         pageState.transientPulseCellId = null;
+        pageState.lastSpokenListenFindKey = null;
+    }
+
+    function speakListenFindPromptIfNeeded(state, showTransition) {
+        if (
+            showTransition
+            || state.completed
+            || state.mode !== SCHULTE_LISTEN_FIND_MODE
+            || !Number.isInteger(state.expectedNumber)
+        ) {
+            return;
+        }
+
+        const speechKey = `${state.currentBoardIndex}:${state.expectedNumber}`;
+        if (pageState.lastSpokenListenFindKey === speechKey) {
+            return;
+        }
+
+        pageState.lastSpokenListenFindKey = speechKey;
+        listenFindSpeaker.speakTarget(state.expectedNumber);
     }
 
     function renderActivePrompt(state, showTransition) {
