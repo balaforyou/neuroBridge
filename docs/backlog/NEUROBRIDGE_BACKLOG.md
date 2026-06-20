@@ -10,15 +10,6 @@ This file is the lightweight source of truth for deferred NeuroBridge work.
 
 Items frozen enough for Codex handover.
 
-### SCH-001 Core Grid Engine
-
-Priority: P1  
-Status: Ready  
-Depends On:  
-- `SCH-FREEZE-001`
-- `SCH-TEST-001`
-- `SCH-IMPLEMENTATION-PLAN-001`
-
 ### SCH-002 Ascending Progression
 
 Priority: P1  
@@ -65,6 +56,15 @@ Depends On:
 ## Backlog
 
 Valid ideas that are not ready for implementation yet.
+
+### SCH-001.1 Square Grid Size Expansion Contract
+
+Priority: Unassigned  
+Status: Backlog  
+Depends On:  
+- `SCH-001`
+Notes:  
+`SCH-TEST-001` includes V1 representability for 4x4, 5x5, and 6x6 square boards, while `SCH-001` is intentionally limited to the 3x3 core grid engine. Promote this item when a later Schulte packet is ready to expand grid-size support without changing the SCH-001 scope.
 
 ### NB-BL-004 Master Auto Progression
 
@@ -155,6 +155,17 @@ Status: Deferred
 ## Done
 
 Completed feature IDs and closure notes.
+
+### SCH-001 Core Grid Engine
+
+Priority: P1  
+Status: Done  
+Depends On:  
+- `SCH-FREEZE-001`
+- `SCH-TEST-001`
+- `SCH-IMPLEMENTATION-PLAN-001`
+
+Closure note: Implemented 3x3 Schulte core grid engine with randomized board generation, number placement, cell selection guards, board completion detection, renderable grid markup, and focused unit tests.
 
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
