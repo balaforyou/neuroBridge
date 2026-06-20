@@ -288,6 +288,7 @@ function mountSchulteActivity() {
     const pageState = {
         learnerName: 'Learner',
         mode: SCHULTE_ASCENDING_MODE,
+        awaitingDescendingStart: false,
         transientPulseCellId: null,
         feedbackText: 'Find 1'
     };
@@ -325,7 +326,7 @@ function mountSchulteActivity() {
 
     function getSessionCelebrationText() {
         if (pageState.mode === SCHULTE_ASCENDING_MODE) {
-            return 'Mode: Descending';
+            return 'Great work! Now let\'s try descending.';
         }
 
         return 'Great work!';
@@ -333,6 +334,7 @@ function mountSchulteActivity() {
 
     function render() {
         const state = session.getState();
+        const showTransition = pageState.awaitingDescendingStart;
         root.innerHTML = `
             <section data-testid="schulte-activity" class="flex h-full min-h-0 flex-col gap-3">
                 <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-cyan-200 bg-white px-4 py-3 shadow-sm">
@@ -351,11 +353,13 @@ function mountSchulteActivity() {
                     ${pageState.feedbackText}
                 </div>
 
-                <div data-testid="schulte-grid" class="grid flex-1 min-h-0 gap-2" style="grid-template-columns: repeat(${state.currentBoard.gridSize}, minmax(0, 1fr));">
-                    ${state.currentBoard.cells.map(cell => renderCell(cell, state.completed)).join('')}
-                </div>
+                ${showTransition ? renderDescendingTransition() : `
+                    <div data-testid="schulte-grid" class="grid flex-1 min-h-0 gap-2" style="grid-template-columns: repeat(${state.currentBoard.gridSize}, minmax(0, 1fr));">
+                        ${state.currentBoard.cells.map(cell => renderCell(cell, state.completed)).join('')}
+                    </div>
+                `}
 
-                ${state.completed ? `
+                ${state.completed && !showTransition ? `
                     <div data-testid="schulte-completion" class="rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 text-center text-xl font-black text-emerald-900">
                         Great work! You finished Grid Vision.
                     </div>
@@ -369,21 +373,50 @@ function mountSchulteActivity() {
                 pageState.transientPulseCellId = outcome.result === 'incorrect'
                     ? outcome.cell.cellId
                     : null;
-                advanceFlowIfNeeded(outcome);
+                prepareDescendingTransitionIfNeeded(outcome);
                 render();
             });
         });
+
+        root.querySelector('[data-schulte-start-descending]')?.addEventListener('click', () => {
+            startDescendingMode();
+            render();
+        });
     }
 
-    function advanceFlowIfNeeded(outcome) {
+    function prepareDescendingTransitionIfNeeded(outcome) {
         if (outcome.result !== 'session-complete' || pageState.mode !== SCHULTE_ASCENDING_MODE) {
             return;
         }
 
+        pageState.awaitingDescendingStart = true;
+        pageState.transientPulseCellId = null;
+    }
+
+    function startDescendingMode() {
         pageState.mode = SCHULTE_DESCENDING_MODE;
+        pageState.awaitingDescendingStart = false;
         pageState.transientPulseCellId = null;
         session = createVisibleSchulteSession(pageState.mode, handleFeedback);
         pageState.feedbackText = `Find ${session.getState().expectedNumber}`;
+    }
+
+    function renderDescendingTransition() {
+        return `
+            <div data-testid="schulte-descending-transition" class="flex flex-1 flex-col items-center justify-center gap-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-5 py-6 text-center text-slate-950">
+                <div>
+                    <p class="text-2xl font-black text-emerald-900">Great work! Now let's try descending.</p>
+                    <p class="mt-2 text-lg font-black text-slate-800">Start from 9 and go backwards.</p>
+                </div>
+                <button
+                    type="button"
+                    data-schulte-start-descending
+                    data-testid="schulte-start-descending"
+                    class="min-h-[48px] rounded-xl bg-emerald-700 px-5 py-2 text-base font-black text-white shadow-sm transition focus:outline-none focus:ring-4 focus:ring-emerald-300">
+                    Continue
+                </button>
+            </div>
+        `;
     }
 
     function renderCell(cell, sessionComplete) {

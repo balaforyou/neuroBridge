@@ -58,7 +58,19 @@ async function testAutomaticAscendingToDescendingFlow() {
         }
 
         assert(await page.getByTestId('schulte-completion').count() === 0, 'Final completion should not show after ascending only');
-        assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Descending', 'Flow should transition to Descending mode');
+        await page.getByTestId('schulte-descending-transition').waitFor();
+        assert(
+            (await page.getByTestId('schulte-descending-transition').innerText()).includes('Great work! Now let\'s try descending.'),
+            'Transition should praise before descending'
+        );
+        assert(
+            (await page.getByTestId('schulte-descending-transition').innerText()).includes('Start from 9 and go backwards.'),
+            'Transition should explain descending start'
+        );
+        assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Ascending', 'Transition should appear before descending starts');
+
+        await page.getByTestId('schulte-start-descending').click();
+        assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Descending', 'Continue should move to Descending mode');
         assert(await page.getByTestId('schulte-target').innerText() === 'Find 9', 'Descending mode should start at 9');
 
         await page.locator('[data-schulte-number="8"]').click();

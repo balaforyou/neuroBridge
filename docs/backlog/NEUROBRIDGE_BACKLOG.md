@@ -218,6 +218,14 @@ Depends On:
 
 Closure note: Updated the learner-facing Schulte flow to start in Ascending, automatically transition to Descending after two ascending boards, start Descending at Find 9, and show final completion only after both ascending and descending sessions complete.
 
+### SCH-004.3 Smooth Ascending-to-Descending Transition Message
+
+Status: Done  
+Depends On:  
+- `SCH-004.2`
+
+Closure note: Added a gentle transition panel after Ascending Board 2 with the required descending guidance, plus a Continue action before starting Descending at Find 9.
+
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
 Status: Done  
