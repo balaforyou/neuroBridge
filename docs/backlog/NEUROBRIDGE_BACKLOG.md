@@ -192,6 +192,14 @@ Depends On:
 
 Closure note: Implemented descending 9->1 validation for 3x3 boards, preserved two-board session progression and completion behavior, preserved feedback hooks, and added focused descending tests.
 
+### SCH-004.1 Descending Mode Exposure
+
+Status: Done  
+Depends On:  
+- `SCH-004`
+
+Closure note: Added manual learner-facing mode controls to the Schulte activity page so existing descending mode can be selected and played for testing, with focused browser coverage for descending launch and completion.
+
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
 Status: Done  

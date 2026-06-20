@@ -287,12 +287,11 @@ function mountSchulteActivity() {
 
     const pageState = {
         learnerName: 'Learner',
+        mode: SCHULTE_ASCENDING_MODE,
         transientPulseCellId: null,
         feedbackText: 'Find 1'
     };
-    const session = createSchulteAscendingSession({
-        onFeedback: handleFeedback
-    });
+    let session = createVisibleSchulteSession(pageState.mode, handleFeedback);
     const homeButton = document.getElementById('home-button');
 
     if (homeButton) {
@@ -339,6 +338,11 @@ function mountSchulteActivity() {
                     </div>
                 </div>
 
+                <div data-testid="schulte-mode-controls" class="grid shrink-0 grid-cols-2 gap-2 rounded-xl border border-cyan-200 bg-cyan-50 p-1">
+                    ${renderModeButton(SCHULTE_ASCENDING_MODE, 'Ascending')}
+                    ${renderModeButton(SCHULTE_DESCENDING_MODE, 'Descending')}
+                </div>
+
                 <div data-testid="schulte-feedback" class="min-h-[40px] rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-center text-base font-black text-amber-900">
                     ${pageState.feedbackText}
                 </div>
@@ -364,6 +368,41 @@ function mountSchulteActivity() {
                 render();
             });
         });
+
+        root.querySelectorAll('[data-schulte-mode]').forEach(button => {
+            button.addEventListener('click', () => {
+                setMode(button.getAttribute('data-schulte-mode'));
+            });
+        });
+    }
+
+    function setMode(mode) {
+        const nextMode = mode === SCHULTE_DESCENDING_MODE ? SCHULTE_DESCENDING_MODE : SCHULTE_ASCENDING_MODE;
+        if (nextMode === pageState.mode) return;
+
+        pageState.mode = nextMode;
+        pageState.transientPulseCellId = null;
+        session = createVisibleSchulteSession(pageState.mode, handleFeedback);
+        pageState.feedbackText = `Find ${session.getState().expectedNumber}`;
+        render();
+    }
+
+    function renderModeButton(mode, label) {
+        const isActive = pageState.mode === mode;
+        const activeClass = isActive
+            ? 'border-cyan-600 bg-white text-cyan-950 shadow-sm'
+            : 'border-transparent bg-transparent text-cyan-800';
+
+        return `
+            <button
+                type="button"
+                data-testid="schulte-mode-${mode}"
+                data-schulte-mode="${mode}"
+                aria-pressed="${isActive ? 'true' : 'false'}"
+                class="min-h-[44px] rounded-lg border-2 ${activeClass} px-3 py-2 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-cyan-300">
+                ${label}
+            </button>
+        `;
     }
 
     function renderCell(cell, sessionComplete) {
@@ -393,6 +432,13 @@ function mountSchulteActivity() {
 function normalizeLearnerName(learnerName) {
     const trimmed = String(learnerName || 'Learner').trim();
     return trimmed || 'Learner';
+}
+
+function createVisibleSchulteSession(mode, onFeedback) {
+    const config = { onFeedback };
+    return mode === SCHULTE_DESCENDING_MODE
+        ? createSchulteDescendingSession(config)
+        : createSchulteAscendingSession(config);
 }
 
 function createOrderedSessionBoards(config) {
