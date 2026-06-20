@@ -228,6 +228,14 @@ Depends On:
 
 Closure note: Implemented Memory Mode for the learner-facing Ascending -> Descending Schulte flow so selected cells no longer remain visually highlighted while internal validation, feedback hooks, transition messaging, and completion behavior remain intact.
 
+### SCH-005.1 Instruction Simplification and Prompt Sync Fix
+
+Status: Done  
+Depends On:  
+- `SCH-005`
+
+Closure note: Removed the duplicate header Find badge and made the center learner prompt derive from the active Schulte session state so Ascending and Descending prompts stay synchronized after correct selections, wrong selections, and board transitions.
+
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
 Status: Done  

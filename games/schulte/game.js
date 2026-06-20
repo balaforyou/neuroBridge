@@ -293,8 +293,7 @@ function mountSchulteActivity() {
         mode: SCHULTE_ASCENDING_MODE,
         memoryMode: true,
         awaitingDescendingStart: false,
-        transientPulseCellId: null,
-        feedbackText: 'Find 1'
+        transientPulseCellId: null
     };
     let session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, handleFeedback);
     const homeButton = document.getElementById('home-button');
@@ -316,24 +315,7 @@ function mountSchulteActivity() {
     function handleFeedback(event) {
         if (event.type === SCHULTE_FEEDBACK.ORANGE_PULSE) {
             pageState.transientPulseCellId = event.cellId;
-            pageState.feedbackText = `Find ${event.expectedNumber}`;
-        } else if (event.type === SCHULTE_FEEDBACK.SUCCESS) {
-            pageState.feedbackText = 'Perfect board!';
-        } else if (event.type === SCHULTE_FEEDBACK.CELEBRATION) {
-            pageState.feedbackText = event.scope === 'session'
-                ? getSessionCelebrationText()
-                : 'Next board';
-        } else if (event.type === SCHULTE_FEEDBACK.CLICK) {
-            pageState.feedbackText = `Find ${session.getState().expectedNumber}`;
         }
-    }
-
-    function getSessionCelebrationText() {
-        if (pageState.mode === SCHULTE_ASCENDING_MODE) {
-            return 'Great work! Now let\'s try descending.';
-        }
-
-        return 'Great work!';
     }
 
     function render() {
@@ -344,18 +326,15 @@ function mountSchulteActivity() {
                 <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-cyan-200 bg-white px-4 py-3 shadow-sm">
                     <div>
                         <p class="text-xs font-black uppercase tracking-[0.14em] text-cyan-700">Grid Vision</p>
-                        <h2 class="text-xl font-black text-slate-950">Find the numbers in order, ${pageState.learnerName}</h2>
+                        <h2 class="text-xl font-black text-slate-950">Number order, ${pageState.learnerName}</h2>
                     </div>
                     <div class="flex gap-2 text-sm font-black text-slate-800">
                         <span data-testid="schulte-mode-label" class="rounded-full border border-cyan-200 bg-white px-3 py-1.5">Mode: ${getModeLabel(pageState.mode)}</span>
                         <span data-testid="schulte-board-counter" class="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5">Board ${state.boardNumber} / ${state.boardCount}</span>
-                        <span data-testid="schulte-target" class="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5">Find ${state.expectedNumber}</span>
                     </div>
                 </div>
 
-                <div data-testid="schulte-feedback" class="min-h-[40px] rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-center text-base font-black text-amber-900">
-                    ${pageState.feedbackText}
-                </div>
+                ${renderActivePrompt(state, showTransition)}
 
                 ${showTransition ? renderDescendingTransition() : `
                     <div data-testid="schulte-grid" class="grid flex-1 min-h-0 gap-2" style="grid-template-columns: repeat(${state.currentBoard.gridSize}, minmax(0, 1fr));">
@@ -402,7 +381,18 @@ function mountSchulteActivity() {
         pageState.awaitingDescendingStart = false;
         pageState.transientPulseCellId = null;
         session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, handleFeedback);
-        pageState.feedbackText = `Find ${session.getState().expectedNumber}`;
+    }
+
+    function renderActivePrompt(state, showTransition) {
+        if (showTransition || state.completed) {
+            return '';
+        }
+
+        return `
+            <div data-testid="schulte-target" class="min-h-[40px] rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-center text-base font-black text-amber-900">
+                Find ${state.expectedNumber}
+            </div>
+        `;
     }
 
     function renderDescendingTransition() {

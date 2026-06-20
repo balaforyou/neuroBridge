@@ -49,28 +49,38 @@ async function testAutomaticAscendingToDescendingFlow() {
 
         assert(await page.getByTestId('schulte-mode-controls').count() === 0, 'Learner path should not show manual mode selector');
         assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Ascending', 'Flow should start in Ascending mode');
-        assert(await page.getByTestId('schulte-target').innerText() === 'Find 1', 'Ascending mode should start at 1');
+        assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 1 / 2', 'Header should show board context');
+        assert(!(await page.getByTestId('schulte-activity').innerText()).includes('Find the numbers'), 'Header should not include a second Find instruction');
+        await assertSingleFindPrompt(page, 'Find 1');
 
         const oneCell = page.locator('[data-schulte-number="1"]');
         const twoCell = page.locator('[data-schulte-number="2"]');
         await oneCell.click();
-        assert(await page.getByTestId('schulte-target').innerText() === 'Find 2', 'Memory mode should still advance after correct selection');
+        await assertSingleFindPrompt(page, 'Find 2');
         assert(await oneCell.getAttribute('data-schulte-memory-mode') === 'true', 'Learner path should run memory mode');
         assert(await oneCell.isDisabled() === false, 'Memory mode selected cell should remain interactable-looking');
         assert(await oneCell.getAttribute('class') === await twoCell.getAttribute('class'), 'Memory mode selected cell should look identical to unselected cell');
         await oneCell.click();
-        assert(await page.getByTestId('schulte-target').innerText() === 'Find 2', 'Duplicate selected cell should not advance memory mode target');
+        await assertSingleFindPrompt(page, 'Find 2');
         await twoCell.click();
+        await assertSingleFindPrompt(page, 'Find 3');
 
         for (let board = 0; board < 2; board += 1) {
             const startValue = board === 0 ? 3 : 1;
             for (let value = startValue; value <= 9; value += 1) {
                 await page.locator(`[data-schulte-number="${value}"]`).click();
             }
+
+            if (board === 0) {
+                assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 2 / 2', 'Board completion should advance header context');
+                await assertSingleFindPrompt(page, 'Find 1');
+                assert(await page.getByText('Next board').count() === 0, 'Board transition should not show generic Next board copy');
+            }
         }
 
         assert(await page.getByTestId('schulte-completion').count() === 0, 'Final completion should not show after ascending only');
         await page.getByTestId('schulte-descending-transition').waitFor();
+        assert(await page.getByTestId('schulte-target').count() === 0, 'Transition should not show a stale Find prompt');
         assert(
             (await page.getByTestId('schulte-descending-transition').innerText()).includes('Great work! Now let\'s try descending.'),
             'Transition should praise before descending'
@@ -83,13 +93,18 @@ async function testAutomaticAscendingToDescendingFlow() {
 
         await page.getByTestId('schulte-start-descending').click();
         assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Descending', 'Continue should move to Descending mode');
-        assert(await page.getByTestId('schulte-target').innerText() === 'Find 9', 'Descending mode should start at 9');
+        assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 1 / 2', 'Descending should restart board context');
+        await assertSingleFindPrompt(page, 'Find 9');
 
         await page.locator('[data-schulte-number="8"]').click();
-        assert(await page.getByTestId('schulte-target').innerText() === 'Find 9', 'Wrong descending selection should not advance target');
+        await assertSingleFindPrompt(page, 'Find 9');
+
+        await page.locator('[data-schulte-number="9"]').click();
+        await assertSingleFindPrompt(page, 'Find 8');
 
         for (let board = 0; board < 2; board += 1) {
-            for (let value = 9; value >= 1; value -= 1) {
+            const startValue = board === 0 ? 8 : 9;
+            for (let value = startValue; value >= 1; value -= 1) {
                 await page.locator(`[data-schulte-number="${value}"]`).click();
             }
         }
@@ -107,6 +122,17 @@ async function testAutomaticAscendingToDescendingFlow() {
     }
 
     console.log('Schulte automatic ascending-to-descending flow test passed');
+}
+
+async function assertSingleFindPrompt(page, expectedText) {
+    const prompt = page.getByTestId('schulte-target');
+    assert(await prompt.count() === 1, 'Only one active Find prompt should be rendered');
+    assert(await prompt.innerText() === expectedText, `Expected center prompt to show ${expectedText}`);
+    const visibleFindPromptCount = await page.locator('body *').evaluateAll(elements => elements.filter(element => {
+        const isVisible = !!(element.offsetWidth || element.offsetHeight || element.getClientRects().length);
+        return isVisible && /^Find \d+$/.test(element.textContent.trim());
+    }).length);
+    assert(visibleFindPromptCount === 1, 'Only one visible Find instruction should appear');
 }
 
 async function runAllTests() {
