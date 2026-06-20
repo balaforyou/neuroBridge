@@ -38,7 +38,7 @@ async function isServerReady() {
     }
 }
 
-async function testDescendingModeCanBeSelectedAndPlayed() {
+async function testAutomaticAscendingToDescendingFlow() {
     const server = await ensureStaticServer();
     const browser = await chromium.launch({ headless: true });
     const page = await browser.newPage({ viewport: { width: 1000, height: 800 } });
@@ -47,7 +47,18 @@ async function testDescendingModeCanBeSelectedAndPlayed() {
         await page.goto('http://127.0.0.1:5501/games/schulte/index.html');
         await page.getByTestId('schulte-activity').waitFor();
 
-        await page.getByTestId('schulte-mode-descending').click();
+        assert(await page.getByTestId('schulte-mode-controls').count() === 0, 'Learner path should not show manual mode selector');
+        assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Ascending', 'Flow should start in Ascending mode');
+        assert(await page.getByTestId('schulte-target').innerText() === 'Find 1', 'Ascending mode should start at 1');
+
+        for (let board = 0; board < 2; board += 1) {
+            for (let value = 1; value <= 9; value += 1) {
+                await page.locator(`[data-schulte-number="${value}"]`).click();
+            }
+        }
+
+        assert(await page.getByTestId('schulte-completion').count() === 0, 'Final completion should not show after ascending only');
+        assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Descending', 'Flow should transition to Descending mode');
         assert(await page.getByTestId('schulte-target').innerText() === 'Find 9', 'Descending mode should start at 9');
 
         await page.locator('[data-schulte-number="8"]').click();
@@ -62,7 +73,7 @@ async function testDescendingModeCanBeSelectedAndPlayed() {
         await page.getByTestId('schulte-completion').waitFor();
         assert(
             (await page.getByTestId('schulte-completion').innerText()).includes('Great work!'),
-            'Descending mode should complete two-board session'
+            'Final completion should show after ascending and descending sessions complete'
         );
     } finally {
         await browser.close();
@@ -71,12 +82,12 @@ async function testDescendingModeCanBeSelectedAndPlayed() {
         }
     }
 
-    console.log('Schulte descending launch mode test passed');
+    console.log('Schulte automatic ascending-to-descending flow test passed');
 }
 
 async function runAllTests() {
     console.log('=== Schulte Launch Tests ===');
-    await testDescendingModeCanBeSelectedAndPlayed();
+    await testAutomaticAscendingToDescendingFlow();
     console.log('=== All Schulte Launch Tests Passed ===');
 }
 

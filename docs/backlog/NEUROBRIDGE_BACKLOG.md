@@ -53,6 +53,16 @@ Notes:
 - Consider shared tile component, icons, badges, progress indicators, hover/focus states, and mobile-friendly layout.
 - Do not implement now.
 
+### SCH-004.2.1 Practice Lab Mode Selector
+
+Status: Backlog  
+Depends On:  
+- `SCH-004.2`
+Notes:  
+- Manual Ascending / Descending selection may still be useful for parent experimentation or advanced testing.
+- Keep this out of the learner path.
+- Do not implement Practice Lab now.
+
 ### NB-BL-004 Master Auto Progression
 
 Status: Backlog  
@@ -199,6 +209,14 @@ Depends On:
 - `SCH-004`
 
 Closure note: Added manual learner-facing mode controls to the Schulte activity page so existing descending mode can be selected and played for testing, with focused browser coverage for descending launch and completion.
+
+### SCH-004.2 Automatic Ascending-to-Descending Flow
+
+Status: Done  
+Depends On:  
+- `SCH-004`
+
+Closure note: Updated the learner-facing Schulte flow to start in Ascending, automatically transition to Descending after two ascending boards, start Descending at Find 9, and show final completion only after both ascending and descending sessions complete.
 
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 

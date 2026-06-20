@@ -316,11 +316,19 @@ function mountSchulteActivity() {
             pageState.feedbackText = 'Perfect board!';
         } else if (event.type === SCHULTE_FEEDBACK.CELEBRATION) {
             pageState.feedbackText = event.scope === 'session'
-                ? 'Great work!'
+                ? getSessionCelebrationText()
                 : 'Next board';
         } else if (event.type === SCHULTE_FEEDBACK.CLICK) {
             pageState.feedbackText = `Find ${session.getState().expectedNumber}`;
         }
+    }
+
+    function getSessionCelebrationText() {
+        if (pageState.mode === SCHULTE_ASCENDING_MODE) {
+            return 'Mode: Descending';
+        }
+
+        return 'Great work!';
     }
 
     function render() {
@@ -333,14 +341,10 @@ function mountSchulteActivity() {
                         <h2 class="text-xl font-black text-slate-950">Find the numbers in order, ${pageState.learnerName}</h2>
                     </div>
                     <div class="flex gap-2 text-sm font-black text-slate-800">
+                        <span data-testid="schulte-mode-label" class="rounded-full border border-cyan-200 bg-white px-3 py-1.5">Mode: ${getModeLabel(pageState.mode)}</span>
                         <span data-testid="schulte-board-counter" class="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5">Board ${state.boardNumber} / ${state.boardCount}</span>
                         <span data-testid="schulte-target" class="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5">Find ${state.expectedNumber}</span>
                     </div>
-                </div>
-
-                <div data-testid="schulte-mode-controls" class="grid shrink-0 grid-cols-2 gap-2 rounded-xl border border-cyan-200 bg-cyan-50 p-1">
-                    ${renderModeButton(SCHULTE_ASCENDING_MODE, 'Ascending')}
-                    ${renderModeButton(SCHULTE_DESCENDING_MODE, 'Descending')}
                 </div>
 
                 <div data-testid="schulte-feedback" class="min-h-[40px] rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-center text-base font-black text-amber-900">
@@ -365,44 +369,21 @@ function mountSchulteActivity() {
                 pageState.transientPulseCellId = outcome.result === 'incorrect'
                     ? outcome.cell.cellId
                     : null;
+                advanceFlowIfNeeded(outcome);
                 render();
             });
         });
-
-        root.querySelectorAll('[data-schulte-mode]').forEach(button => {
-            button.addEventListener('click', () => {
-                setMode(button.getAttribute('data-schulte-mode'));
-            });
-        });
     }
 
-    function setMode(mode) {
-        const nextMode = mode === SCHULTE_DESCENDING_MODE ? SCHULTE_DESCENDING_MODE : SCHULTE_ASCENDING_MODE;
-        if (nextMode === pageState.mode) return;
+    function advanceFlowIfNeeded(outcome) {
+        if (outcome.result !== 'session-complete' || pageState.mode !== SCHULTE_ASCENDING_MODE) {
+            return;
+        }
 
-        pageState.mode = nextMode;
+        pageState.mode = SCHULTE_DESCENDING_MODE;
         pageState.transientPulseCellId = null;
         session = createVisibleSchulteSession(pageState.mode, handleFeedback);
         pageState.feedbackText = `Find ${session.getState().expectedNumber}`;
-        render();
-    }
-
-    function renderModeButton(mode, label) {
-        const isActive = pageState.mode === mode;
-        const activeClass = isActive
-            ? 'border-cyan-600 bg-white text-cyan-950 shadow-sm'
-            : 'border-transparent bg-transparent text-cyan-800';
-
-        return `
-            <button
-                type="button"
-                data-testid="schulte-mode-${mode}"
-                data-schulte-mode="${mode}"
-                aria-pressed="${isActive ? 'true' : 'false'}"
-                class="min-h-[44px] rounded-lg border-2 ${activeClass} px-3 py-2 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-cyan-300">
-                ${label}
-            </button>
-        `;
     }
 
     function renderCell(cell, sessionComplete) {
@@ -427,6 +408,10 @@ function mountSchulteActivity() {
             </button>
         `;
     }
+}
+
+function getModeLabel(mode) {
+    return mode === SCHULTE_DESCENDING_MODE ? 'Descending' : 'Ascending';
 }
 
 function normalizeLearnerName(learnerName) {
