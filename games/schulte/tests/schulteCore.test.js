@@ -502,6 +502,30 @@ function testListenFindSessionCompletesAfterTwoBoards() {
     console.log('Schulte Listen & Find session completion test passed');
 }
 
+function testListenFindSecondBoardStartsFresh() {
+    const session = createSchulteListenFindSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')]
+    });
+    let outcome = null;
+
+    for (let value = 1; value <= SCHULTE_CORE_CELL_COUNT; value += 1) {
+        const board = session.getState().currentBoard;
+        outcome = session.selectCell(getCellIdByValue(board, value));
+    }
+
+    const state = outcome.state;
+    const oneCellId = getCellIdByValue(state.currentBoard, 1);
+
+    assert(outcome.result === 'board-complete', 'Listen & Find Board 1 should advance instead of completing session');
+    assert(state.completed === false, 'Listen & Find session should remain incomplete after Board 1');
+    assert(state.currentBoardIndex === 1, 'Listen & Find should move to second board');
+    assert(state.boardNumber === 2, 'Listen & Find learner-facing board number should show Board 2');
+    assert(state.expectedNumber === 1, 'Listen & Find Board 2 should restart at Find 1');
+    assert(state.currentBoard.cells.every(cell => cell.selected === false), 'Listen & Find Board 2 should start with no selected cells');
+    assert(session.selectCell(oneCellId).state.expectedNumber === 2, 'Listen & Find Board 2 should be playable from target 1');
+    console.log('Schulte Listen & Find second board reset test passed');
+}
+
 function runAllTests() {
     console.log('=== Schulte Core Grid Unit Tests ===');
     testNumberSetCreatesThreeByThreeRange();
@@ -528,6 +552,7 @@ function runAllTests() {
     testListenFindSessionStartsAtOneWithTwoBoards();
     testListenFindSessionUsesOrderedOneToNineValidation();
     testListenFindSessionCompletesAfterTwoBoards();
+    testListenFindSecondBoardStartsFresh();
     console.log('=== All Schulte Core Grid Tests Passed ===');
 }
 

@@ -164,7 +164,7 @@ async function testAutomaticAscendingToDescendingFlow() {
         assertSpeechRequests(await getListenFindSpeechRequests(page), ['Find 1', 'Find 2'], 'Correct Listen & Find selection should speak the next target');
 
         for (let board = 0; board < 2; board += 1) {
-            const startValue = board === 0 ? 2 : 1;
+            const startValue = 2;
             for (let value = startValue; value <= 9; value += 1) {
                 await page.locator(`[data-schulte-number="${value}"]`).click();
             }
@@ -173,12 +173,18 @@ async function testAutomaticAscendingToDescendingFlow() {
                 assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Listen & Find', 'Listen & Find should stay in mode after first board');
                 assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 2 / 2', 'Listen & Find should advance to second board');
                 assert(await page.getByTestId('schulte-completion').count() === 0, 'Listen & Find should not complete after Board 1');
+                assert(await page.getByTestId('schulte-grid').count() === 1, 'Listen & Find Board 2 should render a fresh playable grid');
                 await assertSingleFindPrompt(page, 'Find 1');
                 assertSpeechRequests(
                     await getListenFindSpeechRequests(page),
                     [...createExpectedListenFindSpeechRequests(1), 'Find 1'],
                     'Listen & Find Board 2 should restart spoken prompts at Find 1'
                 );
+                const boardTwoOneCell = page.locator('[data-schulte-number="1"]');
+                assert(await boardTwoOneCell.isDisabled() === false, 'Listen & Find Board 2 first target should be playable');
+                await boardTwoOneCell.click();
+                await assertSingleFindPrompt(page, 'Find 2');
+                assert(await page.getByTestId('schulte-completion').count() === 0, 'Listen & Find should not complete after Board 2 first selection');
             }
         }
 

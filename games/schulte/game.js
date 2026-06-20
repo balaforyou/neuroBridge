@@ -495,6 +495,7 @@ function mountSchulteActivity() {
 function isLearnerFlowComplete(state, showTransition) {
     return showTransition === false
         && state.completed === true
+        && state.completedBoards === state.boardCount
         && state.mode === SCHULTE_LISTEN_FIND_MODE;
 }
 

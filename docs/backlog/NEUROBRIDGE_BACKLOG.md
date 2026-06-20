@@ -314,6 +314,14 @@ Depends On:
 
 Closure note: Fixed Listen & Find flow activation so the final completion screen is gated to a completed Listen & Find session, the active mode label is tied to the current session state, and entering Listen & Find starts a fresh Board 1 / 2 at Find 1.
 
+### SCH-006.5 Listen & Find Board 2 Reset Fix
+
+Status: Done
+Depends On:
+- `SCH-006`
+
+Closure note: Hardened Listen & Find final-completion gating so completion requires all Listen & Find boards to be complete, and added regression coverage proving Board 2 starts fresh at Find 1 with a playable grid before final completion appears.
+
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
 Status: Done  
