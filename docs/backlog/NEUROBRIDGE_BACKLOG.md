@@ -10,6 +10,58 @@ This file is the lightweight source of truth for deferred NeuroBridge work.
 
 Items frozen enough for Codex handover.
 
+### SCH-001 Core Grid Engine
+
+Priority: P1  
+Status: Ready  
+Depends On:  
+- `SCH-FREEZE-001`
+- `SCH-TEST-001`
+- `SCH-IMPLEMENTATION-PLAN-001`
+
+### SCH-002 Ascending Progression
+
+Priority: P1  
+Status: Ready  
+Depends On:  
+- `SCH-001`
+
+### SCH-003 Feedback Engine Integration
+
+Priority: P1  
+Status: Ready  
+Depends On:  
+- `SCH-001`
+- `SCH-002`
+
+### SCH-004 Descending Progression
+
+Priority: P2  
+Status: Ready  
+Depends On:  
+- `SCH-002`
+
+### SCH-005 Memory Mode
+
+Priority: P2  
+Status: Ready  
+Depends On:  
+- `SCH-002`
+
+### SCH-006 Listen & Find
+
+Priority: P2  
+Status: Ready  
+Depends On:  
+- `SCH-002`
+
+### SCH-007 Analytics Foundation
+
+Priority: P2  
+Status: Ready  
+Depends On:  
+- `SCH-002`
+
 ## Backlog
 
 Valid ideas that are not ready for implementation yet.
@@ -72,6 +124,34 @@ Division Master depends on Division progression and should not be implemented be
 Trigger:  
 Pick up after Division L1-L9 progression is introduced and stable.
 
+## Deferred
+
+Items explicitly parked until promoted.
+
+### SCH-008 Honeycomb Layout
+
+Status: Deferred
+
+### SCH-009 Multiples Mode
+
+Status: Deferred
+
+### SCH-010 Peripheral Mode
+
+Status: Deferred
+
+### SCH-011 Gorbov Schulte
+
+Status: Deferred
+
+### SCH-012 Adaptive Fluency Engine Integration
+
+Status: Deferred
+
+### SCH-013 Practice Lab
+
+Status: Deferred
+
 ## Done
 
 Completed feature IDs and closure notes.
@@ -79,7 +159,23 @@ Completed feature IDs and closure notes.
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
 Status: Done  
-Closure note: Added `SCH-FREEZE-001.md` architecture freeze and `SCH-TEST-001.md` V1 test matrix for Schulte Family implementation handovers.
+Closure note:  
+- `SCH-FREEZE-001` created
+- `SCH-TEST-001` created
+- Schulte V1 architecture frozen
+- Test matrix completed
+
+### NB-BL-008A Schulte Implementation Plan
+
+Status: Done  
+Note: Requested as `NB-BL-008`, but `NB-BL-008` is already assigned to Results Page Learner Accuracy Highlight. Preserved existing backlog history and recorded this Schulte planning item as `NB-BL-008A`.  
+Closure note:  
+- `SCH-IMPLEMENTATION-PLAN-001` created
+- `SCH-001` through `SCH-007` defined
+- Dependencies documented
+- Scope boundaries documented
+- Deferred items identified
+- Implementation sequence frozen
 
 ### NB-BL-008 Results Page Learner Accuracy Highlight
 
