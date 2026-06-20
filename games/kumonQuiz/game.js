@@ -10,6 +10,8 @@ export const KUMON_QUIZ_ACTIVITY_ID = 'kumonQuiz';
 export const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
 export const NUMBER_BRIDGE_PAGE_TURN_MS = 320;
 export const NUMBER_BRIDGE_MAX_LEVEL = 9;
+export const NUMBER_BRIDGE_MASTER_RANGE_MIN = 1;
+export const NUMBER_BRIDGE_MASTER_RANGE_MAX = 9;
 export const NUMBER_BRIDGE_AUTO_PROGRESSION_THRESHOLD = 80;
 export const NUMBER_BRIDGE_OPERATION_PACKS = {
     '+': {
@@ -49,6 +51,11 @@ export const NUMBER_BRIDGE_OPERATION_PACKS = {
 export const DEFAULT_KUMON_CONFIG = {
     operation: '+',
     level: 1,
+    arithmeticMode: 'bridge',
+    aMin: 1,
+    aMax: 2,
+    bMin: 1,
+    bMax: 2,
     firstNumberMin: 1,
     firstNumberMax: 10,
     secondNumberMode: 'fixed',
@@ -82,6 +89,8 @@ export function getNumberBridgeLevelModel(level = DEFAULT_KUMON_CONFIG.level, op
 export function normalizeKumonConfig(config = {}) {
     const merged = { ...DEFAULT_KUMON_CONFIG, ...config };
     const operationPack = getNumberBridgeOperationPack(merged.operation);
+    const arithmeticMode = normalizeArithmeticMode(merged.arithmeticMode || merged.numberBridgeMode || merged.mode, operationPack.operation);
+    const masterRanges = normalizeNumberBridgeMasterRanges(merged, operationPack.operation);
     const firstNumberMin = clampInteger(merged.firstNumberMin, 1, 100, DEFAULT_KUMON_CONFIG.firstNumberMin);
     const firstNumberMax = Math.max(firstNumberMin, clampInteger(merged.firstNumberMax, 1, 100, DEFAULT_KUMON_CONFIG.firstNumberMax));
     const secondNumberMode = merged.secondNumberMode === 'range' ? 'range' : 'fixed';
@@ -104,11 +113,18 @@ export function normalizeKumonConfig(config = {}) {
     return {
         operation: operationPack.operation,
         operationName: operationPack.operationName,
+        arithmeticMode,
+        aMin: masterRanges.aMin,
+        aMax: masterRanges.aMax,
+        bMin: masterRanges.bMin,
+        bMax: masterRanges.bMax,
         level: levelModel.level,
         bridgeValue: levelModel.bridgeValue,
-        levelLabel: levelModel.levelLabel,
-        skillLabel: levelModel.skillLabel,
-        levelDisplayLabel: levelModel.displayLabel,
+        levelLabel: arithmeticMode === 'master' ? `${operationPack.label} Master` : levelModel.levelLabel,
+        skillLabel: arithmeticMode === 'master' ? `A${masterRanges.aMin}-${masterRanges.aMax} B${masterRanges.bMin}-${masterRanges.bMax}` : levelModel.skillLabel,
+        levelDisplayLabel: arithmeticMode === 'master'
+            ? `${operationPack.label} Master A${masterRanges.aMin}-${masterRanges.aMax} B${masterRanges.bMin}-${masterRanges.bMax}`
+            : levelModel.displayLabel,
         firstNumberMin,
         firstNumberMax,
         secondNumberMode,
@@ -136,8 +152,35 @@ export function getNumberBridgeOperationPack(operation = DEFAULT_KUMON_CONFIG.op
     return NUMBER_BRIDGE_OPERATION_PACKS[operation] || NUMBER_BRIDGE_OPERATION_PACKS['+'];
 }
 
+function normalizeArithmeticMode(mode = DEFAULT_KUMON_CONFIG.arithmeticMode, operation = DEFAULT_KUMON_CONFIG.operation) {
+    const requestedMode = mode === 'master' ? 'master' : 'bridge';
+    if (requestedMode === 'master' && !['+', '-'].includes(operation)) {
+        return 'bridge';
+    }
+
+    return requestedMode;
+}
+
+export function normalizeNumberBridgeMasterRanges(config = {}, operation = DEFAULT_KUMON_CONFIG.operation) {
+    const aMin = clampInteger(config.aMin, NUMBER_BRIDGE_MASTER_RANGE_MIN, NUMBER_BRIDGE_MASTER_RANGE_MAX, DEFAULT_KUMON_CONFIG.aMin);
+    const aMax = Math.max(aMin, clampInteger(config.aMax, NUMBER_BRIDGE_MASTER_RANGE_MIN, NUMBER_BRIDGE_MASTER_RANGE_MAX, DEFAULT_KUMON_CONFIG.aMax));
+    let bMin = clampInteger(config.bMin, NUMBER_BRIDGE_MASTER_RANGE_MIN, NUMBER_BRIDGE_MASTER_RANGE_MAX, DEFAULT_KUMON_CONFIG.bMin);
+    let bMax = Math.max(bMin, clampInteger(config.bMax, NUMBER_BRIDGE_MASTER_RANGE_MIN, NUMBER_BRIDGE_MASTER_RANGE_MAX, DEFAULT_KUMON_CONFIG.bMax));
+
+    if (operation === '-' && bMin > aMax) {
+        bMin = aMax;
+        bMax = aMax;
+    }
+
+    return { aMin, aMax, bMin, bMax };
+}
+
 export function generateKumonQuestions(config = DEFAULT_KUMON_CONFIG) {
     const normalized = normalizeKumonConfig(config);
+    if (normalized.arithmeticMode === 'master') {
+        return assignQuestionOrderMetadata(createMasterQuestions(normalized));
+    }
+
     if (normalized.questionOrder === 'sequential') {
         return assignQuestionOrderMetadata(createSequentialQuestions(normalized));
     }
@@ -154,6 +197,38 @@ export function generateKumonQuestions(config = DEFAULT_KUMON_CONFIG) {
     }
 
     return assignQuestionOrderMetadata(questions);
+}
+
+function createMasterQuestions(config) {
+    const questionPool = createMasterQuestionPool(config);
+    const questions = [];
+
+    while (questions.length < config.questionCount) {
+        const randomIndex = Math.floor(Math.random() * questionPool.length);
+        questions.push({ ...questionPool[randomIndex] });
+    }
+
+    return questions;
+}
+
+function createMasterQuestionPool(config) {
+    const pool = [];
+
+    for (let operandA = config.aMin; operandA <= config.aMax; operandA += 1) {
+        for (let operandB = config.bMin; operandB <= config.bMax; operandB += 1) {
+            const question = createQuestionForOperation(config.operation, operandA, operandB);
+            if (question) {
+                pool.push(question);
+            }
+        }
+    }
+
+    if (pool.length) {
+        return pool;
+    }
+
+    const fallbackValue = Math.min(config.aMax, config.bMax);
+    return [createArithmeticQuestion(config.operation, fallbackValue, fallbackValue)];
 }
 
 function createSequentialQuestions(config) {
@@ -492,6 +567,12 @@ export function createKumonQuizGame(config = {}) {
 
         return {
             operation: state.config.operation,
+            mode: state.config.arithmeticMode,
+            arithmeticMode: state.config.arithmeticMode,
+            aMin: state.config.aMin,
+            aMax: state.config.aMax,
+            bMin: state.config.bMin,
+            bMax: state.config.bMax,
             level: state.config.level,
             levelLabel: state.config.levelLabel,
             skillLabel: state.config.skillLabel,
@@ -541,6 +622,12 @@ export function createKumonQuizGame(config = {}) {
 export function createKumonSessionSummary(state, resultSummary = null) {
     const summary = resultSummary || {
         operation: state.config.operation,
+        mode: state.config.arithmeticMode,
+        arithmeticMode: state.config.arithmeticMode,
+        aMin: state.config.aMin,
+        aMax: state.config.aMax,
+        bMin: state.config.bMin,
+        bMax: state.config.bMax,
         level: state.config.level,
         levelLabel: state.config.levelLabel,
         skillLabel: state.config.skillLabel,
@@ -562,6 +649,12 @@ export function createKumonSessionSummary(state, resultSummary = null) {
         activityId: KUMON_QUIZ_ACTIVITY_ID,
         activityName: 'Kumon Quiz / Number Bridges',
         operation: state.config.operation,
+        mode: state.config.arithmeticMode,
+        arithmeticMode: state.config.arithmeticMode,
+        aMin: state.config.aMin,
+        aMax: state.config.aMax,
+        bMin: state.config.bMin,
+        bMax: state.config.bMax,
         level: state.config.level,
         levelLabel: state.config.levelLabel,
         skillLabel: state.config.skillLabel,
@@ -589,6 +682,10 @@ export function createKumonSessionSummary(state, resultSummary = null) {
 
 export function getNextNumberBridgeLevel(config = DEFAULT_KUMON_CONFIG, accuracyPercent = 0) {
     const normalized = normalizeKumonConfig(config);
+    if (normalized.arithmeticMode === 'master') {
+        return normalized.level;
+    }
+
     if (!normalized.autoProgression) {
         return normalized.level;
     }
@@ -675,6 +772,8 @@ export function renderNumberBridgeResultMarkup(summary, learnerName = 'Learner')
                         <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-3xl font-black text-white" aria-hidden="true">&#10003;</div>
                         <div class="text-left">
                             <p data-testid="siraash-completion-title" class="text-lg font-black leading-tight sm:text-xl">Great work, ${normalizedLearnerName}! &#127793;</p>
+                            <p data-testid="number-bridges-result-header-accuracy" class="mt-1 text-2xl font-black leading-tight text-emerald-900 sm:text-3xl">${summary.accuracy}% Accuracy</p>
+                            <p data-testid="number-bridges-result-header-score" class="text-sm font-black text-slate-900 sm:text-base">${summary.correct} / ${summary.total} Correct</p>
                             <p data-testid="siraash-completion-message" class="text-sm font-bold text-emerald-900 sm:text-base">You finished your Number Bridges.</p>
                             ${motivationalLine}
                         </div>
@@ -764,6 +863,12 @@ function createTrialRecord({
         questionId: question.questionId,
         questionIndex: question.questionIndex,
         operation: question.operation,
+        mode: state.config.arithmeticMode,
+        arithmeticMode: state.config.arithmeticMode,
+        aMin: state.config.aMin,
+        aMax: state.config.aMax,
+        bMin: state.config.bMin,
+        bMax: state.config.bMax,
         level: state.config.level,
         levelLabel: state.config.levelLabel,
         skillLabel: state.config.skillLabel,

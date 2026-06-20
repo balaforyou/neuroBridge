@@ -1,75 +1,363 @@
-# Delivery Standards
+# NB-STD-001 NeuroBridge Delivery Standard
 
-Purpose: Set consistent expectations for NeuroBridge / SIRAASH story delivery.
+## Purpose
 
-## Story Scope Rules
+This document defines the mandatory process for implementing NeuroBridge features.
 
-- Complete the requested story only.
-- Keep changes inside the smallest reasonable set of files.
-- Treat explicit out-of-scope items as blocked for the story.
-- Ask for clarification only when repo context cannot answer a risky ambiguity.
+The objective is to:
 
-## No Unrelated Changes
+- Reduce implementation rework
+- Prevent scope creep
+- Improve Codex handover quality
+- Preserve architecture decisions
+- Maintain backlog discipline
+- Ensure testability and reviewability
 
-- Do not refactor unrelated code.
-- Do not reformat files broadly.
-- Do not change existing learner flows, analytics, or contracts unless the story requires it.
-- Do not revert user or prior work unless explicitly requested.
+## Golden Rule
 
-## Preserve Contracts
+New discoveries must not expand implementation scope.
 
-- Preserve trial, session, analytics, router, and feedback contracts.
-- Prefer additive selectors, states, and tests over contract-breaking changes.
-- Keep existing public exports stable unless a migration is part of the story.
+If a new requirement, enhancement, dependency, improvement, or architectural need is discovered during implementation:
 
-## UI Change Requirements
+Do not implement it immediately.
 
-- Follow SIRAASH Activity Shell and design-system standards.
-- Keep learner UI calm, readable, touch-friendly, and viewport-safe.
-- Avoid duplicate shell headers, overlapping feedback, clipped controls, and unexpected scrollbars.
-- Add stable `data-testid` selectors when needed for UI regression tests.
+Create a backlog item instead.
 
-## Test Expectations
+Example:
 
-- Run `npm.cmd run test` for implementation stories.
-- Run `npm.cmd run test:ui` when learner-facing UI or layout changes.
-- Add focused Node tests for logic changes.
-- Add or update Playwright tests for viewport, shell, navigation, and visible feedback changes.
+```text
+NB-SCH-001
+-> Discovery
+-> NB-SCH-001.1 Reusable Audio Service
+Status: Backlog
+```
 
-## Documentation Expectations
+Implementation continues only on the approved scope.
 
-- Update `docs/TESTING.md` when suites or coverage change.
-- Update backlog, architecture, ADR, or observation docs when the story changes product direction or learning assumptions.
-- Keep documentation concise and linked to story IDs where possible.
+## Mandatory Delivery Flow
 
-## Observation-Driven Stories
+Every NeuroBridge feature must follow:
 
-When a story originates from learner observations:
+```text
+Observation
+-> Discussion
+-> Backlog
+-> Freeze
+-> Test Matrix
+-> Implementation Packet
+-> Codex
+-> Review
+-> Done
+```
 
-- Preserve links to Observation IDs when applicable.
-- Preserve links to Foundation signals when applicable.
-- Preserve links to related backlog items and epics.
-    Example
-        OBS-AUD-20260615-001
-        #selfContinuation
-        NB-AUD-001
+No implementation should begin before Freeze and Test Matrix are approved.
 
-## Future Refinement Capture
+## Required Artifacts
 
-When meaningful future work emerges during story design or implementation:
+### 1. Backlog
 
-- Capture near-term refinements in backlog items.
-- Capture architectural observations when they influence multiple future stories.
-- Capture future implementation ideas without expanding current story scope.
-- Prefer documented refinement stories over undocumented assumptions.        
+Master source of truth:
 
-## Output Format
+```text
+docs/backlog/NEUROBRIDGE_BACKLOG.md
+```
 
-Final delivery should include:
+Required fields:
 
-- Files created.
-- Files modified.
-- Test commands used.
-- Test results.
-- Commit hash and message when committed.
-- Follow-up notes or known gaps, if any.
+- ID
+- Title
+- Priority
+- Status
+- Dependencies
+- Notes
+
+Status values:
+
+- Ready
+- In Progress
+- Blocked
+- Deferred
+- Done
+
+Only humans may change priorities.
+
+Codex may update status.
+
+### 2. Freeze Document
+
+Format:
+
+```text
+XXX-FREEZE-001.md
+```
+
+Purpose:
+
+Freeze functional requirements before implementation.
+
+Required sections:
+
+- Goals
+- Features
+- Progression
+- Analytics
+- Parent Controls
+- Supported V1
+- Not Supported V1
+- Assumptions
+- Potential Confusion Areas
+
+Example:
+
+```text
+SCH-FREEZE-001.md
+```
+
+### 3. Test Matrix
+
+Format:
+
+```text
+XXX-TEST-001.md
+```
+
+Purpose:
+
+Define exactly what success means.
+
+Required sections:
+
+- Happy Path Tests
+- Boundary Tests
+- Persistence Tests
+- Analytics Tests
+- Regression Tests
+
+Example:
+
+```text
+SCH-TEST-001.md
+```
+
+### 4. Implementation Packet
+
+Format:
+
+```text
+XXX-001
+```
+
+Example:
+
+```text
+SCH-001 Core Grid Engine
+```
+
+Each packet must be independently testable.
+
+Example decomposition:
+
+- SCH-001 Core Grid Engine
+- SCH-002 Ascending / Descending
+- SCH-003 Memory Mode
+- SCH-004 Auditory Mode
+- SCH-005 Analytics
+- SCH-006 Parent Controls
+
+## Scope Guardrails
+
+Every implementation packet must contain:
+
+### In Scope
+
+Explicitly list approved work.
+
+Example:
+
+- 3x3 Ascending
+- Random Board Generation
+- Two Board Sessions
+
+### Out Of Scope
+
+Explicitly list excluded work.
+
+Example:
+
+- Descending
+- Honeycomb
+- Gorbov
+- Parent Controls
+- Adaptive AI
+
+Codex must not implement out-of-scope functionality.
+
+## Assumptions Section
+
+Every handover must include:
+
+```text
+Assumption 1:
+...
+
+Assumption 2:
+...
+
+Assumption 3:
+...
+```
+
+Example:
+
+- Browser TTS is acceptable
+- Session contains two boards
+- Desktop-first implementation
+
+Assumptions can be challenged before implementation begins.
+
+## Potential Confusion Areas
+
+Every packet must identify likely misunderstandings.
+
+Examples:
+
+- Memory Mode is not Hidden Board
+- Auditory Mode is not Speech Recognition
+- Multiples Mode is not Grid Difficulty
+- Practice Lab is not Learning Path
+
+This section exists specifically to reduce review cycles.
+
+## Definition Of Done
+
+Every implementation packet must define:
+
+Done means:
+
+- Feature implemented
+- Tests passing
+- Documentation updated
+- Backlog status updated
+- No known critical defects
+
+"Looks good" is not a valid completion criterion.
+
+## Test Scope Guardrail
+
+Codex may only test affected areas.
+
+Example:
+
+```text
+SCH-001
+```
+
+Allowed:
+
+- Grid Engine
+- Board Rendering
+- Timing Capture
+
+Not allowed:
+
+- Parent Workspace
+- Kumon Quiz
+- Worksheets
+
+Avoid repository-wide testing for feature-level implementation.
+
+## Review Scope Guardrail
+
+Reviews must only inspect:
+
+- Current packet
+- Direct dependencies
+
+Do not review unrelated repository areas.
+
+## Architecture Freeze Rule
+
+Once a Freeze Document is approved, Codex may not change:
+
+- Product rules
+- Progression logic
+- Analytics definitions
+- Learning model
+
+without explicit approval.
+
+Implementation must follow architecture.
+
+Implementation does not redefine architecture.
+
+## Technical Debt Backlog
+
+Create a dedicated section:
+
+```text
+NB-TECH-XXX
+```
+
+Examples:
+
+- Refactoring
+- Performance improvements
+- Code cleanup
+- Shared services
+
+Technical debt items must not be mixed with feature backlog items.
+
+## Weekly Backlog Grooming
+
+Recommended cadence:
+
+Once per week.
+
+Activities:
+
+- Merge duplicates
+- Archive completed items
+- Reprioritize backlog
+- Promote ready items
+- Review deferred items
+
+Implementation sessions must not become backlog grooming sessions.
+
+## Codex Discovery Rule
+
+If implementation discovers:
+
+- New feature
+- New dependency
+- New enhancement
+- New architecture improvement
+
+Create:
+
+```text
+FEATURE-ID.X
+```
+
+Example:
+
+```text
+NB-SCH-001.1
+```
+
+Status:
+
+```text
+Backlog
+```
+
+Do not implement immediately.
+
+## NeuroBridge Principle
+
+Architecture is created during discussion.
+
+Implementation follows architecture.
+
+New discoveries become backlog items.
+
+This preserves focus, velocity, and analytics integrity across the NeuroBridge platform.

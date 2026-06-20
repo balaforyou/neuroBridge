@@ -2,7 +2,10 @@ import {
     createNumberBridgeOperationUpdate,
     formatNumberBridgeConfigurationSummary,
     getDashboardViewType,
+    getNumberBridgeArithmeticModeOptionsForOperation,
+    getNumberBridgeControlVisibility,
     getNumberBridgeLevelOptionsForOperation,
+    normalizeNumberBridgeDashboardMasterRanges,
     NUMBER_BRIDGE_LEVEL_OPTIONS,
     renderNumberBridgeCorrectionReview,
     renderParentSessionDetails,
@@ -152,6 +155,99 @@ function testOperationSwitchPreservesValidL9Levels() {
     console.log('Number Bridges operation switch test passed');
 }
 
+function testNumberBridgeMasterModeOptionsAndVisibility() {
+    assert(
+        getNumberBridgeArithmeticModeOptionsForOperation('+').map(option => option.value).join(',') === 'bridge,master',
+        'Addition should expose Bridge and Master modes'
+    );
+    assert(
+        getNumberBridgeArithmeticModeOptionsForOperation('-').map(option => option.value).join(',') === 'bridge,master',
+        'Subtraction should expose Bridge and Master modes'
+    );
+    assert(
+        getNumberBridgeArithmeticModeOptionsForOperation('×').map(option => option.value).join(',') === 'bridge',
+        'Multiplication should expose Bridge mode only'
+    );
+    assert(
+        getNumberBridgeArithmeticModeOptionsForOperation('÷').map(option => option.value).join(',') === 'bridge',
+        'Division should expose Bridge mode only'
+    );
+    assert(getNumberBridgeControlVisibility({ operation: '+', arithmeticMode: 'bridge' }).showLevel === true, 'Bridge mode should show level control');
+    assert(getNumberBridgeControlVisibility({ operation: '+', arithmeticMode: 'bridge' }).showRanges === false, 'Bridge mode should hide range controls');
+    assert(getNumberBridgeControlVisibility({ operation: '+', arithmeticMode: 'master' }).showLevel === false, 'Master mode should hide level control');
+    assert(getNumberBridgeControlVisibility({ operation: '+', arithmeticMode: 'master' }).showRanges === true, 'Master mode should show range controls');
+    assert(getNumberBridgeControlVisibility({ operation: '×', arithmeticMode: 'master' }).showLevel === true, 'Unsupported Master operation should fall back to Bridge visibility');
+    console.log('Number Bridges Master UI option test passed');
+}
+
+function testNumberBridgeMasterRangeValidation() {
+    const clamped = normalizeNumberBridgeDashboardMasterRanges({
+        aMin: 0,
+        aMax: 18,
+        bMin: -1,
+        bMax: 99
+    }, '+');
+    const corrected = normalizeNumberBridgeDashboardMasterRanges({
+        aMin: 8,
+        aMax: 3,
+        bMin: 7,
+        bMax: 2
+    }, '+');
+    const subtractionFallback = normalizeNumberBridgeDashboardMasterRanges({
+        aMin: 1,
+        aMax: 1,
+        bMin: 2,
+        bMax: 2
+    }, '-');
+
+    assert(clamped.aMin === 1 && clamped.aMax === 9, 'Dashboard A range should clamp to 1-9');
+    assert(clamped.bMin === 1 && clamped.bMax === 9, 'Dashboard B range should clamp to 1-9');
+    assert(corrected.aMin === 8 && corrected.aMax === 8, 'Dashboard A range should correct min greater than max');
+    assert(corrected.bMin === 7 && corrected.bMax === 7, 'Dashboard B range should correct min greater than max');
+    assert(subtractionFallback.bMin === 1 && subtractionFallback.bMax === 1, 'Dashboard subtraction range should fallback safely');
+    console.log('Number Bridges Master range validation test passed');
+}
+
+function testNumberBridgeMasterSummaryLabels() {
+    const addition = formatNumberBridgeConfigurationSummary({
+        operation: '+',
+        arithmeticMode: 'master',
+        aMin: 1,
+        aMax: 3,
+        bMin: 1,
+        bMax: 3
+    });
+    const subtraction = formatNumberBridgeConfigurationSummary({
+        operation: '-',
+        arithmeticMode: 'master',
+        aMin: 1,
+        aMax: 5,
+        bMin: 1,
+        bMax: 3
+    });
+    const multiplication = formatNumberBridgeConfigurationSummary({
+        operation: '×',
+        arithmeticMode: 'master',
+        level: 9
+    });
+
+    assert(addition.includes('Addition Master A1-3 B1-3'), 'Addition Master summary should show A/B ranges');
+    assert(subtraction.includes('Subtraction Master A1-5 B1-3'), 'Subtraction Master summary should show A/B ranges');
+    assert(multiplication.includes('Multiplication L9 (×10 Tables)'), 'Unsupported Multiplication Master should display Bridge summary');
+    console.log('Number Bridges Master summary label test passed');
+}
+
+function testNumberBridgeMasterOperationSwitching() {
+    const additionMasterToMultiplication = createNumberBridgeOperationUpdate('×', 9, 'master');
+    const additionMasterToSubtraction = createNumberBridgeOperationUpdate('-', 9, 'master');
+
+    assert(additionMasterToMultiplication.arithmeticMode === 'bridge', 'Switching Master to Multiplication should force Bridge mode');
+    assert(additionMasterToMultiplication.level === 9, 'Switching Addition L9 to Multiplication should preserve valid L9');
+    assert(additionMasterToSubtraction.arithmeticMode === 'master', 'Switching Master Addition to Subtraction should preserve Master mode');
+    assert(additionMasterToSubtraction.level === 9, 'Switching Addition L9 to Subtraction should preserve valid L9');
+    console.log('Number Bridges Master operation switching test passed');
+}
+
 function testDashboardViewTypeUsesActivityMetadata() {
     assert(
         getDashboardViewType({ gameId: 'kumonQuiz' }) === DASHBOARD_VIEW_TYPES.SUMMARY_WITH_CORRECTIONS,
@@ -257,6 +353,10 @@ function runAllTests() {
     testNumberBridgeLevelOptionsAreOperationSpecific();
     testMultiplicationLevelLabelsMapL1ThroughL9();
     testOperationSwitchPreservesValidL9Levels();
+    testNumberBridgeMasterModeOptionsAndVisibility();
+    testNumberBridgeMasterRangeValidation();
+    testNumberBridgeMasterSummaryLabels();
+    testNumberBridgeMasterOperationSwitching();
     testDashboardViewTypeUsesActivityMetadata();
     testMatrixReasoningKeepsPlainLevelLabel();
     testNumberBridgeHidesFullTrialTableAndLevelDash();

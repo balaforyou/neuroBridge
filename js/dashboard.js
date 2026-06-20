@@ -20,6 +20,9 @@ const DEFAULT_PARENT_WORKSPACE_TAB = 'dashboard';
 const NUMBER_BRIDGE_MAX_LEVEL = 9;
 export const NUMBER_BRIDGE_LEVEL_OPTIONS = Array.from({ length: NUMBER_BRIDGE_MAX_LEVEL }, (_, index) => index + 1);
 const NUMBER_BRIDGE_TABLE_LEVEL_OPTIONS = [1, 2, 3, 4, 5];
+const NUMBER_BRIDGE_MASTER_OPERATIONS = ['+', '-'];
+const NUMBER_BRIDGE_MASTER_RANGE_MIN = 1;
+const NUMBER_BRIDGE_MASTER_RANGE_MAX = 9;
 const NUMBER_BRIDGE_QUESTION_COUNT_OPTIONS = [5, 10, 20];
 const NUMBER_BRIDGE_QUESTIONS_PER_SCREEN_OPTIONS = [1, 3, 5];
 const NUMBER_BRIDGE_OPERATION_OPTIONS = [
@@ -173,6 +176,8 @@ function createNumberBridgeControlCard(game, config) {
     const controlCard = document.createElement('div');
     controlCard.className = 'p-4 bg-slate-950 border border-emerald-900 rounded-xl space-y-4';
     controlCard.setAttribute('data-testid', 'number-bridges-config-panel');
+    const normalizedMode = getNumberBridgeArithmeticMode(config);
+    const controlVisibility = getNumberBridgeControlVisibility(config);
 
     controlCard.innerHTML = `
         <div class="border-b border-slate-800 pb-2">
@@ -193,16 +198,62 @@ function createNumberBridgeControlCard(game, config) {
                 }))
             })}
             ${renderSelectSetting({
+                label: 'Mode',
+                gameId: game.id,
+                setting: 'arithmeticMode',
+                testId: 'number-bridges-config-mode',
+                value: normalizedMode,
+                options: getNumberBridgeArithmeticModeOptionsForOperation(config.operation)
+            })}
+            ${renderSelectSetting({
                 label: 'Level',
                 gameId: game.id,
                 setting: 'level',
                 type: 'number',
                 testId: 'number-bridges-config-level',
+                wrapperTestId: 'number-bridges-config-level-control',
+                hidden: !controlVisibility.showLevel,
                 value: Number(config.level || 1),
                 options: getNumberBridgeLevelOptionsForOperation(config.operation).map(level => ({
                     value: level,
                     label: formatNumberBridgeLevelDisplay({ ...config, level })
                 }))
+            })}
+            ${renderNumberInputSetting({
+                label: 'A Min',
+                gameId: game.id,
+                setting: 'aMin',
+                testId: 'number-bridges-config-a-min',
+                wrapperTestId: 'number-bridges-config-a-min-control',
+                hidden: !controlVisibility.showRanges,
+                value: normalizeNumberBridgeDashboardMasterRanges(config).aMin
+            })}
+            ${renderNumberInputSetting({
+                label: 'A Max',
+                gameId: game.id,
+                setting: 'aMax',
+                testId: 'number-bridges-config-a-max',
+                wrapperTestId: 'number-bridges-config-a-max-control',
+                hidden: !controlVisibility.showRanges,
+                value: normalizeNumberBridgeDashboardMasterRanges(config).aMax
+            })}
+            ${renderNumberInputSetting({
+                label: 'B Min',
+                gameId: game.id,
+                setting: 'bMin',
+                testId: 'number-bridges-config-b-min',
+                wrapperTestId: 'number-bridges-config-b-min-control',
+                hidden: !controlVisibility.showRanges,
+                value: normalizeNumberBridgeDashboardMasterRanges(config).bMin
+            })}
+            ${renderNumberInputSetting({
+                label: 'B Max',
+                gameId: game.id,
+                setting: 'bMax',
+                testId: 'number-bridges-config-b-max',
+                wrapperTestId: 'number-bridges-config-b-max-control',
+                hidden: !controlVisibility.showRanges,
+                value: normalizeNumberBridgeDashboardMasterRanges(config).bMax
             })}
             ${renderSelectSetting({
                 label: 'Questions',
@@ -282,12 +333,14 @@ function renderSelectSetting({
     testId,
     value,
     options,
-    type = 'string'
+    type = 'string',
+    wrapperTestId,
+    hidden = false
 }) {
     const normalizedValue = String(value);
 
     return `
-        <label class="block">
+        <label ${wrapperTestId ? `data-testid="${wrapperTestId}"` : ''} class="block ${hidden ? 'hidden' : ''}">
             <span class="block text-xs text-slate-400 mb-1">${label}</span>
             <select
                 data-game="${gameId}"
@@ -299,6 +352,33 @@ function renderSelectSetting({
                     <option value="${option.value}" ${String(option.value) === normalizedValue ? 'selected' : ''}>${option.label}</option>
                 `).join('')}
             </select>
+        </label>
+    `;
+}
+
+function renderNumberInputSetting({
+    label,
+    gameId,
+    setting,
+    testId,
+    value,
+    wrapperTestId,
+    hidden = false
+}) {
+    return `
+        <label ${wrapperTestId ? `data-testid="${wrapperTestId}"` : ''} class="block ${hidden ? 'hidden' : ''}">
+            <span class="block text-xs text-slate-400 mb-1">${label}</span>
+            <input
+                type="number"
+                min="${NUMBER_BRIDGE_MASTER_RANGE_MIN}"
+                max="${NUMBER_BRIDGE_MASTER_RANGE_MAX}"
+                step="1"
+                data-game="${gameId}"
+                data-setting="${setting}"
+                data-setting-type="number"
+                data-testid="${testId}"
+                value="${value}"
+                class="setting-input w-full p-2 bg-slate-900 border border-slate-700 rounded text-sm">
         </label>
     `;
 }
@@ -375,7 +455,9 @@ async function persistSettingModification(input) {
         }
 
         updateNumberBridgeConfigurationSummary(gameId, savedConfig);
+        updateNumberBridgeModeOptions(gameId, savedConfig);
         updateNumberBridgeLevelOptions(gameId, savedConfig);
+        updateNumberBridgeRangeControls(gameId, savedConfig);
         await renderParentProgressReport();
 
         setTimeout(() => {
@@ -411,13 +493,31 @@ function parseSettingValue(input) {
 function createSettingUpdate(gameId, settingKey, targetValue) {
     const updates = { [settingKey]: targetValue };
 
+    if (gameId === GAME_IDS.KUMON_QUIZ && settingKey === 'arithmeticMode') {
+        const operation = getCurrentNumberBridgeOperation();
+        updates.arithmeticMode = targetValue === 'master' && NUMBER_BRIDGE_MASTER_OPERATIONS.includes(operation)
+            ? 'master'
+            : 'bridge';
+        Object.assign(updates, normalizeNumberBridgeDashboardMasterRanges(getCurrentNumberBridgeRangeValues()));
+    }
+
     if (gameId === GAME_IDS.KUMON_QUIZ && settingKey === 'level') {
         updates.secondNumberMode = 'fixed';
         updates.secondNumberFixedValue = getNumberBridgeFactorForLevel(getCurrentNumberBridgeOperation(), targetValue);
     }
 
     if (gameId === GAME_IDS.KUMON_QUIZ && settingKey === 'operation') {
-        Object.assign(updates, createNumberBridgeOperationUpdate(targetValue, getCurrentNumberBridgeLevel()));
+        Object.assign(updates, createNumberBridgeOperationUpdate(targetValue, getCurrentNumberBridgeLevel(), getCurrentNumberBridgeArithmeticMode()));
+        if (!NUMBER_BRIDGE_MASTER_OPERATIONS.includes(targetValue) && getCurrentNumberBridgeArithmeticMode() === 'master') {
+            updates.arithmeticMode = 'bridge';
+        }
+    }
+
+    if (gameId === GAME_IDS.KUMON_QUIZ && ['aMin', 'aMax', 'bMin', 'bMax'].includes(settingKey)) {
+        Object.assign(updates, normalizeNumberBridgeDashboardMasterRanges({
+            ...getCurrentNumberBridgeRangeValues(),
+            [settingKey]: targetValue
+        }, getCurrentNumberBridgeOperation()));
     }
 
     return updates;
@@ -443,6 +543,46 @@ function updateNumberBridgeLevelOptions(gameId, config) {
     levelSelect.innerHTML = levelOptions.map(level => `
         <option value="${level}" ${level === selectedLevel ? 'selected' : ''}>${formatNumberBridgeLevelDisplay({ ...config, level })}</option>
     `).join('');
+}
+
+function updateNumberBridgeModeOptions(gameId, config) {
+    if (gameId !== GAME_IDS.KUMON_QUIZ) return;
+
+    const modeSelect = document.querySelector('[data-testid="number-bridges-config-mode"]');
+    if (!modeSelect) return;
+
+    const arithmeticMode = getNumberBridgeArithmeticMode(config);
+    modeSelect.innerHTML = getNumberBridgeArithmeticModeOptionsForOperation(config.operation).map(option => `
+        <option value="${option.value}" ${option.value === arithmeticMode ? 'selected' : ''}>${option.label}</option>
+    `).join('');
+}
+
+function updateNumberBridgeRangeControls(gameId, config) {
+    if (gameId !== GAME_IDS.KUMON_QUIZ) return;
+
+    const visibility = getNumberBridgeControlVisibility(config);
+    toggleNumberBridgeControl('number-bridges-config-level-control', !visibility.showLevel);
+    toggleNumberBridgeControl('number-bridges-config-a-min-control', !visibility.showRanges);
+    toggleNumberBridgeControl('number-bridges-config-a-max-control', !visibility.showRanges);
+    toggleNumberBridgeControl('number-bridges-config-b-min-control', !visibility.showRanges);
+    toggleNumberBridgeControl('number-bridges-config-b-max-control', !visibility.showRanges);
+
+    const ranges = normalizeNumberBridgeDashboardMasterRanges(config, config.operation);
+    setNumberBridgeInputValue('number-bridges-config-a-min', ranges.aMin);
+    setNumberBridgeInputValue('number-bridges-config-a-max', ranges.aMax);
+    setNumberBridgeInputValue('number-bridges-config-b-min', ranges.bMin);
+    setNumberBridgeInputValue('number-bridges-config-b-max', ranges.bMax);
+}
+
+function toggleNumberBridgeControl(testId, hidden) {
+    document.querySelector(`[data-testid="${testId}"]`)?.classList.toggle('hidden', hidden);
+}
+
+function setNumberBridgeInputValue(testId, value) {
+    const input = document.querySelector(`[data-testid="${testId}"]`);
+    if (input) {
+        input.value = String(value);
+    }
 }
 
 function formatGameName(gameId) {
@@ -472,10 +612,51 @@ export function getNumberBridgeLevelOptionsForOperation(operation = '+') {
     return operationPack.levels || operationPack.factors.map((_, index) => index + 1);
 }
 
-export function createNumberBridgeOperationUpdate(operation = '+', currentLevel = 1) {
+export function getNumberBridgeArithmeticModeOptionsForOperation(operation = '+') {
+    const options = [{ value: 'bridge', label: 'Bridge Level' }];
+    if (NUMBER_BRIDGE_MASTER_OPERATIONS.includes(getNumberBridgeDashboardOperationPack(operation).value)) {
+        options.push({ value: 'master', label: 'Master' });
+    }
+
+    return options;
+}
+
+function getNumberBridgeArithmeticMode(config = {}) {
+    return config.arithmeticMode === 'master' &&
+        NUMBER_BRIDGE_MASTER_OPERATIONS.includes(getNumberBridgeDashboardOperationPack(config.operation).value)
+        ? 'master'
+        : 'bridge';
+}
+
+export function getNumberBridgeControlVisibility(config = {}) {
+    const showRanges = getNumberBridgeArithmeticMode(config) === 'master';
+    return {
+        showLevel: !showRanges,
+        showRanges
+    };
+}
+
+export function normalizeNumberBridgeDashboardMasterRanges(config = {}, operation = '+') {
+    const aMin = clampInteger(config.aMin, NUMBER_BRIDGE_MASTER_RANGE_MIN, NUMBER_BRIDGE_MASTER_RANGE_MAX, 1);
+    const aMax = Math.max(aMin, clampInteger(config.aMax, NUMBER_BRIDGE_MASTER_RANGE_MIN, NUMBER_BRIDGE_MASTER_RANGE_MAX, 2));
+    let bMin = clampInteger(config.bMin, NUMBER_BRIDGE_MASTER_RANGE_MIN, NUMBER_BRIDGE_MASTER_RANGE_MAX, 1);
+    let bMax = Math.max(bMin, clampInteger(config.bMax, NUMBER_BRIDGE_MASTER_RANGE_MIN, NUMBER_BRIDGE_MASTER_RANGE_MAX, 2));
+
+    if (getNumberBridgeDashboardOperationPack(operation).value === '-' && bMin > aMax) {
+        bMin = aMax;
+        bMax = aMax;
+    }
+
+    return { aMin, aMax, bMin, bMax };
+}
+
+export function createNumberBridgeOperationUpdate(operation = '+', currentLevel = 1, currentArithmeticMode = 'bridge') {
     const clampedLevel = clampInteger(currentLevel, 1, getNumberBridgeMaxLevelForOperation(operation), 1);
     return {
         operation,
+        arithmeticMode: NUMBER_BRIDGE_MASTER_OPERATIONS.includes(getNumberBridgeDashboardOperationPack(operation).value)
+            ? (currentArithmeticMode === 'master' ? 'master' : 'bridge')
+            : 'bridge',
         level: clampedLevel,
         secondNumberMode: 'fixed',
         secondNumberFixedValue: getNumberBridgeFactorForLevel(operation, clampedLevel)
@@ -497,9 +678,24 @@ function getCurrentNumberBridgeOperation() {
     return document.querySelector('[data-testid="number-bridges-config-operation"]')?.value || '+';
 }
 
+function getCurrentNumberBridgeArithmeticMode() {
+    return document.querySelector('[data-testid="number-bridges-config-mode"]')?.value === 'master'
+        ? 'master'
+        : 'bridge';
+}
+
 function getCurrentNumberBridgeLevel() {
     const levelValue = document.querySelector('[data-testid="number-bridges-config-level"]')?.value;
     return clampInteger(levelValue, 1, NUMBER_BRIDGE_MAX_LEVEL, 1);
+}
+
+function getCurrentNumberBridgeRangeValues() {
+    return {
+        aMin: document.querySelector('[data-testid="number-bridges-config-a-min"]')?.value,
+        aMax: document.querySelector('[data-testid="number-bridges-config-a-max"]')?.value,
+        bMin: document.querySelector('[data-testid="number-bridges-config-b-min"]')?.value,
+        bMax: document.querySelector('[data-testid="number-bridges-config-b-max"]')?.value
+    };
 }
 
 function getNumberBridgeDashboardOperationPack(operation = '+') {
@@ -528,12 +724,22 @@ export function formatNumberBridgeConfigurationSummary(config = {}) {
     const hintsLabel = config.hintsEnabled === false ? 'Hints Off' : 'Hints On';
 
     return [
-        formatNumberBridgeLevelDisplay(config),
+        formatNumberBridgePrimaryLabel(config),
         `${questionCount} Questions`,
         `${questionsPerScreen} Per Screen`,
         hintsLabel,
         `Question Order: ${formatNumberBridgeQuestionOrder(config)}`
     ].join(' | ');
+}
+
+function formatNumberBridgePrimaryLabel(config = {}) {
+    if (getNumberBridgeArithmeticMode(config) === 'master') {
+        const operationPack = getNumberBridgeDashboardOperationPack(config.operation);
+        const ranges = normalizeNumberBridgeDashboardMasterRanges(config, operationPack.value);
+        return `${operationPack.label} Master A${ranges.aMin}-${ranges.aMax} B${ranges.bMin}-${ranges.bMax}`;
+    }
+
+    return formatNumberBridgeLevelDisplay(config);
 }
 
 function renderNumberBridgeActiveConfiguration(config = {}) {
@@ -607,8 +813,11 @@ function formatSessionLevel(log) {
 
 function formatSessionLevelContext(log) {
     if (getDashboardViewType(log) === DASHBOARD_VIEW_TYPES.SUMMARY_WITH_CORRECTIONS) {
+        const levelDisplayLabel = String(log.levelDisplayLabel || '').trim();
         const levelLabel = String(log.levelLabel || '').trim();
         const skillLabel = String(log.skillLabel || '').trim();
+
+        if (levelDisplayLabel) return levelDisplayLabel;
 
         if (levelLabel && skillLabel) {
             return `${levelLabel} (${skillLabel})`;

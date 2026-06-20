@@ -9,6 +9,7 @@ import {
     getNumberBridgeLevelModel,
     markNumberBridgeCompletionClapPlayed,
     normalizeKumonConfig,
+    normalizeNumberBridgeMasterRanges,
     NUMBER_BRIDGE_MAX_LEVEL,
     NUMBER_BRIDGE_PAGE_TURN_MS,
     playNumberBridgeCompletionClap,
@@ -105,6 +106,36 @@ function testQuestionOrderConfig() {
     assert(randomConfig.questionOrder === 'random', 'Should accept random question order');
     assert(fallbackConfig.questionOrder === 'sequential', 'Unsupported question order should fall back to sequential');
     console.log('Question order config test passed');
+}
+
+function testMasterRangeValidation() {
+    const ranges = normalizeNumberBridgeMasterRanges({
+        aMin: -4,
+        aMax: 14,
+        bMin: 0,
+        bMax: 20
+    }, '+');
+    const corrected = normalizeNumberBridgeMasterRanges({
+        aMin: 7,
+        aMax: 2,
+        bMin: 8,
+        bMax: 1
+    }, '+');
+    const fallbackSubtraction = normalizeNumberBridgeMasterRanges({
+        aMin: 1,
+        aMax: 1,
+        bMin: 2,
+        bMax: 2
+    }, '-');
+
+    assert(ranges.aMin === 1, 'A Min lower than 1 should clamp to 1');
+    assert(ranges.aMax === 9, 'A Max higher than 9 should clamp to 9');
+    assert(ranges.bMin === 1, 'B Min lower than 1 should clamp to 1');
+    assert(ranges.bMax === 9, 'B Max higher than 9 should clamp to 9');
+    assert(corrected.aMin === 7 && corrected.aMax === 7, 'A Min greater than A Max should correct safely');
+    assert(corrected.bMin === 8 && corrected.bMax === 8, 'B Min greater than B Max should correct safely');
+    assert(fallbackSubtraction.bMin === 1 && fallbackSubtraction.bMax === 1, 'Invalid subtraction ranges should fallback to a valid non-negative range');
+    console.log('Master range validation test passed');
 }
 
 function testSequentialQuestionOrder() {
@@ -320,6 +351,78 @@ function testRangeSecondNumberGeneration() {
     assert(questions[1].operandA === 2 && questions[1].operandB === 3, 'Second range question should advance second operand');
     assert(questions[2].operandA === 3 && questions[2].operandB === 2, 'Range second operand should cycle deterministically');
     console.log('Range second number generation test passed');
+}
+
+function testAdditionMasterGeneratesRandomRangeQuestions() {
+    const originalRandom = Math.random;
+    const randomValues = [0, 0.24, 0.48, 0.72, 0.96];
+    let randomIndex = 0;
+    Math.random = () => randomValues[randomIndex++ % randomValues.length];
+
+    try {
+        const config = normalizeKumonConfig({
+            operation: '+',
+            arithmeticMode: 'master',
+            aMin: 1,
+            aMax: 3,
+            bMin: 1,
+            bMax: 3,
+            questionCount: 5
+        });
+        const questions = generateKumonQuestions(config);
+        const questionKeys = questions.map(question => `${question.operandA} + ${question.operandB}`);
+
+        assert(config.arithmeticMode === 'master', 'Addition Master should normalize as master mode');
+        assert(config.levelDisplayLabel === 'Addition Master A1-3 B1-3', 'Addition Master label should include A/B ranges');
+        assert(questions.every(question => question.operandA >= 1 && question.operandA <= 3), 'Addition Master A should stay in range');
+        assert(questions.every(question => question.operandB >= 1 && question.operandB <= 3), 'Addition Master B should stay in range');
+        assert(questions.every(question => question.expectedAnswer === question.operandA + question.operandB), 'Addition Master answers should add A and B');
+        assert(new Set(questionKeys).size > 1, 'Addition Master should show randomized variety');
+    } finally {
+        Math.random = originalRandom;
+    }
+
+    console.log('Addition Master generation test passed');
+}
+
+function testSubtractionMasterGeneratesOnlyNonNegativeQuestions() {
+    const questions = generateKumonQuestions({
+        operation: '-',
+        arithmeticMode: 'master',
+        aMin: 1,
+        aMax: 3,
+        bMin: 1,
+        bMax: 3,
+        questionCount: 20
+    });
+    const fallbackQuestions = generateKumonQuestions({
+        operation: '-',
+        arithmeticMode: 'master',
+        aMin: 1,
+        aMax: 1,
+        bMin: 2,
+        bMax: 2,
+        questionCount: 3
+    });
+
+    assert(questions.every(question => question.operandA >= 1 && question.operandA <= 3), 'Subtraction Master A should stay in range');
+    assert(questions.every(question => question.operandB >= 1 && question.operandB <= 3), 'Subtraction Master B should stay in range');
+    assert(questions.every(question => question.expectedAnswer === question.operandA - question.operandB), 'Subtraction Master answers should subtract B from A');
+    assert(questions.every(question => question.expectedAnswer >= 0), 'Subtraction Master should not generate negative answers');
+    assert(fallbackQuestions.every(question => question.operandA === 1 && question.operandB === 1), 'Invalid subtraction Master range should fallback safely');
+    assert(fallbackQuestions.every(question => question.expectedAnswer === 0), 'Fallback subtraction Master answers should be non-negative');
+    console.log('Subtraction Master generation test passed');
+}
+
+function testUnsupportedOperationsStayBridgeMode() {
+    const multiplication = normalizeKumonConfig({ operation: '×', arithmeticMode: 'master', level: 9 });
+    const division = normalizeKumonConfig({ operation: '÷', arithmeticMode: 'master', level: 9 });
+
+    assert(multiplication.arithmeticMode === 'bridge', 'Multiplication should not enter Master mode');
+    assert(multiplication.level === 9 && multiplication.bridgeValue === 10, 'Multiplication should keep bridge L9 mapping');
+    assert(division.arithmeticMode === 'bridge', 'Division should not enter Master mode');
+    assert(division.level === 5 && division.bridgeValue === 10, 'Division should keep current bridge clamp behavior');
+    console.log('Unsupported Master operation guard test passed');
 }
 
 function testCorrectAnswerAdvances() {
@@ -623,6 +726,37 @@ function testSessionSummaryStoresScoreTotalAndAccuracy() {
     console.log('Session summary analytics test passed');
 }
 
+function testMasterAnalyticsFields() {
+    const game = createKumonQuizGame({
+        operation: '+',
+        arithmeticMode: 'master',
+        aMin: 1,
+        aMax: 3,
+        bMin: 1,
+        bMax: 2,
+        questionCount: 5,
+        questionsPerScreen: 1
+    });
+    const question = game.getCurrentQuestion();
+    const outcome = game.submitAnswer(question.expectedAnswer, {
+        reactionTimeMs: 100,
+        timestamp: '2026-06-16T00:00:00.000Z'
+    });
+    const summary = game.getResultSummary();
+    const session = createKumonSessionSummary(game.getState(), summary);
+
+    assert(outcome.trial.mode === 'master', 'Master trial should store mode master');
+    assert(outcome.trial.aMin === 1 && outcome.trial.aMax === 3, 'Master trial should store A range');
+    assert(outcome.trial.bMin === 1 && outcome.trial.bMax === 2, 'Master trial should store B range');
+    assert(session.mode === 'master', 'Master session should store mode master');
+    assert(session.aMin === 1 && session.aMax === 3, 'Master session should store A range');
+    assert(session.bMin === 1 && session.bMax === 2, 'Master session should store B range');
+    assert(session.levelLabel === 'Addition Master', 'Master session should store Master level label');
+    assert(session.levelDisplayLabel === 'Addition Master A1-3 B1-2', 'Master session should store Master display label');
+    assert(summary.nextLevelSuggested === game.getState().config.level, 'Master mode should not suggest auto progression');
+    console.log('Master analytics fields test passed');
+}
+
 function testOperationMetadataForResultAndSession() {
     const game = createKumonQuizGame({
         operation: '÷',
@@ -797,9 +931,11 @@ function testResultMarkupCompactSummaryAndReview() {
     assert(markup.includes('You finished your Number Bridges.'), 'Result markup should include completion message');
     assert(markup.includes('Addition L1 (+1 Bridges)'), 'Result markup should include level context');
     assert(markup.includes('data-testid="number-bridges-clap-visual"'), 'Result markup should include gentle clap visual marker');
+    assert(markup.includes('data-testid="number-bridges-result-header-accuracy"'), 'Result markup should promote accuracy in the completion header');
+    assert(markup.includes('100% Accuracy'), 'Result markup should show perfect accuracy in the completion header');
+    assert(markup.includes('10 / 10 Correct'), 'Result markup should show score in the completion header');
     assert(markup.includes('Questions: 10'), 'Result markup should include questions total');
     assert(markup.includes('Correct / Total: 10 / 10'), 'Result markup should include correct / total');
-    assert(!markup.includes('data-testid="number-bridges-score"'), 'Result markup should not duplicate correct score metric');
     assert(markup.includes('Accuracy: 100%'), 'Result markup should include accuracy');
     assert(markup.includes('Time Taken: 294 sec'), 'Result markup should include time taken');
     assert(markup.includes('Average Time: 29.4 sec/question'), 'Result markup should include average time');
@@ -810,6 +946,46 @@ function testResultMarkupCompactSummaryAndReview() {
     assert(markup.includes('Correct: 4'), 'Review item should show correct answer');
     assert(!markup.includes('3 + 1 = 5'), 'Review item should not render a misleading equation');
     console.log('Result markup compact summary and review test passed');
+}
+
+function testResultMarkupPerfectAccuracyHeader() {
+    const markup = renderNumberBridgeResultMarkup({
+        correct: 20,
+        total: 20,
+        accuracy: 100,
+        timeTakenSeconds: 120,
+        averageTimeSeconds: 6,
+        hintsUsed: 0,
+        mistakeCount: 0,
+        wrongAnswers: []
+    }, 'Adarsh');
+
+    assert(markup.includes('100% Accuracy'), 'Perfect result should show 100% Accuracy in the header');
+    assert(markup.includes('20 / 20 Correct'), 'Perfect result should keep score visible in the header');
+    assert(markup.includes('Correct / Total: 20 / 20'), 'Perfect result should keep existing score display visible');
+    console.log('Result markup perfect accuracy header test passed');
+}
+
+function testResultMarkupPartialAccuracyHeader() {
+    const markup = renderNumberBridgeResultMarkup({
+        correct: 18,
+        total: 20,
+        accuracy: 90,
+        timeTakenSeconds: 150,
+        averageTimeSeconds: 7.5,
+        hintsUsed: 1,
+        mistakeCount: 2,
+        wrongAnswers: [{
+            question: '9 + 1',
+            attemptedAnswers: [11],
+            correctAnswer: 10
+        }]
+    }, 'Adarsh');
+
+    assert(markup.includes('90% Accuracy'), 'Partial result should show actual rounded accuracy in the header');
+    assert(markup.includes('18 / 20 Correct'), 'Partial result should keep score visible in the header');
+    assert(markup.includes('Correct / Total: 18 / 20'), 'Partial result should keep existing score display visible');
+    console.log('Result markup partial accuracy header test passed');
 }
 
 function testCompletionClapGuardOnlyPlaysOnce() {
@@ -961,6 +1137,7 @@ function runAllTests() {
     testOperationPackLabels();
     testQuestionsPerScreenConfig();
     testQuestionOrderConfig();
+    testMasterRangeValidation();
     testSequentialQuestionOrder();
     testRandomQuestionOrder();
     testFixedSecondNumberGeneration();
@@ -972,6 +1149,9 @@ function runAllTests() {
     testMultiplicationGeneratesTableQuestions();
     testDivisionGeneratesExactIntegerQuestions();
     testRangeSecondNumberGeneration();
+    testAdditionMasterGeneratesRandomRangeQuestions();
+    testSubtractionMasterGeneratesOnlyNonNegativeQuestions();
+    testUnsupportedOperationsStayBridgeMode();
     testCorrectAnswerAdvances();
     testBlurValidationAcceptsCorrectAnswer();
     testWrongAnswerDoesNotAdvanceAndShowsHint();
@@ -985,6 +1165,7 @@ function runAllTests() {
     testAutoProgressionRepeatsOnLowAccuracy();
     testAutoProgressionCapsAtLevelNine();
     testSessionSummaryStoresScoreTotalAndAccuracy();
+    testMasterAnalyticsFields();
     testOperationMetadataForResultAndSession();
     testTrialTableDoesNotRequirePerTrialLevel();
     testWrongAttemptsDoNotReduceResolvedScore();
@@ -993,6 +1174,8 @@ function runAllTests() {
     testResultSummary();
     testResultSummaryHintsUsed();
     testResultMarkupCompactSummaryAndReview();
+    testResultMarkupPerfectAccuracyHeader();
+    testResultMarkupPartialAccuracyHeader();
     testResultMarkupAllCorrectMessage();
     testCompletionClapGuardOnlyPlaysOnce();
     testTrialAnalyticsFields();
