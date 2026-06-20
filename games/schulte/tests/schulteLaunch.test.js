@@ -51,8 +51,20 @@ async function testAutomaticAscendingToDescendingFlow() {
         assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Ascending', 'Flow should start in Ascending mode');
         assert(await page.getByTestId('schulte-target').innerText() === 'Find 1', 'Ascending mode should start at 1');
 
+        const oneCell = page.locator('[data-schulte-number="1"]');
+        const twoCell = page.locator('[data-schulte-number="2"]');
+        await oneCell.click();
+        assert(await page.getByTestId('schulte-target').innerText() === 'Find 2', 'Memory mode should still advance after correct selection');
+        assert(await oneCell.getAttribute('data-schulte-memory-mode') === 'true', 'Learner path should run memory mode');
+        assert(await oneCell.isDisabled() === false, 'Memory mode selected cell should remain interactable-looking');
+        assert(await oneCell.getAttribute('class') === await twoCell.getAttribute('class'), 'Memory mode selected cell should look identical to unselected cell');
+        await oneCell.click();
+        assert(await page.getByTestId('schulte-target').innerText() === 'Find 2', 'Duplicate selected cell should not advance memory mode target');
+        await twoCell.click();
+
         for (let board = 0; board < 2; board += 1) {
-            for (let value = 1; value <= 9; value += 1) {
+            const startValue = board === 0 ? 3 : 1;
+            for (let value = startValue; value <= 9; value += 1) {
                 await page.locator(`[data-schulte-number="${value}"]`).click();
             }
         }

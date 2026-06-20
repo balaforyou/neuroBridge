@@ -10,13 +10,6 @@ This file is the lightweight source of truth for deferred NeuroBridge work.
 
 Items frozen enough for Codex handover.
 
-### SCH-005 Memory Mode
-
-Priority: P2  
-Status: Ready  
-Depends On:  
-- `SCH-002`
-
 ### SCH-006 Listen & Find
 
 Priority: P2  
@@ -225,6 +218,15 @@ Depends On:
 - `SCH-004.2`
 
 Closure note: Added a gentle transition panel after Ascending Board 2 with the required descending guidance, plus a Continue action before starting Descending at Find 9.
+
+### SCH-005 Memory Mode
+
+Priority: P2  
+Status: Done  
+Depends On:  
+- `SCH-002`
+
+Closure note: Implemented Memory Mode for the learner-facing Ascending -> Descending Schulte flow so selected cells no longer remain visually highlighted while internal validation, feedback hooks, transition messaging, and completion behavior remain intact.
 
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 

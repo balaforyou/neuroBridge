@@ -209,6 +209,24 @@ function testAscendingSessionCompletesAfterTwoBoards() {
     console.log('Schulte ascending session completion test passed');
 }
 
+function testMemoryModeKeepsInternalSelectionState() {
+    const session = createSchulteAscendingSession({
+        memoryMode: true,
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')]
+    });
+    const initialBoard = session.getState().currentBoard;
+    const oneCellId = getCellIdByValue(initialBoard, 1);
+    const outcome = session.selectCell(oneCellId);
+    const selectedCell = outcome.state.currentBoard.cells.find(cell => cell.cellId === oneCellId);
+    const duplicate = session.selectCell(oneCellId);
+
+    assert(outcome.state.memoryMode === true, 'Memory mode session should expose memoryMode flag');
+    assert(selectedCell.selected === true, 'Memory mode should preserve internal selection state for validation');
+    assert(duplicate.result === 'ignored', 'Memory mode should still guard duplicate selections internally');
+    assert(duplicate.state.expectedNumber === 2, 'Duplicate memory mode selection should not advance target');
+    console.log('Schulte memory mode internal selection test passed');
+}
+
 function testCorrectAscendingSelectionTriggersClickFeedback() {
     const feedbackEvents = [];
     const clickEvents = [];
@@ -439,6 +457,7 @@ function runAllTests() {
     testAscendingSessionEnforcesOneToNineOrder();
     testAscendingSessionAdvancesAfterFirstBoard();
     testAscendingSessionCompletesAfterTwoBoards();
+    testMemoryModeKeepsInternalSelectionState();
     testCorrectAscendingSelectionTriggersClickFeedback();
     testWrongAscendingSelectionTriggersOrangePulseFeedback();
     testPerfectBoardTriggersSuccessAndCelebrationFeedback();

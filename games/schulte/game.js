@@ -3,6 +3,7 @@ export const SCHULTE_CORE_GRID_SIZE = 3;
 export const SCHULTE_CORE_CELL_COUNT = SCHULTE_CORE_GRID_SIZE * SCHULTE_CORE_GRID_SIZE;
 export const SCHULTE_ASCENDING_MODE = 'ascending';
 export const SCHULTE_DESCENDING_MODE = 'descending';
+export const SCHULTE_MEMORY_MODE = 'memory';
 export const SCHULTE_ASCENDING_BOARD_COUNT = 2;
 export const SCHULTE_FEEDBACK = {
     CLICK: 'click',
@@ -111,11 +112,13 @@ export function createSchulteDescendingSession(config = {}) {
 
 function createSchulteOrderedSession(config = {}) {
     const mode = config.mode === SCHULTE_DESCENDING_MODE ? SCHULTE_DESCENDING_MODE : SCHULTE_ASCENDING_MODE;
+    const memoryMode = config.memoryMode === true;
     const boards = createOrderedSessionBoards(config);
     const emitFeedback = createFeedbackEmitter(config);
     let currentBoardEngine = createSchulteCoreGridEngine({ board: boards[0] });
     const state = {
         mode,
+        memoryMode,
         boardCount: SCHULTE_ASCENDING_BOARD_COUNT,
         currentBoardIndex: 0,
         completedBoards: 0,
@@ -288,11 +291,12 @@ function mountSchulteActivity() {
     const pageState = {
         learnerName: 'Learner',
         mode: SCHULTE_ASCENDING_MODE,
+        memoryMode: true,
         awaitingDescendingStart: false,
         transientPulseCellId: null,
         feedbackText: 'Find 1'
     };
-    let session = createVisibleSchulteSession(pageState.mode, handleFeedback);
+    let session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, handleFeedback);
     const homeButton = document.getElementById('home-button');
 
     if (homeButton) {
@@ -355,7 +359,7 @@ function mountSchulteActivity() {
 
                 ${showTransition ? renderDescendingTransition() : `
                     <div data-testid="schulte-grid" class="grid flex-1 min-h-0 gap-2" style="grid-template-columns: repeat(${state.currentBoard.gridSize}, minmax(0, 1fr));">
-                        ${state.currentBoard.cells.map(cell => renderCell(cell, state.completed)).join('')}
+                        ${state.currentBoard.cells.map(cell => renderCell(cell, state.completed, state.memoryMode)).join('')}
                     </div>
                 `}
 
@@ -397,7 +401,7 @@ function mountSchulteActivity() {
         pageState.mode = SCHULTE_DESCENDING_MODE;
         pageState.awaitingDescendingStart = false;
         pageState.transientPulseCellId = null;
-        session = createVisibleSchulteSession(pageState.mode, handleFeedback);
+        session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, handleFeedback);
         pageState.feedbackText = `Find ${session.getState().expectedNumber}`;
     }
 
@@ -419,14 +423,15 @@ function mountSchulteActivity() {
         `;
     }
 
-    function renderCell(cell, sessionComplete) {
+    function renderCell(cell, sessionComplete, memoryMode) {
         const isPulse = pageState.transientPulseCellId === cell.cellId;
         const selectedClass = cell.selected
             ? 'border-emerald-400 bg-emerald-50 text-emerald-950'
             : 'border-cyan-200 bg-white text-slate-950';
         const pulseClass = isPulse
             ? 'border-orange-400 bg-orange-50 text-orange-950 ring-4 ring-orange-200'
-            : selectedClass;
+            : memoryMode ? 'border-cyan-200 bg-white text-slate-950' : selectedClass;
+        const disabled = sessionComplete || (!memoryMode && cell.selected);
 
         return `
             <button
@@ -434,7 +439,8 @@ function mountSchulteActivity() {
                 data-testid="${cell.cellId}"
                 data-schulte-cell-id="${cell.cellId}"
                 data-schulte-number="${cell.value}"
-                ${sessionComplete || cell.selected ? 'disabled' : ''}
+                data-schulte-memory-mode="${memoryMode ? 'true' : 'false'}"
+                ${disabled ? 'disabled' : ''}
                 class="min-h-[72px] rounded-xl border-4 ${pulseClass} text-3xl font-black shadow-sm transition focus:outline-none focus:ring-4 focus:ring-cyan-300 disabled:opacity-100"
                 aria-label="Schulte number ${cell.value}">
                 ${cell.value}
@@ -452,8 +458,8 @@ function normalizeLearnerName(learnerName) {
     return trimmed || 'Learner';
 }
 
-function createVisibleSchulteSession(mode, onFeedback) {
-    const config = { onFeedback };
+function createVisibleSchulteSession(mode, memoryMode, onFeedback) {
+    const config = { memoryMode, onFeedback };
     return mode === SCHULTE_DESCENDING_MODE
         ? createSchulteDescendingSession(config)
         : createSchulteAscendingSession(config);
