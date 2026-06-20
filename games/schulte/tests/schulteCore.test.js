@@ -6,7 +6,8 @@ import {
     renderSchulteGridMarkup,
     SCHULTE_ASCENDING_BOARD_COUNT,
     SCHULTE_CORE_CELL_COUNT,
-    SCHULTE_CORE_GRID_SIZE
+    SCHULTE_CORE_GRID_SIZE,
+    SCHULTE_FEEDBACK
 } from '../game.js';
 
 function assert(condition, message) {
@@ -207,6 +208,128 @@ function testAscendingSessionCompletesAfterTwoBoards() {
     console.log('Schulte ascending session completion test passed');
 }
 
+function testCorrectAscendingSelectionTriggersClickFeedback() {
+    const feedbackEvents = [];
+    const clickEvents = [];
+    const session = createSchulteAscendingSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')],
+        onFeedback: event => feedbackEvents.push(event),
+        feedbackHooks: {
+            [SCHULTE_FEEDBACK.CLICK]: event => clickEvents.push(event)
+        }
+    });
+    const board = session.getState().currentBoard;
+    const oneCellId = getCellIdByValue(board, 1);
+    const outcome = session.selectCell(oneCellId);
+
+    assert(outcome.result === 'selected', 'Correct ascending selection should be accepted');
+    assert(outcome.state.feedbackState.type === SCHULTE_FEEDBACK.CLICK, 'Correct selection should expose click feedback state');
+    assert(feedbackEvents.length === 1, 'Correct selection should emit one feedback event');
+    assert(feedbackEvents[0].type === SCHULTE_FEEDBACK.CLICK, 'Correct selection should emit click feedback');
+    assert(clickEvents.length === 1, 'Click feedback hook should be called');
+    assert(clickEvents[0].cellId === oneCellId, 'Click feedback should identify selected cell');
+    console.log('Schulte click feedback hook test passed');
+}
+
+function testWrongAscendingSelectionTriggersOrangePulseFeedback() {
+    const feedbackEvents = [];
+    const pulseEvents = [];
+    const session = createSchulteAscendingSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')],
+        onFeedback: event => feedbackEvents.push(event),
+        feedbackHooks: {
+            [SCHULTE_FEEDBACK.ORANGE_PULSE]: event => pulseEvents.push(event)
+        }
+    });
+    const board = session.getState().currentBoard;
+    const twoCellId = getCellIdByValue(board, 2);
+    const outcome = session.selectCell(twoCellId);
+
+    assert(outcome.result === 'incorrect', 'Wrong ascending selection should be rejected');
+    assert(outcome.state.feedbackState.type === SCHULTE_FEEDBACK.ORANGE_PULSE, 'Wrong selection should expose orange pulse feedback state');
+    assert(outcome.state.feedbackState.cellId === twoCellId, 'Orange pulse state should identify wrong cell');
+    assert(outcome.state.currentBoardMistakes === 1, 'Wrong selection should mark board as no longer perfect');
+    assert(feedbackEvents[0].type === SCHULTE_FEEDBACK.ORANGE_PULSE, 'Wrong selection should emit orange pulse feedback');
+    assert(pulseEvents.length === 1, 'Orange pulse feedback hook should be called');
+    console.log('Schulte orange pulse feedback hook test passed');
+}
+
+function testPerfectBoardTriggersSuccessAndCelebrationFeedback() {
+    const feedbackEvents = [];
+    const successEvents = [];
+    const celebrationEvents = [];
+    const session = createSchulteAscendingSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')],
+        onFeedback: event => feedbackEvents.push(event),
+        feedbackHooks: {
+            [SCHULTE_FEEDBACK.SUCCESS]: event => successEvents.push(event),
+            [SCHULTE_FEEDBACK.CELEBRATION]: event => celebrationEvents.push(event)
+        }
+    });
+    let outcome = null;
+
+    for (let value = 1; value <= SCHULTE_CORE_CELL_COUNT; value += 1) {
+        const board = session.getState().currentBoard;
+        outcome = session.selectCell(getCellIdByValue(board, value));
+    }
+
+    assert(outcome.result === 'board-complete', 'Perfect first board should complete board');
+    assert(successEvents.length === 1, 'Perfect board should trigger success feedback hook');
+    assert(successEvents[0].boardNumber === 1, 'Success feedback should identify completed board');
+    assert(celebrationEvents.length === 1, 'Board advancement should expose celebration feedback hook');
+    assert(celebrationEvents[0].scope === 'board', 'Board completion celebration should use board scope');
+    assert(feedbackEvents.some(event => event.type === SCHULTE_FEEDBACK.SUCCESS), 'Feedback event stream should include success');
+    assert(outcome.state.feedbackState.type === SCHULTE_FEEDBACK.CELEBRATION, 'Final board-complete feedback state should expose advancement celebration');
+    console.log('Schulte perfect board feedback test passed');
+}
+
+function testImperfectBoardSkipsSuccessFeedbackButStillAdvances() {
+    const feedbackEvents = [];
+    const session = createSchulteAscendingSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')],
+        onFeedback: event => feedbackEvents.push(event)
+    });
+    let board = session.getState().currentBoard;
+
+    session.selectCell(getCellIdByValue(board, 2));
+    let outcome = null;
+
+    for (let value = 1; value <= SCHULTE_CORE_CELL_COUNT; value += 1) {
+        board = session.getState().currentBoard;
+        outcome = session.selectCell(getCellIdByValue(board, value));
+    }
+
+    assert(outcome.result === 'board-complete', 'Imperfect board should still advance after correct sequence');
+    assert(!feedbackEvents.some(event => event.type === SCHULTE_FEEDBACK.SUCCESS), 'Board with prior wrong selection should not trigger perfect success');
+    assert(feedbackEvents.some(event => event.type === SCHULTE_FEEDBACK.CELEBRATION), 'Board advancement should still expose celebration feedback');
+    assert(outcome.state.currentBoardMistakes === 0, 'Next board should reset local mistake state');
+    console.log('Schulte imperfect board feedback test passed');
+}
+
+function testSessionCompletionTriggersCelebrationFeedback() {
+    const celebrationEvents = [];
+    const session = createSchulteAscendingSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')],
+        feedbackHooks: {
+            [SCHULTE_FEEDBACK.CELEBRATION]: event => celebrationEvents.push(event)
+        }
+    });
+    let outcome = null;
+
+    for (let boardIndex = 0; boardIndex < SCHULTE_ASCENDING_BOARD_COUNT; boardIndex += 1) {
+        for (let value = 1; value <= SCHULTE_CORE_CELL_COUNT; value += 1) {
+            const board = session.getState().currentBoard;
+            outcome = session.selectCell(getCellIdByValue(board, value));
+        }
+    }
+
+    assert(outcome.result === 'session-complete', 'Completing second board should complete session');
+    assert(celebrationEvents.length === 2, 'Board advancement and session completion should both expose celebration feedback');
+    assert(celebrationEvents[1].scope === 'session', 'Final celebration should use session scope');
+    assert(outcome.state.feedbackState.type === SCHULTE_FEEDBACK.CELEBRATION, 'Session completion feedback state should expose celebration');
+    console.log('Schulte session celebration feedback test passed');
+}
+
 function runAllTests() {
     console.log('=== Schulte Core Grid Unit Tests ===');
     testNumberSetCreatesThreeByThreeRange();
@@ -219,6 +342,11 @@ function runAllTests() {
     testAscendingSessionEnforcesOneToNineOrder();
     testAscendingSessionAdvancesAfterFirstBoard();
     testAscendingSessionCompletesAfterTwoBoards();
+    testCorrectAscendingSelectionTriggersClickFeedback();
+    testWrongAscendingSelectionTriggersOrangePulseFeedback();
+    testPerfectBoardTriggersSuccessAndCelebrationFeedback();
+    testImperfectBoardSkipsSuccessFeedbackButStillAdvances();
+    testSessionCompletionTriggersCelebrationFeedback();
     console.log('=== All Schulte Core Grid Tests Passed ===');
 }
 

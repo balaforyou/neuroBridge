@@ -3,6 +3,12 @@ export const SCHULTE_CORE_GRID_SIZE = 3;
 export const SCHULTE_CORE_CELL_COUNT = SCHULTE_CORE_GRID_SIZE * SCHULTE_CORE_GRID_SIZE;
 export const SCHULTE_ASCENDING_MODE = 'ascending';
 export const SCHULTE_ASCENDING_BOARD_COUNT = 2;
+export const SCHULTE_FEEDBACK = {
+    CLICK: 'click',
+    ORANGE_PULSE: 'orange-pulse',
+    SUCCESS: 'success',
+    CELEBRATION: 'celebration'
+};
 
 export function createSchulteNumberSet(gridSize = SCHULTE_CORE_GRID_SIZE) {
     const normalizedGridSize = normalizeSchulteGridSize(gridSize);
@@ -90,6 +96,7 @@ export function createSchulteCoreGridEngine(config = {}) {
 
 export function createSchulteAscendingSession(config = {}) {
     const boards = createAscendingSessionBoards(config);
+    const emitFeedback = createFeedbackEmitter(config);
     let currentBoardEngine = createSchulteCoreGridEngine({ board: boards[0] });
     const state = {
         mode: SCHULTE_ASCENDING_MODE,
@@ -97,9 +104,12 @@ export function createSchulteAscendingSession(config = {}) {
         currentBoardIndex: 0,
         completedBoards: 0,
         expectedNumber: 1,
+        currentBoardMistakes: 0,
         completed: false,
         lastResult: null,
-        lastSelection: null
+        lastSelection: null,
+        feedbackState: null,
+        feedbackEvents: []
     };
 
     function getState() {
@@ -110,7 +120,9 @@ export function createSchulteAscendingSession(config = {}) {
             boardNumber: state.currentBoardIndex + 1,
             currentBoard: currentBoardState.board,
             boards: boards.map(cloneBoard),
-            lastSelection: state.lastSelection ? cloneCell(state.lastSelection) : null
+            lastSelection: state.lastSelection ? cloneCell(state.lastSelection) : null,
+            feedbackState: cloneFeedbackState(state.feedbackState),
+            feedbackEvents: state.feedbackEvents.map(cloneFeedbackState)
         };
     }
 
@@ -122,6 +134,7 @@ export function createSchulteAscendingSession(config = {}) {
         if (state.completed) {
             state.lastResult = 'ignored';
             state.lastSelection = null;
+            state.feedbackState = null;
             return { result: 'ignored', reason: 'session-complete', state: getState() };
         }
 
@@ -129,18 +142,27 @@ export function createSchulteAscendingSession(config = {}) {
         if (!cell) {
             state.lastResult = 'invalid';
             state.lastSelection = null;
+            state.feedbackState = null;
             return { result: 'invalid', reason: 'unknown-cell', state: getState() };
         }
 
         if (cell.selected) {
             state.lastResult = 'ignored';
             state.lastSelection = cloneCell(cell);
+            state.feedbackState = null;
             return { result: 'ignored', reason: 'already-selected', cell: cloneCell(cell), state: getState() };
         }
 
         if (cell.value !== state.expectedNumber) {
             state.lastResult = 'incorrect';
             state.lastSelection = cloneCell(cell);
+            state.currentBoardMistakes += 1;
+            recordFeedback({
+                type: SCHULTE_FEEDBACK.ORANGE_PULSE,
+                cellId: cell.cellId,
+                value: cell.value,
+                expectedNumber: state.expectedNumber
+            });
             return {
                 result: 'incorrect',
                 reason: 'ascending-order',
@@ -153,6 +175,11 @@ export function createSchulteAscendingSession(config = {}) {
         const selection = currentBoardEngine.selectCell(cellId);
         boards[state.currentBoardIndex] = selection.state.board;
         state.lastSelection = cloneCell(selection.cell);
+        recordFeedback({
+            type: SCHULTE_FEEDBACK.CLICK,
+            cellId: selection.cell.cellId,
+            value: selection.cell.value
+        });
 
         if (selection.result !== 'complete') {
             state.expectedNumber += 1;
@@ -161,15 +188,39 @@ export function createSchulteAscendingSession(config = {}) {
         }
 
         state.completedBoards += 1;
+        const boardWasPerfect = state.currentBoardMistakes === 0;
 
         if (state.completedBoards === SCHULTE_ASCENDING_BOARD_COUNT) {
             state.completed = true;
             state.lastResult = 'session-complete';
+            if (boardWasPerfect) {
+                recordFeedback({
+                    type: SCHULTE_FEEDBACK.SUCCESS,
+                    boardNumber: state.currentBoardIndex + 1
+                });
+            }
+            recordFeedback({
+                type: SCHULTE_FEEDBACK.CELEBRATION,
+                scope: 'session',
+                boardNumber: state.currentBoardIndex + 1
+            });
             return { result: 'session-complete', cell: cloneCell(selection.cell), state: getState() };
         }
 
+        if (boardWasPerfect) {
+            recordFeedback({
+                type: SCHULTE_FEEDBACK.SUCCESS,
+                boardNumber: state.currentBoardIndex + 1
+            });
+        }
+        recordFeedback({
+            type: SCHULTE_FEEDBACK.CELEBRATION,
+            scope: 'board',
+            boardNumber: state.currentBoardIndex + 1
+        });
         state.currentBoardIndex += 1;
         state.expectedNumber = 1;
+        state.currentBoardMistakes = 0;
         currentBoardEngine = createSchulteCoreGridEngine({ board: boards[state.currentBoardIndex] });
         state.lastResult = 'board-complete';
 
@@ -185,6 +236,12 @@ export function createSchulteAscendingSession(config = {}) {
         isComplete,
         selectCell
     };
+
+    function recordFeedback(event) {
+        state.feedbackState = { ...event };
+        state.feedbackEvents.push({ ...event });
+        emitFeedback(event);
+    }
 }
 
 export function renderSchulteGridMarkup(stateOrBoard) {
@@ -214,6 +271,22 @@ function createAscendingSessionBoards(config) {
     }
 
     return Array.from({ length: SCHULTE_ASCENDING_BOARD_COUNT }, () => createSchulteBoard(config));
+}
+
+function createFeedbackEmitter(config) {
+    const handlerMap = config.feedbackHooks || {};
+    const onFeedback = typeof config.onFeedback === 'function' ? config.onFeedback : null;
+
+    return (event) => {
+        if (onFeedback) {
+            onFeedback({ ...event });
+        }
+
+        const handler = handlerMap[event.type];
+        if (typeof handler === 'function') {
+            handler({ ...event });
+        }
+    };
 }
 
 function normalizeSchulteGridSize(gridSize = SCHULTE_CORE_GRID_SIZE) {
@@ -248,4 +321,8 @@ function cloneState(state) {
         board: cloneBoard(state.board),
         lastSelection: state.lastSelection ? cloneCell(state.lastSelection) : null
     };
+}
+
+function cloneFeedbackState(feedbackState) {
+    return feedbackState ? { ...feedbackState } : null;
 }

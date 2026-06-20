@@ -10,14 +10,6 @@ This file is the lightweight source of truth for deferred NeuroBridge work.
 
 Items frozen enough for Codex handover.
 
-### SCH-003 Feedback Engine Integration
-
-Priority: P1  
-Status: Ready  
-Depends On:  
-- `SCH-001`
-- `SCH-002`
-
 ### SCH-004 Descending Progression
 
 Priority: P2  
@@ -168,6 +160,16 @@ Depends On:
 - `SCH-001`
 
 Closure note: Implemented ascending 1->9 validation, two-board session structure, board progression, session completion, and focused unit tests without adding feedback, audio, memory, or analytics behavior.
+
+### SCH-003 Feedback Engine Integration
+
+Priority: P1  
+Status: Done  
+Depends On:  
+- `SCH-001`
+- `SCH-002`
+
+Closure note: Added Schulte feedback event state and hooks for correct click feedback, wrong-selection orange pulse, perfect-board success, and board/session celebration exposure without adding sound assets or audio mode behavior.
 
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
