@@ -326,7 +326,7 @@ function mountSchulteActivity() {
                 <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-cyan-200 bg-white px-4 py-3 shadow-sm">
                     <div>
                         <p class="text-xs font-black uppercase tracking-[0.14em] text-cyan-700">Grid Vision</p>
-                        <h2 class="text-xl font-black text-slate-950">Number order, ${pageState.learnerName}</h2>
+                        <h2 class="text-xl font-black text-slate-950">Schulte Table</h2>
                     </div>
                     <div class="flex gap-2 text-sm font-black text-slate-800">
                         <span data-testid="schulte-mode-label" class="rounded-full border border-cyan-200 bg-white px-3 py-1.5">Mode: ${getModeLabel(pageState.mode)}</span>
@@ -344,7 +344,7 @@ function mountSchulteActivity() {
 
                 ${state.completed && !showTransition ? `
                     <div data-testid="schulte-completion" class="rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 text-center text-xl font-black text-emerald-900">
-                        Great work! You finished Grid Vision.
+                        Great work! You finished Schulte Table.
                     </div>
                 ` : ''}
             </section>

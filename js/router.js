@@ -128,7 +128,7 @@ console.log('Trials received:', payload.trials);
 function formatActivityName(gameId) {
     if (gameId === 'attributeExplorer') return 'Attribute Explorer';
     if (gameId === 'matrixReasoning') return 'Matrix Reasoning';
-    if (gameId === 'schulte') return 'Grid Vision';
+    if (gameId === 'schulte') return 'Schulte Table';
 
     return gameId
         .replace(/([A-Z])/g, ' $1')

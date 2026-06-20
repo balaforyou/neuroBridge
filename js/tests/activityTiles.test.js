@@ -24,7 +24,8 @@ function testSchulteTileIsAvailableInAttentionGroup() {
     assert(tile, 'Schulte tile should exist');
     assert(attentionGroup.tiles.includes(tile), 'Schulte tile should appear in Attention group');
     assert(tile.status === 'available', 'Schulte tile should be available');
-    assert(tile.learnerName === 'Grid Vision', 'Schulte tile should use learner-facing Grid Vision name');
+    assert(tile.learnerName === 'Grid Vision', 'Schulte tile should preserve Grid Vision family name');
+    assert(tile.subtitle === 'Schulte Table', 'Schulte tile should show Schulte Table subtitle');
     assert(tile.domain === 'visual-search', 'Schulte tile should preserve visual-search domain');
     console.log('Schulte tile availability test passed');
 }
@@ -37,7 +38,8 @@ function testSchulteTileLaunchMarkup() {
     assert(markup.includes('class="btn-launch-game'), 'Available Schulte tile should render as launch button');
     assert(markup.includes('data-game="schulte"'), 'Schulte tile should launch schulte route');
     assert(markup.includes('data-testid="activity-tile-grid-vision"'), 'Schulte tile should render test id');
-    assert(markup.includes('Grid Vision'), 'Schulte tile should show learner-facing name');
+    assert(markup.includes('Grid Vision'), 'Schulte tile should show Grid Vision family name');
+    assert(markup.includes('Schulte Table'), 'Schulte tile should show learner-facing Schulte Table subtitle');
     assert(!markup.includes('Coming Soon'), 'Schulte tile should not show Coming Soon');
     console.log('Schulte tile launch markup test passed');
 }

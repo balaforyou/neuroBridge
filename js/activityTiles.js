@@ -77,6 +77,7 @@ export const ACTIVITY_TILE_GROUPS = [
                 activityId: 'schulte',
                 parentName: 'Schulte Table',
                 learnerName: 'Grid Vision',
+                subtitle: 'Schulte Table',
                 icon: '🎯',
                 description: 'Train your eyes to find things faster.',
                 status: 'available',
@@ -212,6 +213,7 @@ function renderAvailableTile(tile) {
                     <span class="inline-flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${tile.iconClass} text-6xl shadow-inner ring-2 ring-white/70" aria-hidden="true">${tile.icon}</span>
                     <span class="min-w-0 pt-1">
                         <span class="block text-2xl sm:text-3xl font-black leading-tight text-slate-950">${tile.learnerName}</span>
+                        ${tile.subtitle ? `<span class="mt-1 block text-sm sm:text-base font-black leading-tight text-cyan-900">${tile.subtitle}</span>` : ''}
                         <span class="mt-2 block text-sm sm:text-base font-bold leading-snug text-slate-700">${tile.description}</span>
                     </span>
                 </span>

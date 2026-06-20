@@ -236,6 +236,14 @@ Depends On:
 
 Closure note: Removed the duplicate header Find badge and made the center learner prompt derive from the active Schulte session state so Ascending and Descending prompts stay synchronized after correct selections, wrong selections, and board transitions.
 
+### SCH-005.2 Grid Vision / Schulte Table Terminology Alignment
+
+Status: Done  
+Depends On:  
+- `SCH-005.1`
+
+Closure note: Kept Grid Vision as the broader activity family name while aligning learner-facing activity labels, shell title, activity header, completion message, and tile subtitle to Schulte Table without changing routes, IDs, or internal architecture names.
+
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
 Status: Done  

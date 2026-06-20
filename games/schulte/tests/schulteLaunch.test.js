@@ -47,6 +47,9 @@ async function testAutomaticAscendingToDescendingFlow() {
         await page.goto('http://127.0.0.1:5501/games/schulte/index.html');
         await page.getByTestId('schulte-activity').waitFor();
 
+        assert(await page.title() === 'Schulte Table', 'Schulte page title should use learner-facing Schulte Table name');
+        assert((await page.locator('h1').innerText()) === 'Schulte Table', 'Schulte shell header should show Schulte Table');
+        assert((await page.getByTestId('schulte-activity').innerText()).includes('Schulte Table'), 'Activity header should show Schulte Table');
         assert(await page.getByTestId('schulte-mode-controls').count() === 0, 'Learner path should not show manual mode selector');
         assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Ascending', 'Flow should start in Ascending mode');
         assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 1 / 2', 'Header should show board context');
@@ -111,8 +114,8 @@ async function testAutomaticAscendingToDescendingFlow() {
 
         await page.getByTestId('schulte-completion').waitFor();
         assert(
-            (await page.getByTestId('schulte-completion').innerText()).includes('Great work!'),
-            'Final completion should show after ascending and descending sessions complete'
+            (await page.getByTestId('schulte-completion').innerText()).includes('Great work! You finished Schulte Table.'),
+            'Final completion should show Schulte Table after ascending and descending sessions complete'
         );
     } finally {
         await browser.close();
