@@ -94,7 +94,7 @@ async function testAutomaticAscendingToDescendingFlow() {
         );
         assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Ascending', 'Transition should appear before descending starts');
 
-        await page.getByTestId('schulte-start-descending').click();
+        await page.getByTestId('schulte-start-next-mode').click();
         assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Descending', 'Continue should move to Descending mode');
         assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 1 / 2', 'Descending should restart board context');
         await assertSingleFindPrompt(page, 'Find 9');
@@ -112,10 +112,46 @@ async function testAutomaticAscendingToDescendingFlow() {
             }
         }
 
+        assert(await page.getByTestId('schulte-completion').count() === 0, 'Final completion should not show after descending when Listen & Find remains');
+        await page.getByTestId('schulte-descending-transition').waitFor();
+        assert(await page.getByTestId('schulte-target').count() === 0, 'Listen & Find transition should not show a stale Find prompt');
+        assert(
+            (await page.getByTestId('schulte-descending-transition').innerText()).includes('Great work! Now let\'s listen and find.'),
+            'Transition should introduce Listen & Find after memory progression'
+        );
+        assert(
+            (await page.getByTestId('schulte-descending-transition').innerText()).includes('Follow the ordered prompts from 1 to 9.'),
+            'Transition should explain ordered Listen & Find prompts'
+        );
+
+        await page.getByTestId('schulte-start-next-mode').click();
+        assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Listen & Find', 'Continue should move to Listen & Find mode');
+        assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 1 / 2', 'Listen & Find should restart board context');
+        await assertSingleFindPrompt(page, 'Find 1');
+
+        await page.locator('[data-schulte-number="2"]').click();
+        await assertSingleFindPrompt(page, 'Find 1');
+
+        await page.locator('[data-schulte-number="1"]').click();
+        await assertSingleFindPrompt(page, 'Find 2');
+
+        for (let board = 0; board < 2; board += 1) {
+            const startValue = board === 0 ? 2 : 1;
+            for (let value = startValue; value <= 9; value += 1) {
+                await page.locator(`[data-schulte-number="${value}"]`).click();
+            }
+
+            if (board === 0) {
+                assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Listen & Find', 'Listen & Find should stay in mode after first board');
+                assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 2 / 2', 'Listen & Find should advance to second board');
+                await assertSingleFindPrompt(page, 'Find 1');
+            }
+        }
+
         await page.getByTestId('schulte-completion').waitFor();
         assert(
             (await page.getByTestId('schulte-completion').innerText()).includes('Great work! You finished Schulte Table.'),
-            'Final completion should show Schulte Table after ascending and descending sessions complete'
+            'Final completion should show Schulte Table after ascending, descending, and Listen & Find sessions complete'
         );
     } finally {
         await browser.close();

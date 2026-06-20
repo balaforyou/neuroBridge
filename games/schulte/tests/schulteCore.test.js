@@ -3,12 +3,14 @@ import {
     createSchulteBoard,
     createSchulteCoreGridEngine,
     createSchulteDescendingSession,
+    createSchulteListenFindSession,
     createSchulteNumberSet,
     renderSchulteGridMarkup,
     SCHULTE_ASCENDING_BOARD_COUNT,
     SCHULTE_CORE_CELL_COUNT,
     SCHULTE_CORE_GRID_SIZE,
-    SCHULTE_FEEDBACK
+    SCHULTE_FEEDBACK,
+    SCHULTE_LISTEN_FIND_MODE
 } from '../game.js';
 
 function assert(condition, message) {
@@ -445,6 +447,61 @@ function testDescendingSessionPreservesFeedbackHooks() {
     console.log('Schulte descending feedback preservation test passed');
 }
 
+function testListenFindSessionStartsAtOneWithTwoBoards() {
+    const session = createSchulteListenFindSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')]
+    });
+    const state = session.getState();
+
+    assert(state.mode === SCHULTE_LISTEN_FIND_MODE, 'Listen & Find session should expose listen-find mode');
+    assert(state.boardCount === SCHULTE_ASCENDING_BOARD_COUNT, 'Listen & Find session should preserve two-board structure');
+    assert(state.currentBoardIndex === 0, 'Listen & Find session should start on first board');
+    assert(state.expectedNumber === 1, 'Listen & Find ordered mode should expect 1 first');
+    assert(state.completed === false, 'Listen & Find session should start incomplete');
+    console.log('Schulte Listen & Find start state test passed');
+}
+
+function testListenFindSessionUsesOrderedOneToNineValidation() {
+    const session = createSchulteListenFindSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')]
+    });
+    const initialBoard = session.getState().currentBoard;
+    const twoCellId = getCellIdByValue(initialBoard, 2);
+    const oneCellId = getCellIdByValue(initialBoard, 1);
+
+    const incorrect = session.selectCell(twoCellId);
+    assert(incorrect.result === 'incorrect', 'Selecting 2 before 1 should be incorrect in Listen & Find ordered mode');
+    assert(incorrect.expectedNumber === 1, 'Incorrect Listen & Find selection should expose expected number');
+    assert(incorrect.state.expectedNumber === 1, 'Incorrect Listen & Find selection should not advance expected number');
+    assert(incorrect.state.currentBoard.cells.find(cell => cell.cellId === twoCellId).selected === false, 'Incorrect Listen & Find selection should not mark cell selected');
+
+    const correct = session.selectCell(oneCellId);
+    assert(correct.result === 'selected', 'Selecting 1 first should be accepted in Listen & Find ordered mode');
+    assert(correct.state.expectedNumber === 2, 'Correct Listen & Find selection should advance expected number');
+    assert(correct.state.currentBoard.cells.find(cell => cell.cellId === oneCellId).selected === true, 'Correct Listen & Find selection should mark cell selected internally');
+    console.log('Schulte Listen & Find ordered validation test passed');
+}
+
+function testListenFindSessionCompletesAfterTwoBoards() {
+    const session = createSchulteListenFindSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')]
+    });
+    let outcome = null;
+
+    for (let boardIndex = 0; boardIndex < SCHULTE_ASCENDING_BOARD_COUNT; boardIndex += 1) {
+        for (let value = 1; value <= SCHULTE_CORE_CELL_COUNT; value += 1) {
+            const board = session.getState().currentBoard;
+            outcome = session.selectCell(getCellIdByValue(board, value));
+        }
+    }
+
+    assert(outcome.result === 'session-complete', 'Final Listen & Find selection on second board should complete session');
+    assert(outcome.state.completed === true, 'Listen & Find session state should be complete');
+    assert(outcome.state.completedBoards === SCHULTE_ASCENDING_BOARD_COUNT, 'Listen & Find session should complete both boards');
+    assert(session.isComplete() === true, 'Listen & Find session should report complete');
+    console.log('Schulte Listen & Find session completion test passed');
+}
+
 function runAllTests() {
     console.log('=== Schulte Core Grid Unit Tests ===');
     testNumberSetCreatesThreeByThreeRange();
@@ -468,6 +525,9 @@ function runAllTests() {
     testDescendingSessionAdvancesAfterFirstBoard();
     testDescendingSessionCompletesAfterTwoBoards();
     testDescendingSessionPreservesFeedbackHooks();
+    testListenFindSessionStartsAtOneWithTwoBoards();
+    testListenFindSessionUsesOrderedOneToNineValidation();
+    testListenFindSessionCompletesAfterTwoBoards();
     console.log('=== All Schulte Core Grid Tests Passed ===');
 }
 

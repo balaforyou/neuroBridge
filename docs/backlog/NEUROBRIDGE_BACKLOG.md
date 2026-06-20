@@ -10,21 +10,6 @@ This file is the lightweight source of truth for deferred NeuroBridge work.
 
 Items frozen enough for Codex handover.
 
-### SCH-006 Listen & Find Ordered Mode
-
-Priority: P2  
-Status: Ready  
-Depends On:  
-- `SCH-002`
-Notes:  
-- Implement ordered Listen & Find first.
-- Exposure rules must be documented before implementation.
-- Learner Path: system-controlled.
-- Board count: 2 boards.
-- Prompt order: ordered 1->9 first.
-- Random prompts deferred.
-- No speech recognition.
-
 ### SCH-007 Analytics Foundation
 
 Priority: P2  
@@ -97,6 +82,18 @@ Notes:
 - Document when Listen & Find appears in the learner path before expanding exposure.
 - Current SCH-006 preparation rule: learner path is system-controlled, session uses 2 boards, prompt order is ordered 1->9 first, random prompts are deferred, and speech recognition is out of scope.
 - Do not implement behavior in this documentation item.
+
+### SCH-006.3 Reusable Listen & Find TTS Support
+
+Priority: Unassigned  
+Status: Backlog  
+Depends On:  
+- `SCH-006`
+Notes:  
+- SCH-006 discovered that Schulte does not currently have reusable browser TTS/audio infrastructure.
+- Define and reuse an approved TTS prompt service before adding spoken Listen & Find prompts.
+- Do not add speech recognition or microphone input.
+- Do not implement now.
 
 ### NB-ARCH-001 Adaptive Progression Framework
 
@@ -302,6 +299,15 @@ Depends On:
 - `SCH-005.2`
 
 Closure note: Synced the learner landing page Schulte tile so it renders both Grid Vision and Schulte Table, including the accessible launch label, while preserving the existing route, IDs, and internal architecture names.
+
+### SCH-006 Listen & Find Ordered Mode
+
+Priority: P2  
+Status: Done  
+Depends On:  
+- `SCH-002`
+
+Closure note: Implemented learner-path Listen & Find Ordered Mode after the existing Memory Mode ascending and descending progression, using two ordered 1->9 visual-prompt boards with the existing grid, validation, feedback, and completion flow. Reusable TTS/audio support was deferred to `SCH-006.3`.
 
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 

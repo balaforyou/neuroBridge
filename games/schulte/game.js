@@ -3,6 +3,7 @@ export const SCHULTE_CORE_GRID_SIZE = 3;
 export const SCHULTE_CORE_CELL_COUNT = SCHULTE_CORE_GRID_SIZE * SCHULTE_CORE_GRID_SIZE;
 export const SCHULTE_ASCENDING_MODE = 'ascending';
 export const SCHULTE_DESCENDING_MODE = 'descending';
+export const SCHULTE_LISTEN_FIND_MODE = 'listen-find';
 export const SCHULTE_MEMORY_MODE = 'memory';
 export const SCHULTE_ASCENDING_BOARD_COUNT = 2;
 export const SCHULTE_FEEDBACK = {
@@ -110,8 +111,15 @@ export function createSchulteDescendingSession(config = {}) {
     });
 }
 
+export function createSchulteListenFindSession(config = {}) {
+    return createSchulteOrderedSession({
+        ...config,
+        mode: SCHULTE_LISTEN_FIND_MODE
+    });
+}
+
 function createSchulteOrderedSession(config = {}) {
-    const mode = config.mode === SCHULTE_DESCENDING_MODE ? SCHULTE_DESCENDING_MODE : SCHULTE_ASCENDING_MODE;
+    const mode = normalizeSchulteMode(config.mode);
     const memoryMode = config.memoryMode === true;
     const boards = createOrderedSessionBoards(config);
     const emitFeedback = createFeedbackEmitter(config);
@@ -292,7 +300,8 @@ function mountSchulteActivity() {
         learnerName: 'Learner',
         mode: SCHULTE_ASCENDING_MODE,
         memoryMode: true,
-        awaitingDescendingStart: false,
+        awaitingTransitionStart: false,
+        transitionTargetMode: null,
         transientPulseCellId: null
     };
     let session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, handleFeedback);
@@ -320,7 +329,7 @@ function mountSchulteActivity() {
 
     function render() {
         const state = session.getState();
-        const showTransition = pageState.awaitingDescendingStart;
+        const showTransition = pageState.awaitingTransitionStart;
         root.innerHTML = `
             <section data-testid="schulte-activity" class="flex h-full min-h-0 flex-col gap-3">
                 <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-cyan-200 bg-white px-4 py-3 shadow-sm">
@@ -336,7 +345,7 @@ function mountSchulteActivity() {
 
                 ${renderActivePrompt(state, showTransition)}
 
-                ${showTransition ? renderDescendingTransition() : `
+                ${showTransition ? renderModeTransition() : `
                     <div data-testid="schulte-grid" class="grid flex-1 min-h-0 gap-2" style="grid-template-columns: repeat(${state.currentBoard.gridSize}, minmax(0, 1fr));">
                         ${state.currentBoard.cells.map(cell => renderCell(cell, state.completed, state.memoryMode)).join('')}
                     </div>
@@ -356,29 +365,43 @@ function mountSchulteActivity() {
                 pageState.transientPulseCellId = outcome.result === 'incorrect'
                     ? outcome.cell.cellId
                     : null;
-                prepareDescendingTransitionIfNeeded(outcome);
+                prepareModeTransitionIfNeeded(outcome);
                 render();
             });
         });
 
-        root.querySelector('[data-schulte-start-descending]')?.addEventListener('click', () => {
-            startDescendingMode();
+        root.querySelector('[data-schulte-start-next-mode]')?.addEventListener('click', () => {
+            startNextMode();
             render();
         });
     }
 
-    function prepareDescendingTransitionIfNeeded(outcome) {
-        if (outcome.result !== 'session-complete' || pageState.mode !== SCHULTE_ASCENDING_MODE) {
+    function prepareModeTransitionIfNeeded(outcome) {
+        if (outcome.result !== 'session-complete') {
             return;
         }
 
-        pageState.awaitingDescendingStart = true;
+        if (pageState.mode === SCHULTE_ASCENDING_MODE) {
+            pageState.transitionTargetMode = SCHULTE_DESCENDING_MODE;
+            pageState.awaitingTransitionStart = true;
+            pageState.transientPulseCellId = null;
+            return;
+        }
+
+        if (pageState.mode === SCHULTE_DESCENDING_MODE) {
+            pageState.transitionTargetMode = SCHULTE_LISTEN_FIND_MODE;
+            pageState.awaitingTransitionStart = true;
+            pageState.transientPulseCellId = null;
+            return;
+        }
+
         pageState.transientPulseCellId = null;
     }
 
-    function startDescendingMode() {
-        pageState.mode = SCHULTE_DESCENDING_MODE;
-        pageState.awaitingDescendingStart = false;
+    function startNextMode() {
+        pageState.mode = pageState.transitionTargetMode || SCHULTE_DESCENDING_MODE;
+        pageState.awaitingTransitionStart = false;
+        pageState.transitionTargetMode = null;
         pageState.transientPulseCellId = null;
         session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, handleFeedback);
     }
@@ -395,17 +418,19 @@ function mountSchulteActivity() {
         `;
     }
 
-    function renderDescendingTransition() {
+    function renderModeTransition() {
+        const transitionCopy = getTransitionCopy(pageState.transitionTargetMode);
+
         return `
             <div data-testid="schulte-descending-transition" class="flex flex-1 flex-col items-center justify-center gap-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-5 py-6 text-center text-slate-950">
                 <div>
-                    <p class="text-2xl font-black text-emerald-900">Great work! Now let's try descending.</p>
-                    <p class="mt-2 text-lg font-black text-slate-800">Start from 9 and go backwards.</p>
+                    <p class="text-2xl font-black text-emerald-900">${transitionCopy.title}</p>
+                    <p class="mt-2 text-lg font-black text-slate-800">${transitionCopy.body}</p>
                 </div>
                 <button
                     type="button"
-                    data-schulte-start-descending
-                    data-testid="schulte-start-descending"
+                    data-schulte-start-next-mode
+                    data-testid="schulte-start-next-mode"
                     class="min-h-[48px] rounded-xl bg-emerald-700 px-5 py-2 text-base font-black text-white shadow-sm transition focus:outline-none focus:ring-4 focus:ring-emerald-300">
                     Continue
                 </button>
@@ -440,7 +465,9 @@ function mountSchulteActivity() {
 }
 
 function getModeLabel(mode) {
-    return mode === SCHULTE_DESCENDING_MODE ? 'Descending' : 'Ascending';
+    if (mode === SCHULTE_DESCENDING_MODE) return 'Descending';
+    if (mode === SCHULTE_LISTEN_FIND_MODE) return 'Listen & Find';
+    return 'Ascending';
 }
 
 function normalizeLearnerName(learnerName) {
@@ -450,9 +477,29 @@ function normalizeLearnerName(learnerName) {
 
 function createVisibleSchulteSession(mode, memoryMode, onFeedback) {
     const config = { memoryMode, onFeedback };
-    return mode === SCHULTE_DESCENDING_MODE
-        ? createSchulteDescendingSession(config)
-        : createSchulteAscendingSession(config);
+    if (mode === SCHULTE_DESCENDING_MODE) {
+        return createSchulteDescendingSession(config);
+    }
+
+    if (mode === SCHULTE_LISTEN_FIND_MODE) {
+        return createSchulteListenFindSession(config);
+    }
+
+    return createSchulteAscendingSession(config);
+}
+
+function getTransitionCopy(targetMode) {
+    if (targetMode === SCHULTE_LISTEN_FIND_MODE) {
+        return {
+            title: 'Great work! Now let\'s listen and find.',
+            body: 'Follow the ordered prompts from 1 to 9.'
+        };
+    }
+
+    return {
+        title: 'Great work! Now let\'s try descending.',
+        body: 'Start from 9 and go backwards.'
+    };
 }
 
 function createOrderedSessionBoards(config) {
@@ -473,6 +520,12 @@ function getNextExpectedNumber(mode, currentValue) {
 
 function getOrderReason(mode) {
     return mode === SCHULTE_DESCENDING_MODE ? 'descending-order' : 'ascending-order';
+}
+
+function normalizeSchulteMode(mode) {
+    if (mode === SCHULTE_DESCENDING_MODE) return SCHULTE_DESCENDING_MODE;
+    if (mode === SCHULTE_LISTEN_FIND_MODE) return SCHULTE_LISTEN_FIND_MODE;
+    return SCHULTE_ASCENDING_MODE;
 }
 
 function createFeedbackEmitter(config) {
