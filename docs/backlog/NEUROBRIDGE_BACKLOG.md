@@ -10,13 +10,6 @@ This file is the lightweight source of truth for deferred NeuroBridge work.
 
 Items frozen enough for Codex handover.
 
-### SCH-004 Descending Progression
-
-Priority: P2  
-Status: Ready  
-Depends On:  
-- `SCH-002`
-
 ### SCH-005 Memory Mode
 
 Priority: P2  
@@ -50,6 +43,15 @@ Depends On:
 - `SCH-001`
 Notes:  
 `SCH-TEST-001` includes V1 representability for 4x4, 5x5, and 6x6 square boards, while `SCH-001` is intentionally limited to the 3x3 core grid engine. Promote this item when a later Schulte packet is ready to expand grid-size support without changing the SCH-001 scope.
+
+### NB-UI-001 Activity Tile Visual Refresh
+
+Priority: P2  
+Status: Backlog  
+Notes:  
+- Improve professional appearance of activity tiles later.
+- Consider shared tile component, icons, badges, progress indicators, hover/focus states, and mobile-friendly layout.
+- Do not implement now.
 
 ### NB-BL-004 Master Auto Progression
 
@@ -180,6 +182,15 @@ Depends On:
 - `SCH-003`
 
 Closure note: Added available Grid Vision tile to the post-login activity hub, wired it to the `schulte` route, added a playable Schulte iframe page for the existing 3x3 ascending session, and covered tile launch markup with focused tests.
+
+### SCH-004 Descending Progression
+
+Priority: P2  
+Status: Done  
+Depends On:  
+- `SCH-002`
+
+Closure note: Implemented descending 9->1 validation for 3x3 boards, preserved two-board session progression and completion behavior, preserved feedback hooks, and added focused descending tests.
 
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 

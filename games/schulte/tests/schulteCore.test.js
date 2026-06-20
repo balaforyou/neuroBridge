@@ -2,6 +2,7 @@ import {
     createSchulteAscendingSession,
     createSchulteBoard,
     createSchulteCoreGridEngine,
+    createSchulteDescendingSession,
     createSchulteNumberSet,
     renderSchulteGridMarkup,
     SCHULTE_ASCENDING_BOARD_COUNT,
@@ -330,6 +331,102 @@ function testSessionCompletionTriggersCelebrationFeedback() {
     console.log('Schulte session celebration feedback test passed');
 }
 
+function testDescendingSessionStartsAtNine() {
+    const session = createSchulteDescendingSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')]
+    });
+    const state = session.getState();
+
+    assert(state.mode === 'descending', 'Descending session should expose descending mode');
+    assert(state.boardCount === SCHULTE_ASCENDING_BOARD_COUNT, 'Descending session should preserve two-board structure');
+    assert(state.currentBoardIndex === 0, 'Descending session should start on first board');
+    assert(state.expectedNumber === 9, 'Descending session should expect 9 first');
+    assert(state.completed === false, 'Descending session should start incomplete');
+    console.log('Schulte descending start state test passed');
+}
+
+function testDescendingSessionEnforcesNineToOneOrder() {
+    const session = createSchulteDescendingSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')]
+    });
+    const initialBoard = session.getState().currentBoard;
+    const eightCellId = getCellIdByValue(initialBoard, 8);
+    const nineCellId = getCellIdByValue(initialBoard, 9);
+
+    const incorrect = session.selectCell(eightCellId);
+    assert(incorrect.result === 'incorrect', 'Selecting 8 before 9 should be incorrect');
+    assert(incorrect.reason === 'descending-order', 'Incorrect descending selection should explain order guard');
+    assert(incorrect.expectedNumber === 9, 'Incorrect descending selection should expose expected number');
+    assert(incorrect.state.expectedNumber === 9, 'Incorrect descending selection should not advance expected number');
+    assert(incorrect.state.currentBoard.cells.find(cell => cell.cellId === eightCellId).selected === false, 'Incorrect descending selection should not mark cell selected');
+
+    const correct = session.selectCell(nineCellId);
+    assert(correct.result === 'selected', 'Selecting 9 first should be accepted');
+    assert(correct.state.expectedNumber === 8, 'Correct descending selection should advance expected number downward');
+    assert(correct.state.currentBoard.cells.find(cell => cell.cellId === nineCellId).selected === true, 'Correct descending selection should mark cell selected');
+    console.log('Schulte descending order enforcement test passed');
+}
+
+function testDescendingSessionAdvancesAfterFirstBoard() {
+    const session = createSchulteDescendingSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')]
+    });
+    let outcome = null;
+
+    for (let value = SCHULTE_CORE_CELL_COUNT; value >= 1; value -= 1) {
+        const board = session.getState().currentBoard;
+        outcome = session.selectCell(getCellIdByValue(board, value));
+    }
+
+    assert(outcome.result === 'board-complete', 'Final descending selection on first board should complete board');
+    assert(outcome.state.completedBoards === 1, 'Descending session should record one completed board');
+    assert(outcome.state.currentBoardIndex === 1, 'Descending session should advance to second board');
+    assert(outcome.state.boardNumber === 2, 'Descending learner-facing board number should advance');
+    assert(outcome.state.expectedNumber === 9, 'Second descending board should restart expected number at 9');
+    assert(outcome.state.completed === false, 'Descending session should not complete after first board');
+    console.log('Schulte descending board progression test passed');
+}
+
+function testDescendingSessionCompletesAfterTwoBoards() {
+    const session = createSchulteDescendingSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')]
+    });
+    let outcome = null;
+
+    for (let boardIndex = 0; boardIndex < SCHULTE_ASCENDING_BOARD_COUNT; boardIndex += 1) {
+        for (let value = SCHULTE_CORE_CELL_COUNT; value >= 1; value -= 1) {
+            const board = session.getState().currentBoard;
+            outcome = session.selectCell(getCellIdByValue(board, value));
+        }
+    }
+
+    assert(outcome.result === 'session-complete', 'Final descending selection on second board should complete session');
+    assert(outcome.state.completed === true, 'Descending session state should be complete');
+    assert(outcome.state.completedBoards === SCHULTE_ASCENDING_BOARD_COUNT, 'Descending session should complete both boards');
+    assert(session.isComplete() === true, 'Descending session should report complete');
+    console.log('Schulte descending session completion test passed');
+}
+
+function testDescendingSessionPreservesFeedbackHooks() {
+    const feedbackEvents = [];
+    const session = createSchulteDescendingSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')],
+        onFeedback: event => feedbackEvents.push(event)
+    });
+    const board = session.getState().currentBoard;
+    const eightCellId = getCellIdByValue(board, 8);
+    const nineCellId = getCellIdByValue(board, 9);
+
+    const incorrect = session.selectCell(eightCellId);
+    const correct = session.selectCell(nineCellId);
+
+    assert(incorrect.state.feedbackState.type === SCHULTE_FEEDBACK.ORANGE_PULSE, 'Wrong descending selection should trigger orange pulse feedback');
+    assert(correct.state.feedbackState.type === SCHULTE_FEEDBACK.CLICK, 'Correct descending selection should trigger click feedback');
+    assert(feedbackEvents[0].type === SCHULTE_FEEDBACK.ORANGE_PULSE, 'Descending feedback stream should include orange pulse');
+    assert(feedbackEvents[1].type === SCHULTE_FEEDBACK.CLICK, 'Descending feedback stream should include click');
+    console.log('Schulte descending feedback preservation test passed');
+}
+
 function runAllTests() {
     console.log('=== Schulte Core Grid Unit Tests ===');
     testNumberSetCreatesThreeByThreeRange();
@@ -347,6 +444,11 @@ function runAllTests() {
     testPerfectBoardTriggersSuccessAndCelebrationFeedback();
     testImperfectBoardSkipsSuccessFeedbackButStillAdvances();
     testSessionCompletionTriggersCelebrationFeedback();
+    testDescendingSessionStartsAtNine();
+    testDescendingSessionEnforcesNineToOneOrder();
+    testDescendingSessionAdvancesAfterFirstBoard();
+    testDescendingSessionCompletesAfterTwoBoards();
+    testDescendingSessionPreservesFeedbackHooks();
     console.log('=== All Schulte Core Grid Tests Passed ===');
 }
 

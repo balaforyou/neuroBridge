@@ -2,6 +2,7 @@ export const SCHULTE_ACTIVITY_ID = 'schulte-v1';
 export const SCHULTE_CORE_GRID_SIZE = 3;
 export const SCHULTE_CORE_CELL_COUNT = SCHULTE_CORE_GRID_SIZE * SCHULTE_CORE_GRID_SIZE;
 export const SCHULTE_ASCENDING_MODE = 'ascending';
+export const SCHULTE_DESCENDING_MODE = 'descending';
 export const SCHULTE_ASCENDING_BOARD_COUNT = 2;
 export const SCHULTE_FEEDBACK = {
     CLICK: 'click',
@@ -95,15 +96,30 @@ export function createSchulteCoreGridEngine(config = {}) {
 }
 
 export function createSchulteAscendingSession(config = {}) {
-    const boards = createAscendingSessionBoards(config);
+    return createSchulteOrderedSession({
+        ...config,
+        mode: SCHULTE_ASCENDING_MODE
+    });
+}
+
+export function createSchulteDescendingSession(config = {}) {
+    return createSchulteOrderedSession({
+        ...config,
+        mode: SCHULTE_DESCENDING_MODE
+    });
+}
+
+function createSchulteOrderedSession(config = {}) {
+    const mode = config.mode === SCHULTE_DESCENDING_MODE ? SCHULTE_DESCENDING_MODE : SCHULTE_ASCENDING_MODE;
+    const boards = createOrderedSessionBoards(config);
     const emitFeedback = createFeedbackEmitter(config);
     let currentBoardEngine = createSchulteCoreGridEngine({ board: boards[0] });
     const state = {
-        mode: SCHULTE_ASCENDING_MODE,
+        mode,
         boardCount: SCHULTE_ASCENDING_BOARD_COUNT,
         currentBoardIndex: 0,
         completedBoards: 0,
-        expectedNumber: 1,
+        expectedNumber: getInitialExpectedNumber(mode),
         currentBoardMistakes: 0,
         completed: false,
         lastResult: null,
@@ -165,7 +181,7 @@ export function createSchulteAscendingSession(config = {}) {
             });
             return {
                 result: 'incorrect',
-                reason: 'ascending-order',
+                reason: getOrderReason(mode),
                 expectedNumber: state.expectedNumber,
                 cell: cloneCell(cell),
                 state: getState()
@@ -182,7 +198,7 @@ export function createSchulteAscendingSession(config = {}) {
         });
 
         if (selection.result !== 'complete') {
-            state.expectedNumber += 1;
+            state.expectedNumber = getNextExpectedNumber(mode, state.expectedNumber);
             state.lastResult = 'selected';
             return { result: 'selected', cell: cloneCell(selection.cell), state: getState() };
         }
@@ -219,7 +235,7 @@ export function createSchulteAscendingSession(config = {}) {
             boardNumber: state.currentBoardIndex + 1
         });
         state.currentBoardIndex += 1;
-        state.expectedNumber = 1;
+        state.expectedNumber = getInitialExpectedNumber(mode);
         state.currentBoardMistakes = 0;
         currentBoardEngine = createSchulteCoreGridEngine({ board: boards[state.currentBoardIndex] });
         state.lastResult = 'board-complete';
@@ -379,12 +395,24 @@ function normalizeLearnerName(learnerName) {
     return trimmed || 'Learner';
 }
 
-function createAscendingSessionBoards(config) {
+function createOrderedSessionBoards(config) {
     if (Array.isArray(config.boards) && config.boards.length >= SCHULTE_ASCENDING_BOARD_COUNT) {
         return config.boards.slice(0, SCHULTE_ASCENDING_BOARD_COUNT).map(cloneBoard);
     }
 
     return Array.from({ length: SCHULTE_ASCENDING_BOARD_COUNT }, () => createSchulteBoard(config));
+}
+
+function getInitialExpectedNumber(mode) {
+    return mode === SCHULTE_DESCENDING_MODE ? SCHULTE_CORE_CELL_COUNT : 1;
+}
+
+function getNextExpectedNumber(mode, currentValue) {
+    return mode === SCHULTE_DESCENDING_MODE ? currentValue - 1 : currentValue + 1;
+}
+
+function getOrderReason(mode) {
+    return mode === SCHULTE_DESCENDING_MODE ? 'descending-order' : 'ascending-order';
 }
 
 function createFeedbackEmitter(config) {
