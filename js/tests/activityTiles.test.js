@@ -1,6 +1,7 @@
 import {
     ACTIVITY_TILE_GROUPS,
     getActivityTileTestId,
+    renderActivityTiles,
     renderActivityTile
 } from '../activityTiles.js';
 
@@ -40,14 +41,49 @@ function testSchulteTileLaunchMarkup() {
     assert(markup.includes('data-testid="activity-tile-grid-vision"'), 'Schulte tile should render test id');
     assert(markup.includes('Grid Vision'), 'Schulte tile should show Grid Vision family name');
     assert(markup.includes('Schulte Table'), 'Schulte tile should show learner-facing Schulte Table subtitle');
+    assert(markup.includes('aria-label="Start Grid Vision: Schulte Table"'), 'Schulte tile accessible label should include both family and activity names');
     assert(!markup.includes('Coming Soon'), 'Schulte tile should not show Coming Soon');
     console.log('Schulte tile launch markup test passed');
+}
+
+function testSchulteLandingPageTileTerminology() {
+    const container = createFakeElement();
+    const message = createFakeElement();
+    const previousDocument = globalThis.document;
+
+    globalThis.document = {
+        getElementById(id) {
+            if (id === 'game-selection-list') return container;
+            if (id === 'activity-hub-message') return message;
+            return null;
+        }
+    };
+
+    try {
+        renderActivityTiles('Learner');
+    } finally {
+        globalThis.document = previousDocument;
+    }
+
+    assert(container.innerHTML.includes('data-testid="activity-tile-grid-vision"'), 'Landing page should render Schulte tile');
+    assert(container.innerHTML.includes('Grid Vision'), 'Landing page Schulte tile should show Grid Vision family name');
+    assert(container.innerHTML.includes('Schulte Table'), 'Landing page Schulte tile should show Schulte Table activity name');
+    assert(container.innerHTML.includes('aria-label="Start Grid Vision: Schulte Table"'), 'Landing page Schulte tile label should include aligned terminology');
+    console.log('Schulte landing page tile terminology test passed');
+}
+
+function createFakeElement() {
+    return {
+        innerHTML: '',
+        innerText: ''
+    };
 }
 
 function runAllTests() {
     console.log('=== Activity Tile Unit Tests ===');
     testSchulteTileIsAvailableInAttentionGroup();
     testSchulteTileLaunchMarkup();
+    testSchulteLandingPageTileTerminology();
     console.log('=== All Activity Tile Tests Passed ===');
 }
 

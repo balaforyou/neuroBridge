@@ -206,7 +206,7 @@ function renderAvailableTile(tile) {
             type="button"
             data-game="${tile.activityId}"
             data-testid="${getActivityTileTestId(tile)}"
-            aria-label="Start ${tile.learnerName}"
+            aria-label="${getActivityTileAriaLabel(tile)}"
             class="btn-launch-game group min-h-[148px] w-full rounded-lg border-2 ${tile.identityClass} bg-gradient-to-br px-4 py-3.5 text-left shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-emerald-300/80">
             <span class="flex h-full flex-col">
                 <span class="flex items-start gap-4">
@@ -223,6 +223,12 @@ function renderAvailableTile(tile) {
             </span>
         </button>
     `;
+}
+
+function getActivityTileAriaLabel(tile) {
+    return tile.subtitle
+        ? `Start ${tile.learnerName}: ${tile.subtitle}`
+        : `Start ${tile.learnerName}`;
 }
 
 function renderComingSoonTile(tile) {

@@ -244,6 +244,14 @@ Depends On:
 
 Closure note: Kept Grid Vision as the broader activity family name while aligning learner-facing activity labels, shell title, activity header, completion message, and tile subtitle to Schulte Table without changing routes, IDs, or internal architecture names.
 
+### SCH-005.2.1 Landing Page Tile Terminology Fix
+
+Status: Done  
+Depends On:  
+- `SCH-005.2`
+
+Closure note: Synced the learner landing page Schulte tile so it renders both Grid Vision and Schulte Table, including the accessible launch label, while preserving the existing route, IDs, and internal architecture names.
+
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
 Status: Done  
