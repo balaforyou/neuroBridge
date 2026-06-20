@@ -127,6 +127,8 @@ async function testAutomaticAscendingToDescendingFlow() {
         await page.getByTestId('schulte-start-next-mode').click();
         assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Listen & Find', 'Continue should move to Listen & Find mode');
         assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 1 / 2', 'Listen & Find should restart board context');
+        assert(await page.getByTestId('schulte-completion').count() === 0, 'Listen & Find should not show completion when it starts');
+        assert(await page.getByTestId('schulte-grid').count() === 1, 'Listen & Find should render a playable grid');
         await assertSingleFindPrompt(page, 'Find 1');
 
         await page.locator('[data-schulte-number="2"]').click();
@@ -134,6 +136,7 @@ async function testAutomaticAscendingToDescendingFlow() {
 
         await page.locator('[data-schulte-number="1"]').click();
         await assertSingleFindPrompt(page, 'Find 2');
+        assert(await page.getByTestId('schulte-completion').count() === 0, 'Listen & Find should stay active after its first correct selection');
 
         for (let board = 0; board < 2; board += 1) {
             const startValue = board === 0 ? 2 : 1;
@@ -144,6 +147,7 @@ async function testAutomaticAscendingToDescendingFlow() {
             if (board === 0) {
                 assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Listen & Find', 'Listen & Find should stay in mode after first board');
                 assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 2 / 2', 'Listen & Find should advance to second board');
+                assert(await page.getByTestId('schulte-completion').count() === 0, 'Listen & Find should not complete after Board 1');
                 await assertSingleFindPrompt(page, 'Find 1');
             }
         }

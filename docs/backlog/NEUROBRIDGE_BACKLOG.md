@@ -309,6 +309,14 @@ Depends On:
 
 Closure note: Implemented learner-path Listen & Find Ordered Mode after the existing Memory Mode ascending and descending progression, using two ordered 1->9 visual-prompt boards with the existing grid, validation, feedback, and completion flow. Reusable TTS/audio support was deferred to `SCH-006.3`.
 
+### SCH-006.4 Listen & Find Flow Activation Fix
+
+Status: Done  
+Depends On:  
+- `SCH-006`
+
+Closure note: Fixed Listen & Find flow activation so the final completion screen is gated to a completed Listen & Find session, the active mode label is tied to the current session state, and entering Listen & Find starts a fresh Board 1 / 2 at Find 1.
+
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
 Status: Done  

@@ -330,6 +330,7 @@ function mountSchulteActivity() {
     function render() {
         const state = session.getState();
         const showTransition = pageState.awaitingTransitionStart;
+        const showCompletion = isLearnerFlowComplete(state, showTransition);
         root.innerHTML = `
             <section data-testid="schulte-activity" class="flex h-full min-h-0 flex-col gap-3">
                 <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-cyan-200 bg-white px-4 py-3 shadow-sm">
@@ -338,7 +339,7 @@ function mountSchulteActivity() {
                         <h2 class="text-xl font-black text-slate-950">Schulte Table</h2>
                     </div>
                     <div class="flex gap-2 text-sm font-black text-slate-800">
-                        <span data-testid="schulte-mode-label" class="rounded-full border border-cyan-200 bg-white px-3 py-1.5">Mode: ${getModeLabel(pageState.mode)}</span>
+                        <span data-testid="schulte-mode-label" class="rounded-full border border-cyan-200 bg-white px-3 py-1.5">Mode: ${getModeLabel(state.mode)}</span>
                         <span data-testid="schulte-board-counter" class="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5">Board ${state.boardNumber} / ${state.boardCount}</span>
                     </div>
                 </div>
@@ -351,7 +352,7 @@ function mountSchulteActivity() {
                     </div>
                 `}
 
-                ${state.completed && !showTransition ? `
+                ${showCompletion ? `
                     <div data-testid="schulte-completion" class="rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 text-center text-xl font-black text-emerald-900">
                         Great work! You finished Schulte Table.
                     </div>
@@ -399,11 +400,12 @@ function mountSchulteActivity() {
     }
 
     function startNextMode() {
-        pageState.mode = pageState.transitionTargetMode || SCHULTE_DESCENDING_MODE;
+        const nextMode = pageState.transitionTargetMode || SCHULTE_DESCENDING_MODE;
+        session = createVisibleSchulteSession(nextMode, pageState.memoryMode, handleFeedback);
+        pageState.mode = session.getState().mode;
         pageState.awaitingTransitionStart = false;
         pageState.transitionTargetMode = null;
         pageState.transientPulseCellId = null;
-        session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, handleFeedback);
     }
 
     function renderActivePrompt(state, showTransition) {
@@ -462,6 +464,12 @@ function mountSchulteActivity() {
             </button>
         `;
     }
+}
+
+function isLearnerFlowComplete(state, showTransition) {
+    return showTransition === false
+        && state.completed === true
+        && state.mode === SCHULTE_LISTEN_FIND_MODE;
 }
 
 function getModeLabel(mode) {
