@@ -10,13 +10,6 @@ This file is the lightweight source of truth for deferred NeuroBridge work.
 
 Items frozen enough for Codex handover.
 
-### SCH-002 Ascending Progression
-
-Priority: P1  
-Status: Ready  
-Depends On:  
-- `SCH-001`
-
 ### SCH-003 Feedback Engine Integration
 
 Priority: P1  
@@ -166,6 +159,15 @@ Depends On:
 - `SCH-IMPLEMENTATION-PLAN-001`
 
 Closure note: Implemented 3x3 Schulte core grid engine with randomized board generation, number placement, cell selection guards, board completion detection, renderable grid markup, and focused unit tests.
+
+### SCH-002 Ascending Progression
+
+Priority: P1  
+Status: Done  
+Depends On:  
+- `SCH-001`
+
+Closure note: Implemented ascending 1->9 validation, two-board session structure, board progression, session completion, and focused unit tests without adding feedback, audio, memory, or analytics behavior.
 
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 

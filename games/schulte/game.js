@@ -1,6 +1,8 @@
 export const SCHULTE_ACTIVITY_ID = 'schulte-v1';
 export const SCHULTE_CORE_GRID_SIZE = 3;
 export const SCHULTE_CORE_CELL_COUNT = SCHULTE_CORE_GRID_SIZE * SCHULTE_CORE_GRID_SIZE;
+export const SCHULTE_ASCENDING_MODE = 'ascending';
+export const SCHULTE_ASCENDING_BOARD_COUNT = 2;
 
 export function createSchulteNumberSet(gridSize = SCHULTE_CORE_GRID_SIZE) {
     const normalizedGridSize = normalizeSchulteGridSize(gridSize);
@@ -86,6 +88,105 @@ export function createSchulteCoreGridEngine(config = {}) {
     };
 }
 
+export function createSchulteAscendingSession(config = {}) {
+    const boards = createAscendingSessionBoards(config);
+    let currentBoardEngine = createSchulteCoreGridEngine({ board: boards[0] });
+    const state = {
+        mode: SCHULTE_ASCENDING_MODE,
+        boardCount: SCHULTE_ASCENDING_BOARD_COUNT,
+        currentBoardIndex: 0,
+        completedBoards: 0,
+        expectedNumber: 1,
+        completed: false,
+        lastResult: null,
+        lastSelection: null
+    };
+
+    function getState() {
+        const currentBoardState = currentBoardEngine.getState();
+
+        return {
+            ...state,
+            boardNumber: state.currentBoardIndex + 1,
+            currentBoard: currentBoardState.board,
+            boards: boards.map(cloneBoard),
+            lastSelection: state.lastSelection ? cloneCell(state.lastSelection) : null
+        };
+    }
+
+    function getCurrentCell(cellId) {
+        return currentBoardEngine.getState().board.cells.find(cell => cell.cellId === cellId) || null;
+    }
+
+    function selectCell(cellId) {
+        if (state.completed) {
+            state.lastResult = 'ignored';
+            state.lastSelection = null;
+            return { result: 'ignored', reason: 'session-complete', state: getState() };
+        }
+
+        const cell = getCurrentCell(cellId);
+        if (!cell) {
+            state.lastResult = 'invalid';
+            state.lastSelection = null;
+            return { result: 'invalid', reason: 'unknown-cell', state: getState() };
+        }
+
+        if (cell.selected) {
+            state.lastResult = 'ignored';
+            state.lastSelection = cloneCell(cell);
+            return { result: 'ignored', reason: 'already-selected', cell: cloneCell(cell), state: getState() };
+        }
+
+        if (cell.value !== state.expectedNumber) {
+            state.lastResult = 'incorrect';
+            state.lastSelection = cloneCell(cell);
+            return {
+                result: 'incorrect',
+                reason: 'ascending-order',
+                expectedNumber: state.expectedNumber,
+                cell: cloneCell(cell),
+                state: getState()
+            };
+        }
+
+        const selection = currentBoardEngine.selectCell(cellId);
+        boards[state.currentBoardIndex] = selection.state.board;
+        state.lastSelection = cloneCell(selection.cell);
+
+        if (selection.result !== 'complete') {
+            state.expectedNumber += 1;
+            state.lastResult = 'selected';
+            return { result: 'selected', cell: cloneCell(selection.cell), state: getState() };
+        }
+
+        state.completedBoards += 1;
+
+        if (state.completedBoards === SCHULTE_ASCENDING_BOARD_COUNT) {
+            state.completed = true;
+            state.lastResult = 'session-complete';
+            return { result: 'session-complete', cell: cloneCell(selection.cell), state: getState() };
+        }
+
+        state.currentBoardIndex += 1;
+        state.expectedNumber = 1;
+        currentBoardEngine = createSchulteCoreGridEngine({ board: boards[state.currentBoardIndex] });
+        state.lastResult = 'board-complete';
+
+        return { result: 'board-complete', cell: cloneCell(selection.cell), state: getState() };
+    }
+
+    function isComplete() {
+        return state.completed;
+    }
+
+    return {
+        getState,
+        isComplete,
+        selectCell
+    };
+}
+
 export function renderSchulteGridMarkup(stateOrBoard) {
     const board = stateOrBoard?.board || stateOrBoard;
     const gridSize = normalizeSchulteGridSize(board?.gridSize);
@@ -105,6 +206,14 @@ export function renderSchulteGridMarkup(stateOrBoard) {
             `).join('')}
         </div>
     `;
+}
+
+function createAscendingSessionBoards(config) {
+    if (Array.isArray(config.boards) && config.boards.length >= SCHULTE_ASCENDING_BOARD_COUNT) {
+        return config.boards.slice(0, SCHULTE_ASCENDING_BOARD_COUNT).map(cloneBoard);
+    }
+
+    return Array.from({ length: SCHULTE_ASCENDING_BOARD_COUNT }, () => createSchulteBoard(config));
 }
 
 function normalizeSchulteGridSize(gridSize = SCHULTE_CORE_GRID_SIZE) {

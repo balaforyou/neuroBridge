@@ -1,8 +1,10 @@
 import {
+    createSchulteAscendingSession,
     createSchulteBoard,
     createSchulteCoreGridEngine,
     createSchulteNumberSet,
     renderSchulteGridMarkup,
+    SCHULTE_ASCENDING_BOARD_COUNT,
     SCHULTE_CORE_CELL_COUNT,
     SCHULTE_CORE_GRID_SIZE
 } from '../game.js';
@@ -16,6 +18,24 @@ function assert(condition, message) {
 function createFixedRandom(values) {
     let index = 0;
     return () => values[index++ % values.length];
+}
+
+function createOrderedBoard(prefix = 'board') {
+    return {
+        gridSize: SCHULTE_CORE_GRID_SIZE,
+        cellCount: SCHULTE_CORE_CELL_COUNT,
+        cells: createSchulteNumberSet().map((value, index) => ({
+            cellId: `${prefix}-cell-${value}`,
+            value,
+            row: Math.floor(index / SCHULTE_CORE_GRID_SIZE),
+            column: index % SCHULTE_CORE_GRID_SIZE,
+            selected: false
+        }))
+    };
+}
+
+function getCellIdByValue(board, value) {
+    return board.cells.find(cell => cell.value === value).cellId;
 }
 
 function testNumberSetCreatesThreeByThreeRange() {
@@ -109,6 +129,84 @@ function testRenderSchulteGridMarkup() {
     console.log('Schulte grid markup test passed');
 }
 
+function testAscendingSessionStartsWithTwoBoardStructure() {
+    const session = createSchulteAscendingSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')]
+    });
+    const state = session.getState();
+
+    assert(state.mode === 'ascending', 'Ascending session should expose ascending mode');
+    assert(state.boardCount === SCHULTE_ASCENDING_BOARD_COUNT, 'Ascending session should contain two boards');
+    assert(state.currentBoardIndex === 0, 'Ascending session should start on first board');
+    assert(state.boardNumber === 1, 'Ascending session should expose learner-facing board number');
+    assert(state.expectedNumber === 1, 'Ascending session should expect 1 first');
+    assert(state.completed === false, 'Ascending session should start incomplete');
+    console.log('Schulte ascending two-board structure test passed');
+}
+
+function testAscendingSessionEnforcesOneToNineOrder() {
+    const session = createSchulteAscendingSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')]
+    });
+    const initialBoard = session.getState().currentBoard;
+    const twoCellId = getCellIdByValue(initialBoard, 2);
+    const oneCellId = getCellIdByValue(initialBoard, 1);
+
+    const incorrect = session.selectCell(twoCellId);
+    assert(incorrect.result === 'incorrect', 'Selecting 2 before 1 should be incorrect');
+    assert(incorrect.reason === 'ascending-order', 'Incorrect ascending selection should explain order guard');
+    assert(incorrect.expectedNumber === 1, 'Incorrect selection should expose expected number');
+    assert(incorrect.state.expectedNumber === 1, 'Incorrect selection should not advance expected number');
+    assert(incorrect.state.currentBoard.cells.find(cell => cell.cellId === twoCellId).selected === false, 'Incorrect selection should not mark cell selected');
+
+    const correct = session.selectCell(oneCellId);
+    assert(correct.result === 'selected', 'Selecting 1 first should be accepted');
+    assert(correct.state.expectedNumber === 2, 'Correct ascending selection should advance expected number');
+    assert(correct.state.currentBoard.cells.find(cell => cell.cellId === oneCellId).selected === true, 'Correct selection should mark cell selected');
+    console.log('Schulte ascending order enforcement test passed');
+}
+
+function testAscendingSessionAdvancesAfterFirstBoard() {
+    const session = createSchulteAscendingSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')]
+    });
+    let outcome = null;
+
+    for (let value = 1; value <= SCHULTE_CORE_CELL_COUNT; value += 1) {
+        const board = session.getState().currentBoard;
+        outcome = session.selectCell(getCellIdByValue(board, value));
+    }
+
+    assert(outcome.result === 'board-complete', 'Ninth ascending selection on first board should complete board');
+    assert(outcome.state.completedBoards === 1, 'One completed board should be recorded');
+    assert(outcome.state.currentBoardIndex === 1, 'Session should advance to second board');
+    assert(outcome.state.boardNumber === 2, 'Learner-facing board number should advance');
+    assert(outcome.state.expectedNumber === 1, 'Second board should restart expected number at 1');
+    assert(outcome.state.completed === false, 'Session should not complete after first board');
+    console.log('Schulte ascending board progression test passed');
+}
+
+function testAscendingSessionCompletesAfterTwoBoards() {
+    const session = createSchulteAscendingSession({
+        boards: [createOrderedBoard('one'), createOrderedBoard('two')]
+    });
+    let outcome = null;
+
+    for (let boardIndex = 0; boardIndex < SCHULTE_ASCENDING_BOARD_COUNT; boardIndex += 1) {
+        for (let value = 1; value <= SCHULTE_CORE_CELL_COUNT; value += 1) {
+            const board = session.getState().currentBoard;
+            outcome = session.selectCell(getCellIdByValue(board, value));
+        }
+    }
+
+    assert(outcome.result === 'session-complete', 'Final selection on second board should complete session');
+    assert(outcome.state.completed === true, 'Session state should be complete');
+    assert(outcome.state.completedBoards === SCHULTE_ASCENDING_BOARD_COUNT, 'Both boards should be completed');
+    assert(session.isComplete() === true, 'Session should report complete');
+    assert(session.selectCell('two-cell-1').reason === 'session-complete', 'Selections after session completion should be ignored');
+    console.log('Schulte ascending session completion test passed');
+}
+
 function runAllTests() {
     console.log('=== Schulte Core Grid Unit Tests ===');
     testNumberSetCreatesThreeByThreeRange();
@@ -117,6 +215,10 @@ function runAllTests() {
     testCoreGridRejectsInvalidAndDuplicateSelections();
     testCoreGridDetectsBoardCompletion();
     testRenderSchulteGridMarkup();
+    testAscendingSessionStartsWithTwoBoardStructure();
+    testAscendingSessionEnforcesOneToNineOrder();
+    testAscendingSessionAdvancesAfterFirstBoard();
+    testAscendingSessionCompletesAfterTwoBoards();
     console.log('=== All Schulte Core Grid Tests Passed ===');
 }
 
