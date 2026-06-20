@@ -10,12 +10,20 @@ This file is the lightweight source of truth for deferred NeuroBridge work.
 
 Items frozen enough for Codex handover.
 
-### SCH-006 Listen & Find
+### SCH-006 Listen & Find Ordered Mode
 
 Priority: P2  
 Status: Ready  
 Depends On:  
 - `SCH-002`
+Notes:  
+- Implement ordered Listen & Find first.
+- Exposure rules must be documented before implementation.
+- Learner Path: system-controlled.
+- Board count: 2 boards.
+- Prompt order: ordered 1->9 first.
+- Random prompts deferred.
+- No speech recognition.
 
 ### SCH-007 Analytics Foundation
 
@@ -48,6 +56,7 @@ Notes:
 
 ### SCH-004.2.1 Practice Lab Mode Selector
 
+Priority: Unassigned  
 Status: Backlog  
 Depends On:  
 - `SCH-004.2`
@@ -55,6 +64,48 @@ Notes:
 - Manual Ascending / Descending selection may still be useful for parent experimentation or advanced testing.
 - Keep this out of the learner path.
 - Do not implement Practice Lab now.
+
+### SCH-005.1A Memory Mode Progression Review
+
+Priority: Unassigned  
+Status: Backlog  
+Depends On:  
+- `SCH-005`
+Notes:  
+- Requested during backlog audit as `SCH-005.1 Memory Mode Progression Review`.
+- `SCH-005.1` is already assigned to the completed Instruction Simplification and Prompt Sync Fix packet, so this follow-up is recorded as `SCH-005.1A` to avoid duplicate IDs.
+- Review how Memory Mode should fit into longer-term Learn -> Practice -> Memory -> Mastery progression before adding progression or analytics behavior.
+- Do not implement now.
+
+### SCH-006.1 Listen & Find Random Prompt Variant
+
+Priority: Unassigned  
+Status: Backlog  
+Depends On:  
+- `SCH-006`
+Notes:  
+- Random spoken target prompts are deferred until after ordered Listen & Find is implemented and validated.
+- Do not implement in SCH-006 ordered mode.
+
+### SCH-006.2 Listen & Find Exposure Rule Documentation
+
+Priority: Unassigned  
+Status: Backlog  
+Depends On:  
+- `SCH-006`
+Notes:  
+- Document when Listen & Find appears in the learner path before expanding exposure.
+- Current SCH-006 preparation rule: learner path is system-controlled, session uses 2 boards, prompt order is ordered 1->9 first, random prompts are deferred, and speech recognition is out of scope.
+- Do not implement behavior in this documentation item.
+
+### NB-ARCH-001 Adaptive Progression Framework
+
+Priority: Unassigned  
+Status: Backlog  
+Notes:  
+- Define a shared adaptive progression framework before connecting individual activity mastery, fluency, or level-unlock rules.
+- Keep separate from SCH-007 analytics implementation until architecture is explicitly approved.
+- Do not implement now.
 
 ### NB-BL-004 Master Auto Progression
 
