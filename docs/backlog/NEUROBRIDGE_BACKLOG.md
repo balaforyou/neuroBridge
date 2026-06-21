@@ -10,6 +10,11 @@ This file is the lightweight source of truth for deferred NeuroBridge work.
 
 Items frozen enough for Codex handover.
 
+### NB-WS-001.2 Attribute Matching Worksheet V1
+
+Status: Ready
+Activity docs: `docs/activities/matching-worksheets/`
+
 ## Backlog
 
 Valid ideas that are not ready for implementation yet.
