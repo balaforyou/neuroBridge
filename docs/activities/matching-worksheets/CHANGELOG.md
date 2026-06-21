@@ -22,6 +22,7 @@ This document records learner-facing and implementation-facing changes for the M
 ### Fixed
 
 - Fixed Color Attribute Pack entries so displayed images match expected color answers.
+- Persisted Attribute Matching completion sessions to Parent Dashboard Recent Activity.
 
 ### Documentation
 

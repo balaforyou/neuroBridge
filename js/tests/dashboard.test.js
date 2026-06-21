@@ -281,6 +281,33 @@ function testMatrixReasoningKeepsPlainLevelLabel() {
     console.log('Matrix Reasoning dashboard metadata test passed');
 }
 
+function testMatchingWorksheetsRecentActivityRow() {
+    const markup = renderParentSessionRow({
+        gameId: 'attributeMatchingWorksheet',
+        activityName: 'Matching Worksheets',
+        timestamp: Date.parse('2026-06-21T10:00:00.000Z'),
+        level: 1,
+        levelLabel: 'Color',
+        skillLabel: 'Attribute Matching V1',
+        levelDisplayLabel: 'Color / Attribute Matching V1',
+        correctCount: 10,
+        totalQuestions: 10,
+        accuracyPercent: 100,
+        sessionLengthSeconds: 12,
+        hintUsageCount: 0,
+        mistakeCount: 0,
+        highestLevelReached: 1,
+        trials: []
+    });
+
+    assert(markup.includes('Matching Worksheets / Attribute Matching V1'), 'Recent activity should show Matching Worksheets activity name');
+    assert(markup.includes('Color / Attribute Matching V1'), 'Recent activity should show attribute matching level context');
+    assert(markup.includes('Score:</span> 10 / 10'), 'Recent activity should show Matching Worksheets score');
+    assert(markup.includes('Accuracy:</span> 100%'), 'Recent activity should show Matching Worksheets accuracy');
+    assert(markup.includes('Duration:</span> 12 sec'), 'Recent activity should show Matching Worksheets duration');
+    console.log('Matching Worksheets recent activity dashboard test passed');
+}
+
 function testNumberBridgeHidesFullTrialTableAndLevelDash() {
     const markup = renderParentSessionRow(createNumberBridgeLog({
         trials: [{
@@ -359,6 +386,7 @@ function runAllTests() {
     testNumberBridgeMasterOperationSwitching();
     testDashboardViewTypeUsesActivityMetadata();
     testMatrixReasoningKeepsPlainLevelLabel();
+    testMatchingWorksheetsRecentActivityRow();
     testNumberBridgeHidesFullTrialTableAndLevelDash();
     testNumberBridgeNoCorrectionsMessage();
     testNumberBridgeCorrectionReview();

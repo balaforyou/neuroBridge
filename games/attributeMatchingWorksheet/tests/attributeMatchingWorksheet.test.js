@@ -2,6 +2,7 @@ import {
     ATTRIBUTE_GROUP_COLOR,
     COLOR_ATTRIBUTE_QUESTIONS,
     createAttributeMatchingCompletionSummary,
+    createAttributeMatchingSessionSummary,
     createAttributeMatchingWorksheetGame,
     createColorAttributeQuestions
 } from '../game.js';
@@ -142,6 +143,34 @@ function testCompletionAndAccuracyCalculation() {
     console.log('Attribute Matching completion summary test passed');
 }
 
+function testCompletionSessionSummaryPersistencePayload() {
+    const game = createAttributeMatchingWorksheetGame({
+        questionCount: 2,
+        random: createNoShuffleRandom(),
+        startedAtMs: Date.parse('2026-06-21T10:00:00.000Z')
+    });
+
+    game.selectAnswer('Red');
+    game.advanceAfterFeedback();
+    game.selectAnswer('Blue');
+    game.advanceAfterFeedback();
+
+    const payload = createAttributeMatchingSessionSummary(game.getState(), {
+        endedAtMs: Date.parse('2026-06-21T10:00:05.000Z')
+    });
+
+    assert(payload.gameId === 'attributeMatchingWorksheet', 'Persistence payload should use Matching Worksheets game id');
+    assert(payload.activityName === 'Matching Worksheets', 'Persistence payload should use dashboard activity family name');
+    assert(payload.levelDisplayLabel === 'Color / Attribute Matching V1', 'Persistence payload should expose dashboard level context');
+    assert(payload.correctCount === 2, 'Persistence payload should include correct count');
+    assert(payload.totalQuestions === 2, 'Persistence payload should include total question count');
+    assert(payload.accuracyPercent === 100, 'Persistence payload should include accuracy percentage');
+    assert(payload.sessionLengthSeconds === 5, 'Persistence payload should include duration seconds');
+    assert(payload.completionStatus === 'completed', 'Persistence payload should mark completion');
+    assert(payload.completed === true, 'Persistence payload should mark completed true');
+    console.log('Attribute Matching completion persistence payload test passed');
+}
+
 function testPartialAccuracyCalculation() {
     const summary = createAttributeMatchingCompletionSummary({
         questions: [{}, {}, {}],
@@ -161,6 +190,7 @@ function runAllTests() {
     testCorrectAnswerAdvancesAfterFeedback();
     testIncorrectFeedbackProgression();
     testCompletionAndAccuracyCalculation();
+    testCompletionSessionSummaryPersistencePayload();
     testPartialAccuracyCalculation();
     console.log('=== All Attribute Matching Worksheet Unit Tests Passed ===');
 }

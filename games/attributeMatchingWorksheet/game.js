@@ -6,8 +6,10 @@ import {
     applyWorksheetHeaderState,
     normalizeWorksheetLearnerName
 } from '../../js/worksheetTemplate.js';
+import { GAME_EVENTS } from '../../js/constants.js';
 
 export const ATTRIBUTE_MATCHING_ACTIVITY_ID = 'attribute-matching-worksheet-v1';
+export const ATTRIBUTE_MATCHING_GAME_ID = 'attributeMatchingWorksheet';
 export const ATTRIBUTE_MATCHING_ACTIVITY_TITLE = 'Attribute Matching V1';
 export const ATTRIBUTE_MATCHING_FAMILY_TITLE = 'Matching Worksheets';
 export const ATTRIBUTE_GROUP_COLOR = 'color';
@@ -57,6 +59,7 @@ export function createAttributeMatchingWorksheetGame(config = {}) {
         feedbackType: null,
         visualHint: false,
         answerRevealed: false,
+        startedAtMs: normalizeTimestampMs(config.startedAtMs, Date.now()),
         learnerName: normalizeWorksheetLearnerName(config.learnerName || 'Adarsh')
     };
 
@@ -160,13 +163,62 @@ export function createAttributeMatchingCompletionSummary(state = {}) {
     };
 }
 
+export function createAttributeMatchingSessionSummary(state = {}, options = {}) {
+    const summary = createAttributeMatchingCompletionSummary(state);
+    const startedAtMs = normalizeTimestampMs(state.startedAtMs, Date.now());
+    const endedAtMs = normalizeTimestampMs(options.endedAtMs ?? Date.now(), startedAtMs);
+    const durationSeconds = Math.max(1, Math.round((endedAtMs - startedAtMs) / 1000));
+    const averageReactionTimeMs = summary.questionsAnswered
+        ? Math.round((durationSeconds * 1000) / summary.questionsAnswered)
+        : 0;
+
+    return {
+        gameId: ATTRIBUTE_MATCHING_GAME_ID,
+        activityId: ATTRIBUTE_MATCHING_ACTIVITY_ID,
+        activityName: ATTRIBUTE_MATCHING_FAMILY_TITLE,
+        mode: ATTRIBUTE_GROUP_COLOR,
+        level: 1,
+        levelLabel: 'Color',
+        skillLabel: ATTRIBUTE_MATCHING_ACTIVITY_TITLE,
+        levelDisplayLabel: `Color / ${ATTRIBUTE_MATCHING_ACTIVITY_TITLE}`,
+        score: summary.correctAnswers,
+        correctCount: summary.correctAnswers,
+        totalQuestions: summary.questionsAnswered,
+        accuracy: summary.accuracyPercent / 100,
+        accuracyPercent: summary.accuracyPercent,
+        averageReactionTimeMs,
+        averageTimePerQuestion: Math.round((durationSeconds / Math.max(summary.questionsAnswered, 1)) * 10) / 10,
+        hintUsageCount: Number(state.incorrectAttempts || 0),
+        mistakeCount: Number(state.incorrectAttempts || 0),
+        highestLevelReached: 1,
+        sessionLengthSeconds: durationSeconds,
+        durationSeconds,
+        sessionTimestamp: new Date(startedAtMs).toISOString(),
+        completionStatus: 'completed',
+        completed: state.completed === true,
+        trials: Array.isArray(state.questions)
+            ? state.questions.map((question, index) => ({
+                stage: 1,
+                questionId: question.id,
+                questionIndex: index,
+                prompt: question.prompt,
+                correctAnswer: question.correctAnswer,
+                isCorrect: true,
+                correct: true,
+                attributeType: question.attributeType
+            }))
+            : []
+    };
+}
+
 function mountAttributeMatchingWorksheet() {
     const root = document.getElementById('attribute-matching-root');
     if (!root) return;
 
     const pageState = {
         learnerName: 'Adarsh',
-        advanceTimer: null
+        advanceTimer: null,
+        completionSubmitted: false
     };
     let game = createAttributeMatchingWorksheetGame({
         learnerName: pageState.learnerName
@@ -181,6 +233,7 @@ function mountAttributeMatchingWorksheet() {
 
         clearPendingAdvanceTimer();
         pageState.learnerName = normalizeWorksheetLearnerName(event.data.learnerName || 'Adarsh');
+        pageState.completionSubmitted = false;
         game = createAttributeMatchingWorksheetGame({
             learnerName: pageState.learnerName
         });
@@ -295,12 +348,29 @@ function mountAttributeMatchingWorksheet() {
         if (outcome.result === 'correct') {
             clearPendingAdvanceTimer();
             pageState.advanceTimer = setTimeout(() => {
-                game.advanceAfterFeedback();
+                const advance = game.advanceAfterFeedback();
                 pageState.advanceTimer = null;
                 updateHeader();
                 renderQuestion();
                 renderCompletion();
+                if (advance.result === 'complete') {
+                    submitCompletionIfNeeded();
+                }
             }, CORRECT_ADVANCE_DELAY_MS);
+        }
+    }
+
+    function submitCompletionIfNeeded() {
+        if (pageState.completionSubmitted) return;
+
+        pageState.completionSubmitted = true;
+        try {
+            window.parent?.postMessage({
+                type: GAME_EVENTS.COMPLETE,
+                payload: createAttributeMatchingSessionSummary(game.getState())
+            }, '*');
+        } catch {
+            // Completion persistence should never block the learner completion screen.
         }
     }
 
@@ -392,6 +462,15 @@ function normalizeQuestionCount(questionCount, max) {
     }
 
     return Math.min(max, Math.round(count));
+}
+
+function normalizeTimestampMs(value, fallback) {
+    const number = Number(value);
+    if (Number.isFinite(number) && number > 0) {
+        return number;
+    }
+
+    return fallback;
 }
 
 function getFeedbackClass(feedbackType) {

@@ -14,6 +14,7 @@ export const USER_ROLES = {
 export const GAME_IDS = {
     MATRIX_REASONING: 'matrixReasoning',
     ATTRIBUTE_EXPLORER: 'attributeExplorer',
+    ATTRIBUTE_MATCHING_WORKSHEET: 'attributeMatchingWorksheet',
     KUMON_QUIZ: 'kumonQuiz'
 };
 

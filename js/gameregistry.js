@@ -55,6 +55,27 @@ export const GAME_REGISTRY = [
         version: '1.0.0'
     },
     {
+        gameId: GAME_IDS.ATTRIBUTE_MATCHING_WORKSHEET,
+        id: GAME_IDS.ATTRIBUTE_MATCHING_WORKSHEET,
+        name: 'Matching Worksheets',
+        title: 'Attribute Matching V1',
+        folder: 'attributeMatchingWorksheet',
+        enabled: true,
+        domain: 'concept-formation',
+        description: 'Single-select worksheet practice for visible attribute recognition.',
+        skills: [
+            'attribute-comparison',
+            'visual-attention'
+        ],
+        maxStage: 1,
+        maxLevel: 1,
+        maxDifficulty: 1,
+        supportsScaffolds: true,
+        supportsDifficulty: false,
+        dashboardViewType: DASHBOARD_VIEW_TYPES.TRIAL_BREAKDOWN,
+        version: '1.0.0'
+    },
+    {
         gameId: GAME_IDS.KUMON_QUIZ,
         id: GAME_IDS.KUMON_QUIZ,
         name: 'Kumon Quiz',

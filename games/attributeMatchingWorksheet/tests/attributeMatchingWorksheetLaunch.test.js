@@ -44,9 +44,18 @@ async function isServerReady() {
 async function testAttributeMatchingLearnerFlow() {
     const server = await ensureStaticServer();
     const browser = await chromium.launch({ headless: true });
-    const page = await browser.newPage({ viewport: { width: 900, height: 760 } });
+    const context = await browser.newContext({ viewport: { width: 900, height: 760 } });
 
     try {
+        await context.addInitScript(() => {
+            window.__attributeMatchingCompletionPayloads = [];
+            window.addEventListener('message', event => {
+                if (event.data?.type === 'GAME_OVER_SUBMIT_SCORE') {
+                    window.__attributeMatchingCompletionPayloads.push(event.data.payload);
+                }
+            });
+        });
+        const page = await context.newPage();
         await page.goto(ACTIVITY_URL);
         await page.getByTestId('attribute-matching-worksheet').waitFor();
 
@@ -84,6 +93,10 @@ async function testAttributeMatchingLearnerFlow() {
         assert(completionText.includes('10 Questions Answered'), 'Completion should show questions answered');
         assert(completionText.includes('10 Correct Answers'), 'Completion should show correct answers');
         assert(await page.getByTestId('attribute-matching-question').isVisible() === false, 'Completion should hide active question screen');
+
+        const completionPayloads = await page.evaluate(() => window.__attributeMatchingCompletionPayloads);
+        assert(completionPayloads.length === 1, 'Attribute Matching should submit one completion persistence payload');
+        assertAttributeMatchingCompletionPayload(completionPayloads[0]);
     } finally {
         await browser.close();
         if (server) {
@@ -92,6 +105,18 @@ async function testAttributeMatchingLearnerFlow() {
     }
 
     console.log('Attribute Matching learner flow launch test passed');
+}
+
+function assertAttributeMatchingCompletionPayload(payload) {
+    assert(payload.gameId === 'attributeMatchingWorksheet', 'Completion payload should use Matching Worksheets game id');
+    assert(payload.activityId === 'attribute-matching-worksheet-v1', 'Completion payload should preserve activity id');
+    assert(payload.activityName === 'Matching Worksheets', 'Completion payload should use dashboard activity name');
+    assert(payload.correctCount === 10, 'Completion payload should include correct answers');
+    assert(payload.totalQuestions === 10, 'Completion payload should include total questions');
+    assert(payload.accuracyPercent === 100, 'Completion payload should include accuracy');
+    assert(payload.levelDisplayLabel === 'Color / Attribute Matching V1', 'Completion payload should include dashboard level context');
+    assert(payload.completionStatus === 'completed', 'Completion payload should mark completed');
+    assert(payload.completed === true, 'Completion payload should mark completed true');
 }
 
 async function assertCenteredWorksheetStage(page) {

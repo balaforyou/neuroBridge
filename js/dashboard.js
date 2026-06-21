@@ -812,12 +812,12 @@ function formatSessionLevel(log) {
 }
 
 function formatSessionLevelContext(log) {
+    const levelDisplayLabel = String(log.levelDisplayLabel || '').trim();
+    if (levelDisplayLabel) return levelDisplayLabel;
+
     if (getDashboardViewType(log) === DASHBOARD_VIEW_TYPES.SUMMARY_WITH_CORRECTIONS) {
-        const levelDisplayLabel = String(log.levelDisplayLabel || '').trim();
         const levelLabel = String(log.levelLabel || '').trim();
         const skillLabel = String(log.skillLabel || '').trim();
-
-        if (levelDisplayLabel) return levelDisplayLabel;
 
         if (levelLabel && skillLabel) {
             return `${levelLabel} (${skillLabel})`;
