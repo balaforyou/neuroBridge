@@ -13,6 +13,12 @@ This document records learner-facing and implementation-facing changes for the M
 - Activity launcher integration
 - Completion screen integration
 
+### Changed
+
+- Centered Attribute Matching learner task layout.
+- Improved question card and answer choice alignment.
+- Reduced visual imbalance in the worksheet panel.
+
 ### Documentation
 
 - Created activity-specific documentation folder.

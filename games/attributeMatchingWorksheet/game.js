@@ -199,11 +199,11 @@ function mountAttributeMatchingWorksheet() {
     function renderActivity() {
         activityContent = document.createElement('div');
         activityContent.setAttribute('data-testid', 'attribute-matching-worksheet');
-        activityContent.className = 'flex h-full min-h-0 flex-col justify-center gap-3';
+        activityContent.className = 'flex h-full min-h-0 flex-col justify-center px-1 py-1 sm:px-2';
 
         questionContent = document.createElement('div');
         questionContent.setAttribute('data-testid', 'attribute-matching-question');
-        questionContent.className = 'flex h-full min-h-0 flex-col justify-center gap-3';
+        questionContent.className = 'flex h-full min-h-0 flex-col justify-center';
 
         completionPanel = document.createElement('div');
         completionPanel.setAttribute('data-testid', 'attribute-matching-completion');
@@ -227,11 +227,16 @@ function mountAttributeMatchingWorksheet() {
             return;
         }
 
+        const stage = document.createElement('div');
+        stage.setAttribute('data-testid', 'attribute-matching-stage');
+        stage.className = 'mx-auto flex w-full max-w-[920px] flex-col gap-3 sm:gap-4';
+
         const promptPanel = document.createElement('div');
+        promptPanel.setAttribute('data-testid', 'attribute-matching-prompt-card');
         const visualHintClass = state.visualHint
             ? 'border-amber-400 bg-amber-50 ring-4 ring-amber-200'
             : 'border-emerald-200 bg-emerald-50';
-        promptPanel.className = `rounded-2xl border-4 ${visualHintClass} p-4 text-center shadow-sm`;
+        promptPanel.className = `w-full rounded-2xl border-4 ${visualHintClass} px-4 py-4 text-center shadow-sm sm:px-6`;
         promptPanel.innerHTML = `
             <div data-testid="attribute-matching-prompt-image" class="text-6xl sm:text-7xl" aria-hidden="true">${question.image}</div>
             <div data-testid="attribute-matching-prompt-label" class="mt-2 text-2xl font-black text-slate-950">${question.prompt}</div>
@@ -239,7 +244,8 @@ function mountAttributeMatchingWorksheet() {
         `;
 
         const choices = document.createElement('div');
-        choices.className = 'grid grid-cols-1 gap-3 sm:grid-cols-3';
+        choices.setAttribute('data-testid', 'attribute-matching-choices');
+        choices.className = 'grid w-full grid-cols-1 gap-3 sm:grid-cols-3';
         question.options.forEach(option => {
             const isCorrectReveal = state.answerRevealed && option === question.correctAnswer;
             const button = document.createElement('button');
@@ -258,7 +264,8 @@ function mountAttributeMatchingWorksheet() {
         feedback.className = getFeedbackClass(state.feedbackType);
         feedback.textContent = state.feedbackMessage;
 
-        questionContent.append(promptPanel, choices, feedback);
+        stage.append(promptPanel, choices, feedback);
+        questionContent.append(stage);
     }
 
     function renderCompletion() {
@@ -335,7 +342,7 @@ function mountAttributeMatchingWorksheet() {
         }
     });
 
-    shell.classList.add('h-full');
+    shell.classList.add('attribute-matching-shell', 'h-full');
     root.innerHTML = '';
     root.appendChild(shell);
     updateHeader();

@@ -18,3 +18,29 @@ body {
 .attribute-choice:not(:disabled):active {
     transform: scale(0.98);
 }
+
+.attribute-matching-shell {
+    gap: 0.5rem;
+}
+
+.attribute-matching-shell .worksheet-shell__instruction {
+    padding-bottom: 0.625rem;
+    padding-top: 0.625rem;
+}
+
+.attribute-matching-shell .worksheet-shell__main {
+    gap: 0.5rem;
+}
+
+.attribute-matching-shell .worksheet-shell__activity {
+    display: flex;
+    min-height: 0;
+}
+
+.attribute-matching-shell .worksheet-shell__activity > [data-testid="attribute-matching-worksheet"] {
+    flex: 1;
+}
+
+.attribute-matching-shell .worksheet-shell__feedback {
+    min-height: 0;
+}

@@ -56,6 +56,7 @@ async function testAttributeMatchingLearnerFlow() {
         assert(await page.getByTestId('attribute-matching-prompt-label').innerText() === 'Red Apple', 'First prompt should render');
         assert(await page.getByTestId('attribute-matching-progress').innerText() === 'Question 1 of 10', 'Progress should show question count');
         assert(await page.locator('[data-answer]').count() === 3, 'Question should render three answer choices');
+        await assertCenteredWorksheetStage(page);
 
         await page.getByTestId('attribute-choice-blue').click();
         assert(await page.getByTestId('attribute-matching-feedback').innerText() === 'Let\'s look again.', 'First incorrect answer should show retry feedback');
@@ -95,6 +96,39 @@ async function testAttributeMatchingLearnerFlow() {
     }
 
     console.log('Attribute Matching learner flow launch test passed');
+}
+
+async function assertCenteredWorksheetStage(page) {
+    assert(await page.getByTestId('attribute-matching-stage').count() === 1, 'Worksheet stage should render once');
+
+    const layout = await page.evaluate(() => {
+        const activity = document.querySelector('[data-testid="worksheet-activity"]');
+        const stage = document.querySelector('[data-testid="attribute-matching-stage"]');
+        const promptCard = document.querySelector('[data-testid="attribute-matching-prompt-card"]');
+        const choices = document.querySelector('[data-testid="attribute-matching-choices"]');
+
+        const activityRect = activity.getBoundingClientRect();
+        const stageRect = stage.getBoundingClientRect();
+        const promptRect = promptCard.getBoundingClientRect();
+        const choicesRect = choices.getBoundingClientRect();
+
+        return {
+            activityCenter: activityRect.left + (activityRect.width / 2),
+            stageCenter: stageRect.left + (stageRect.width / 2),
+            stageWidth: stageRect.width,
+            promptInsideStage: promptCard.parentElement === stage,
+            choicesInsideStage: choices.parentElement === stage,
+            promptWidthMatchesStage: Math.abs(promptRect.width - stageRect.width) < 2,
+            choicesWidthMatchesStage: Math.abs(choicesRect.width - stageRect.width) < 2
+        };
+    });
+
+    assert(Math.abs(layout.stageCenter - layout.activityCenter) < 4, 'Worksheet stage should be centered in activity panel');
+    assert(layout.stageWidth <= 960, 'Worksheet stage should keep a constrained learner-task width');
+    assert(layout.promptInsideStage, 'Prompt card should render inside centered stage');
+    assert(layout.choicesInsideStage, 'Answer choices should render inside centered stage');
+    assert(layout.promptWidthMatchesStage, 'Prompt card should align to stage width');
+    assert(layout.choicesWidthMatchesStage, 'Answer choices should align to stage width');
 }
 
 async function answerQuestion(page, answer, expectedProgress) {
