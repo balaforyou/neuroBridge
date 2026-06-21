@@ -4,204 +4,159 @@ import {
 } from '../../js/worksheetShell.js';
 import {
     applyWorksheetHeaderState,
-    normalizeWorksheetLearnerName,
-    renderWorksheetCompletion
+    normalizeWorksheetLearnerName
 } from '../../js/worksheetTemplate.js';
 
 export const ATTRIBUTE_MATCHING_ACTIVITY_ID = 'attribute-matching-worksheet-v1';
-const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
+export const ATTRIBUTE_MATCHING_ACTIVITY_TITLE = 'Attribute Matching V1';
+export const ATTRIBUTE_MATCHING_FAMILY_TITLE = 'Matching Worksheets';
+export const ATTRIBUTE_GROUP_COLOR = 'color';
+export const DEFAULT_ATTRIBUTE_MATCHING_QUESTION_COUNT = 10;
 
-export const ATTRIBUTE_MATCHING_QUESTIONS = [
-    {
-        id: 'red-001',
-        source: {
-            id: 'apple',
-            label: 'Apple',
-            symbol: '\u{1F34E}'
-        },
-        attribute: 'red',
-        prompt: 'Find another red item.',
-        hints: [
-            'Look carefully.',
-            'Think about the color.',
-            'Find another red item.'
-        ],
-        choices: [
-            {
-                id: 'strawberry',
-                label: 'Strawberry',
-                symbol: '\u{1F353}',
-                correct: true
-            },
-            {
-                id: 'ball',
-                label: 'Ball',
-                symbol: '\u26BD',
-                correct: false
-            },
-            {
-                id: 'sun',
-                label: 'Sun',
-                symbol: '\u{1F31E}',
-                correct: false
-            }
-        ]
-    },
-    {
-        id: 'round-001',
-        source: {
-            id: 'ball',
-            label: 'Ball',
-            symbol: '\u26BD'
-        },
-        attribute: 'round',
-        prompt: 'Find another round item.',
-        hints: [
-            'Look carefully.',
-            'Think about the shape.',
-            'Find another round item.'
-        ],
-        choices: [
-            {
-                id: 'sun',
-                label: 'Sun',
-                symbol: '\u{1F31E}',
-                correct: true
-            },
-            {
-                id: 'book',
-                label: 'Book',
-                symbol: '\u{1F4DA}',
-                correct: false
-            },
-            {
-                id: 'pencil',
-                label: 'Pencil',
-                symbol: '\u270F\uFE0F',
-                correct: false
-            }
-        ]
-    },
-    {
-        id: 'big-001',
-        source: {
-            id: 'elephant',
-            label: 'Elephant',
-            symbol: '\u{1F418}'
-        },
-        attribute: 'big',
-        prompt: 'Find another big thing.',
-        hints: [
-            'Look carefully.',
-            'Think about the size.',
-            'Find another big thing.'
-        ],
-        choices: [
-            {
-                id: 'bus',
-                label: 'Bus',
-                symbol: '\u{1F68C}',
-                correct: true
-            },
-            {
-                id: 'ant',
-                label: 'Ant',
-                symbol: '\u{1F41C}',
-                correct: false
-            },
-            {
-                id: 'grapes',
-                label: 'Grapes',
-                symbol: '\u{1F347}',
-                correct: false
-            }
-        ]
-    }
+const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
+const CORRECT_ADVANCE_DELAY_MS = 550;
+
+export const COLOR_ATTRIBUTE_QUESTIONS = [
+    createColorQuestion('color-red-apple', 'Red Apple', '\u{1F34E}', 'Red', ['Red', 'Blue', 'Green']),
+    createColorQuestion('color-blue-ball', 'Blue Ball', '\u{1F535}', 'Blue', ['Blue', 'Red', 'Yellow']),
+    createColorQuestion('color-green-leaf', 'Green Leaf', '\u{1F343}', 'Green', ['Green', 'Purple', 'Orange']),
+    createColorQuestion('color-yellow-banana', 'Yellow Banana', '\u{1F34C}', 'Yellow', ['Yellow', 'Black', 'Pink']),
+    createColorQuestion('color-orange-carrot', 'Orange Carrot', '\u{1F955}', 'Orange', ['Orange', 'White', 'Brown']),
+    createColorQuestion('color-purple-grapes', 'Purple Grapes', '\u{1F347}', 'Purple', ['Purple', 'Green', 'Red']),
+    createColorQuestion('color-brown-coconut', 'Brown Coconut', '\u{1F965}', 'Brown', ['Brown', 'Blue', 'Yellow']),
+    createColorQuestion('color-white-egg', 'White Egg', '\u{1F95A}', 'White', ['White', 'Orange', 'Black']),
+    createColorQuestion('color-black-crow', 'Black Crow', '\u{1F426}', 'Black', ['Black', 'Pink', 'Green']),
+    createColorQuestion('color-pink-flower', 'Pink Flower', '\u{1F338}', 'Pink', ['Pink', 'Brown', 'Blue'])
 ];
 
-export function createAttributeQuestion(index = 0, questions = ATTRIBUTE_MATCHING_QUESTIONS) {
-    if (!Array.isArray(questions) || questions.length === 0) {
-        throw new Error('createAttributeQuestion requires at least one question');
-    }
+export function createColorAttributeQuestions(config = {}) {
+    const random = typeof config.random === 'function' ? config.random : Math.random;
+    const questionCount = normalizeQuestionCount(config.questionCount, COLOR_ATTRIBUTE_QUESTIONS.length);
 
-    const question = questions[index % questions.length];
-    return cloneQuestion(question);
-}
-
-export function isCorrectAttributeChoice(question, choiceId) {
-    return Boolean(question?.choices?.find(choice => choice.id === choiceId)?.correct);
-}
-
-export function getAttributeHints(question) {
-    return (question?.hints || []).slice();
+    return COLOR_ATTRIBUTE_QUESTIONS
+        .slice(0, questionCount)
+        .map(question => ({
+            ...question,
+            options: shuffleArray(question.options, random)
+        }));
 }
 
 export function createAttributeMatchingWorksheetGame(config = {}) {
-    const questions = config.questions || ATTRIBUTE_MATCHING_QUESTIONS;
+    const questions = Array.isArray(config.questions) && config.questions.length
+        ? config.questions.map(cloneQuestion)
+        : createColorAttributeQuestions(config);
     const state = {
-        questionIndex: config.questionIndex || 0,
-        currentQuestion: createAttributeQuestion(config.questionIndex || 0, questions),
-        selectedChoiceId: null,
-        attempts: 0,
+        questions,
+        currentQuestionIndex: 0,
+        attemptsForCurrentQuestion: 0,
+        incorrectAttempts: 0,
+        correctAnswers: 0,
         completed: false,
-        lastResult: null,
-        roundNumber: 1
+        pendingAdvance: false,
+        feedbackMessage: '',
+        feedbackType: null,
+        visualHint: false,
+        answerRevealed: false,
+        learnerName: normalizeWorksheetLearnerName(config.learnerName || 'Adarsh')
     };
 
     function getState() {
-        return {
-            ...state,
-            currentQuestion: cloneQuestion(state.currentQuestion)
-        };
+        return cloneState(state);
     }
 
-    function selectChoice(choiceId) {
+    function getCurrentQuestion() {
+        return cloneQuestion(state.questions[state.currentQuestionIndex]);
+    }
+
+    function selectAnswer(answer) {
         if (state.completed) {
             return { result: 'ignored', state: getState() };
         }
 
-        const exists = state.currentQuestion.choices.some(choice => choice.id === choiceId);
-        if (!exists) {
+        if (state.pendingAdvance) {
+            return { result: 'ignored', reason: 'pending-advance', state: getState() };
+        }
+
+        const question = state.questions[state.currentQuestionIndex];
+        if (!question || !question.options.includes(answer)) {
+            return { result: 'ignored', reason: 'unknown-answer', state: getState() };
+        }
+
+        state.attemptsForCurrentQuestion += 1;
+
+        if (answer === question.correctAnswer) {
+            state.correctAnswers += 1;
+            state.pendingAdvance = true;
+            state.feedbackType = 'success';
+            state.feedbackMessage = `Great work, ${state.learnerName}!`;
+            state.visualHint = false;
+            state.answerRevealed = false;
+            return { result: 'correct', state: getState() };
+        }
+
+        state.incorrectAttempts += 1;
+        state.feedbackType = 'retry';
+
+        if (state.attemptsForCurrentQuestion === 1) {
+            state.feedbackMessage = 'Let\'s look again.';
+        } else if (state.attemptsForCurrentQuestion === 2) {
+            state.feedbackMessage = 'What color do you see?';
+        } else if (state.attemptsForCurrentQuestion === 3) {
+            state.visualHint = true;
+            state.feedbackMessage = 'Look at the color around the picture.';
+        } else {
+            state.answerRevealed = true;
+            state.feedbackMessage = `The answer is ${question.correctAnswer}.`;
+        }
+
+        return { result: 'incorrect', state: getState() };
+    }
+
+    function advanceAfterFeedback() {
+        if (!state.pendingAdvance) {
             return { result: 'ignored', state: getState() };
         }
 
-        state.selectedChoiceId = choiceId;
-        state.attempts += 1;
-        state.lastResult = isCorrectAttributeChoice(state.currentQuestion, choiceId)
-            ? 'success'
-            : 'mistake';
-        state.completed = state.lastResult === 'success';
+        state.pendingAdvance = false;
+        state.feedbackMessage = '';
+        state.feedbackType = null;
+        state.visualHint = false;
+        state.answerRevealed = false;
+        state.attemptsForCurrentQuestion = 0;
 
-        return {
-            result: state.lastResult,
-            state: getState()
-        };
+        if (state.currentQuestionIndex >= state.questions.length - 1) {
+            state.completed = true;
+            return { result: 'complete', state: getState() };
+        }
+
+        state.currentQuestionIndex += 1;
+        return { result: 'advanced', state: getState() };
     }
 
-    function nextRound() {
-        state.questionIndex = (state.questionIndex + 1) % questions.length;
-        state.currentQuestion = createAttributeQuestion(state.questionIndex, questions);
-        state.selectedChoiceId = null;
-        state.attempts = 0;
-        state.completed = false;
-        state.lastResult = null;
-        state.roundNumber += 1;
-        return getState();
+    function getCompletionSummary() {
+        return createAttributeMatchingCompletionSummary(getState());
     }
 
     return {
+        advanceAfterFeedback,
+        getCompletionSummary,
+        getCurrentQuestion,
         getState,
-        nextRound,
-        selectChoice
+        selectAnswer
     };
 }
 
-function cloneQuestion(question) {
+export function createAttributeMatchingCompletionSummary(state = {}) {
+    const totalQuestions = Array.isArray(state.questions)
+        ? state.questions.length
+        : DEFAULT_ATTRIBUTE_MATCHING_QUESTION_COUNT;
+    const correctAnswers = Number(state.correctAnswers || 0);
+    const accuracyPercent = totalQuestions ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+
     return {
-        ...question,
-        source: { ...question.source },
-        hints: (question.hints || []).slice(),
-        choices: question.choices.map(choice => ({ ...choice }))
+        questionsAnswered: totalQuestions,
+        correctAnswers,
+        accuracyPercent
     };
 }
 
@@ -209,11 +164,13 @@ function mountAttributeMatchingWorksheet() {
     const root = document.getElementById('attribute-matching-root');
     if (!root) return;
 
-    const game = createAttributeMatchingWorksheetGame();
     const pageState = {
-        learnerName: 'Learner',
-        stars: 0
+        learnerName: 'Adarsh',
+        advanceTimer: null
     };
+    let game = createAttributeMatchingWorksheetGame({
+        learnerName: pageState.learnerName
+    });
     let shell = null;
     let activityContent = null;
     let questionContent = null;
@@ -222,8 +179,13 @@ function mountAttributeMatchingWorksheet() {
     window.addEventListener('message', (event) => {
         if (event.data?.type !== 'INITIALIZE_GAME_RULES') return;
 
-        pageState.learnerName = normalizeWorksheetLearnerName(event.data.learnerName);
+        clearPendingAdvanceTimer();
+        pageState.learnerName = normalizeWorksheetLearnerName(event.data.learnerName || 'Adarsh');
+        game = createAttributeMatchingWorksheetGame({
+            learnerName: pageState.learnerName
+        });
         updateHeader();
+        renderQuestion();
         renderCompletion();
     });
 
@@ -238,12 +200,15 @@ function mountAttributeMatchingWorksheet() {
         activityContent = document.createElement('div');
         activityContent.setAttribute('data-testid', 'attribute-matching-worksheet');
         activityContent.className = 'flex h-full min-h-0 flex-col justify-center gap-3';
+
         questionContent = document.createElement('div');
         questionContent.setAttribute('data-testid', 'attribute-matching-question');
         questionContent.className = 'flex h-full min-h-0 flex-col justify-center gap-3';
+
         completionPanel = document.createElement('div');
         completionPanel.setAttribute('data-testid', 'attribute-matching-completion');
-        completionPanel.className = 'hidden rounded-2xl text-center text-slate-950';
+        completionPanel.className = 'hidden text-center text-slate-950';
+
         activityContent.append(questionContent, completionPanel);
         renderQuestion();
         renderCompletion();
@@ -258,35 +223,42 @@ function mountAttributeMatchingWorksheet() {
         questionContent.classList.toggle('hidden', state.completed);
         questionContent.innerHTML = '';
 
-        const sourcePanel = document.createElement('div');
-        sourcePanel.className = 'grid grid-cols-1 gap-3 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-center';
-        sourcePanel.innerHTML = `
-            <div class="rounded-2xl border-4 border-emerald-200 bg-emerald-50 p-3 text-center">
-                <span class="block text-5xl sm:text-6xl" aria-hidden="true">${question.source.symbol}</span>
-                <span class="mt-1 block text-base font-black">${question.source.label}</span>
-            </div>
-            <p data-testid="attribute-prompt" class="rounded-2xl border-2 border-sky-200 bg-sky-50 px-4 py-3 text-xl sm:text-2xl font-black leading-tight text-slate-950">
-                ${question.prompt}
-            </p>
+        if (state.completed) {
+            return;
+        }
+
+        const promptPanel = document.createElement('div');
+        const visualHintClass = state.visualHint
+            ? 'border-amber-400 bg-amber-50 ring-4 ring-amber-200'
+            : 'border-emerald-200 bg-emerald-50';
+        promptPanel.className = `rounded-2xl border-4 ${visualHintClass} p-4 text-center shadow-sm`;
+        promptPanel.innerHTML = `
+            <div data-testid="attribute-matching-prompt-image" class="text-6xl sm:text-7xl" aria-hidden="true">${question.image}</div>
+            <div data-testid="attribute-matching-prompt-label" class="mt-2 text-2xl font-black text-slate-950">${question.prompt}</div>
+            <div data-testid="attribute-matching-progress" class="mt-2 text-sm font-black text-emerald-800">Question ${state.currentQuestionIndex + 1} of ${state.questions.length}</div>
         `;
 
         const choices = document.createElement('div');
-        choices.className = 'grid grid-cols-3 gap-3';
-        question.choices.forEach(choice => {
-            const isSelected = state.selectedChoiceId === choice.id;
+        choices.className = 'grid grid-cols-1 gap-3 sm:grid-cols-3';
+        question.options.forEach(option => {
+            const isCorrectReveal = state.answerRevealed && option === question.correctAnswer;
             const button = document.createElement('button');
             button.type = 'button';
-            button.dataset.testid = `attribute-choice-${choice.id}`;
-            button.className = `attribute-choice min-h-[112px] rounded-2xl border-4 ${isSelected ? 'border-sky-500 bg-sky-50 ring-4 ring-sky-200' : 'border-sky-200 bg-white'} p-2 text-center shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-300`;
-            button.innerHTML = `
-                <span class="block text-4xl sm:text-5xl" aria-hidden="true">${choice.symbol}</span>
-                <span class="mt-2 block text-sm sm:text-base font-black">${choice.label}</span>
-            `;
-            button.addEventListener('click', () => handleChoice(choice.id));
+            button.dataset.testid = `attribute-choice-${toTestId(option)}`;
+            button.dataset.answer = option;
+            button.disabled = state.pendingAdvance;
+            button.className = `min-h-[88px] rounded-2xl border-4 ${isCorrectReveal ? 'border-emerald-500 bg-emerald-50 ring-4 ring-emerald-200' : 'border-sky-200 bg-white'} px-4 py-3 text-2xl font-black text-slate-950 shadow-sm transition focus:outline-none focus:ring-4 focus:ring-emerald-300`;
+            button.textContent = option;
+            button.addEventListener('click', () => handleAnswer(option));
             choices.appendChild(button);
         });
 
-        questionContent.append(sourcePanel, choices);
+        const feedback = document.createElement('div');
+        feedback.setAttribute('data-testid', 'attribute-matching-feedback');
+        feedback.className = getFeedbackClass(state.feedbackType);
+        feedback.textContent = state.feedbackMessage;
+
+        questionContent.append(promptPanel, choices, feedback);
     }
 
     function renderCompletion() {
@@ -294,66 +266,64 @@ function mountAttributeMatchingWorksheet() {
 
         const state = game.getState();
         if (!state.completed) {
-            completionPanel.className = 'hidden rounded-2xl text-center text-slate-950';
+            completionPanel.className = 'hidden text-center text-slate-950';
             completionPanel.innerHTML = '';
             return;
         }
 
-        completionPanel.className = 'rounded-2xl text-center text-slate-950';
-        completionPanel.innerHTML = renderWorksheetCompletion({
-            learnerName: pageState.learnerName,
-            message: 'You found the matching attribute.',
-            actionTestId: 'attribute-matching-next-round-button'
-        });
-        completionPanel.querySelector('[data-testid="attribute-matching-next-round-button"]').addEventListener('click', handleNextRound);
+        const summary = game.getCompletionSummary();
+        completionPanel.className = 'flex min-h-0 flex-1 flex-col items-center justify-center gap-4 rounded-2xl border-4 border-emerald-300 bg-emerald-50 px-4 py-5 text-center text-slate-950';
+        completionPanel.innerHTML = `
+            <p class="text-3xl font-black text-emerald-900 sm:text-4xl">Great work, ${pageState.learnerName}!</p>
+            <p data-testid="attribute-matching-completion-accuracy" class="text-4xl font-black text-emerald-950 sm:text-5xl">${summary.accuracyPercent}% Accuracy</p>
+            <p data-testid="attribute-matching-completion-answered" class="text-2xl font-black text-slate-900">${summary.questionsAnswered} Questions Answered</p>
+            <p data-testid="attribute-matching-completion-correct" class="text-2xl font-black text-emerald-900">${summary.correctAnswers} Correct Answers</p>
+        `;
     }
 
-    function handleChoice(choiceId) {
-        const { result } = game.selectChoice(choiceId);
+    function handleAnswer(answer) {
+        const outcome = game.selectAnswer(answer);
         renderQuestion();
-        renderCompletion();
 
-        if (result === 'success') {
-            pageState.stars += 1;
-            updateHeader();
-            shell.clearFeedback();
-            return;
-        }
-
-        if (result === 'mistake') {
-            shell.showFeedback('mistake');
+        if (outcome.result === 'correct') {
+            clearPendingAdvanceTimer();
+            pageState.advanceTimer = setTimeout(() => {
+                game.advanceAfterFeedback();
+                pageState.advanceTimer = null;
+                updateHeader();
+                renderQuestion();
+                renderCompletion();
+            }, CORRECT_ADVANCE_DELAY_MS);
         }
     }
 
-    function handleNextRound() {
-        game.nextRound();
-        shell.clearFeedback();
-        updateHeader();
-        renderQuestion();
-        renderCompletion();
+    function clearPendingAdvanceTimer() {
+        if (!pageState.advanceTimer) return;
+
+        clearTimeout(pageState.advanceTimer);
+        pageState.advanceTimer = null;
     }
 
     function updateHeader() {
+        const state = game.getState();
         applyWorksheetHeaderState({
-            roundNumber: game.getState().roundNumber,
-            stars: pageState.stars
+            roundNumber: Math.min(state.currentQuestionIndex + 1, state.questions.length),
+            stars: state.correctAnswers
         });
     }
 
-    const initialQuestion = game.getState().currentQuestion;
     shell = createWorksheetShell({
         templateType: WORKSHEET_TEMPLATE_TYPES.MATCHING,
-        title: 'Find the same attribute',
-        instruction: 'Find another item with the same attribute.',
+        title: ATTRIBUTE_MATCHING_ACTIVITY_TITLE,
+        instruction: 'Look at the picture. Choose its color.',
         activity: {
             render: renderActivity
         },
         help: {
-            enabled: true,
-            hints: getAttributeHints(initialQuestion)
+            enabled: false
         },
         feedback: {
-            enabled: true
+            enabled: false
         },
         celebration: {
             enabled: false
@@ -369,6 +339,73 @@ function mountAttributeMatchingWorksheet() {
     root.innerHTML = '';
     root.appendChild(shell);
     updateHeader();
+}
+
+function createColorQuestion(id, prompt, image, correctAnswer, options) {
+    return {
+        id,
+        prompt,
+        image,
+        attributeType: ATTRIBUTE_GROUP_COLOR,
+        options,
+        correctAnswer
+    };
+}
+
+function cloneQuestion(question) {
+    return {
+        ...question,
+        options: question.options.slice()
+    };
+}
+
+function cloneState(state) {
+    return {
+        ...state,
+        questions: state.questions.map(cloneQuestion),
+        currentQuestion: cloneQuestion(state.questions[state.currentQuestionIndex])
+    };
+}
+
+function shuffleArray(items, random) {
+    const shuffled = items.slice();
+
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(random() * (index + 1));
+        [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+    }
+
+    return shuffled;
+}
+
+function normalizeQuestionCount(questionCount, max) {
+    const count = Number(questionCount || max);
+    if (!Number.isFinite(count) || count <= 0) {
+        return max;
+    }
+
+    return Math.min(max, Math.round(count));
+}
+
+function getFeedbackClass(feedbackType) {
+    const base = 'min-h-[36px] rounded-xl px-4 py-2 text-center text-lg font-black';
+    if (feedbackType === 'success') {
+        return `${base} bg-emerald-50 text-emerald-900`;
+    }
+
+    if (feedbackType === 'retry') {
+        return `${base} bg-amber-50 text-amber-900`;
+    }
+
+    return `${base} text-slate-700`;
+}
+
+function toTestId(value) {
+    return String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
 }
 
 if (typeof document !== 'undefined') {

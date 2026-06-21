@@ -1,9 +1,9 @@
 import {
-    ATTRIBUTE_MATCHING_QUESTIONS,
+    ATTRIBUTE_GROUP_COLOR,
+    COLOR_ATTRIBUTE_QUESTIONS,
+    createAttributeMatchingCompletionSummary,
     createAttributeMatchingWorksheetGame,
-    createAttributeQuestion,
-    getAttributeHints,
-    isCorrectAttributeChoice
+    createColorAttributeQuestions
 } from '../game.js';
 
 function assert(condition, message) {
@@ -12,80 +12,128 @@ function assert(condition, message) {
     }
 }
 
-function testQuestionCreation() {
-    const question = createAttributeQuestion(0);
-
-    assert(question.id === 'red-001', 'First deterministic question should be red-001');
-    assert(question.source.label === 'Apple', 'Question should include source item');
-    assert(question.attribute === 'red', 'Question should include target attribute');
-    assert(question.prompt === 'Find another red item.', 'Question should include attribute prompt');
-    assert(question.choices.length === 3, 'Question should include three choices');
-    console.log('Attribute question creation test passed');
+function createNoShuffleRandom() {
+    return () => 0.99;
 }
 
-function testCorrectAnswerDetection() {
-    const question = createAttributeQuestion(0);
-
-    assert(isCorrectAttributeChoice(question, 'strawberry') === true, 'Correct choice should be detected');
-    assert(isCorrectAttributeChoice(question, 'ball') === false, 'Incorrect choice should be false');
-    assert(isCorrectAttributeChoice(question, 'missing') === false, 'Missing choice should be false');
-    console.log('Attribute answer detection test passed');
+function testColorDatasetLoads() {
+    assert(COLOR_ATTRIBUTE_QUESTIONS.length === 10, 'Color pack should include ten questions');
+    assert(COLOR_ATTRIBUTE_QUESTIONS[0].prompt === 'Red Apple', 'First color question should be Red Apple');
+    assert(COLOR_ATTRIBUTE_QUESTIONS[0].image, 'Color question should include prompt image');
+    assert(COLOR_ATTRIBUTE_QUESTIONS.every(question => question.attributeType === ATTRIBUTE_GROUP_COLOR), 'Color pack should only include color questions');
+    assert(COLOR_ATTRIBUTE_QUESTIONS.every(question => question.options.length === 3), 'Each color question should include three options');
+    console.log('Attribute Matching color dataset load test passed');
 }
 
-function testDeterministicDataset() {
-    assert(ATTRIBUTE_MATCHING_QUESTIONS.length === 3, 'V1 should include three deterministic questions');
-    assert(ATTRIBUTE_MATCHING_QUESTIONS[0].choices.map(choice => choice.id).join(',') === 'strawberry,ball,sun', 'Color choices should keep stable order');
-    assert(ATTRIBUTE_MATCHING_QUESTIONS[1].choices.map(choice => choice.id).join(',') === 'sun,book,pencil', 'Shape choices should keep stable order');
-    assert(ATTRIBUTE_MATCHING_QUESTIONS[2].choices.map(choice => choice.id).join(',') === 'bus,ant,grapes', 'Size choices should keep stable order');
-    console.log('Deterministic dataset test passed');
+function testQuestionCreationRandomizesOptions() {
+    const questions = createColorAttributeQuestions({
+        questionCount: 1,
+        random: () => 0
+    });
+
+    assert(questions.length === 1, 'Question count should be configurable');
+    assert(questions[0].id === 'color-red-apple', 'Color question should preserve id');
+    assert(questions[0].correctAnswer === 'Red', 'Color question should preserve correct answer');
+    assert(questions[0].options.length === 3, 'Color question should keep three answer choices');
+    assert(questions[0].options.join(',') !== COLOR_ATTRIBUTE_QUESTIONS[0].options.join(','), 'Color options should support randomized order');
+    console.log('Attribute Matching option randomization test passed');
 }
 
-function testSingleSelectGameFlow() {
-    const game = createAttributeMatchingWorksheetGame();
-
-    assert(game.selectChoice('ball').result === 'mistake', 'Incorrect single-select should produce mistake');
-    assert(game.selectChoice('strawberry').result === 'success', 'Correct single-select should produce success');
-
+function testQuestionRendersInState() {
+    const game = createAttributeMatchingWorksheetGame({
+        questionCount: 1,
+        random: createNoShuffleRandom()
+    });
     const state = game.getState();
-    assert(state.selectedChoiceId === 'strawberry', 'Selected choice should be tracked');
-    assert(state.completed === true, 'Correct choice should complete the current round');
-    assert(state.attempts === 2, 'Each valid tap should count as one attempt');
-    assert(game.selectChoice('ball').result === 'ignored', 'Completed round should ignore further choices');
-    console.log('Single-select game flow test passed');
+
+    assert(state.questions.length === 1, 'Game should load requested questions');
+    assert(state.currentQuestion.prompt === 'Red Apple', 'State should expose current prompt');
+    assert(state.currentQuestion.options.length === 3, 'State should expose three choices');
+    assert(state.currentQuestion.correctAnswer === 'Red', 'State should expose correct answer');
+    console.log('Attribute Matching state render contract test passed');
 }
 
-function testNextRoundProgression() {
-    const game = createAttributeMatchingWorksheetGame();
+function testCorrectAnswerAdvancesAfterFeedback() {
+    const game = createAttributeMatchingWorksheetGame({
+        questionCount: 2,
+        random: createNoShuffleRandom(),
+        learnerName: 'Adarsh'
+    });
 
-    game.selectChoice('strawberry');
-    const nextState = game.nextRound();
+    const outcome = game.selectAnswer('Red');
+    assert(outcome.result === 'correct', 'Correct answer should be accepted');
+    assert(outcome.state.feedbackMessage === 'Great work, Adarsh!', 'Correct answer should show success feedback');
+    assert(outcome.state.pendingAdvance === true, 'Correct answer should wait for feedback before advancing');
 
-    assert(nextState.roundNumber === 2, 'Next round should increment round number');
-    assert(nextState.currentQuestion.id === 'round-001', 'Next round should advance to next deterministic question');
-    assert(nextState.selectedChoiceId === null, 'Next round should clear selected choice');
-    assert(nextState.completed === false, 'Next round should clear completion');
-    assert(nextState.attempts === 0, 'Next round should reset attempts');
-    console.log('Next round progression test passed');
+    const advance = game.advanceAfterFeedback();
+    assert(advance.result === 'advanced', 'Advance should move to next question');
+    assert(advance.state.currentQuestionIndex === 1, 'Next question index should be 1');
+    assert(advance.state.correctAnswers === 1, 'Correct answer count should increment');
+    console.log('Attribute Matching correct answer advance test passed');
 }
 
-function testHintProgressionData() {
-    const hints = getAttributeHints(createAttributeQuestion(0));
+function testIncorrectFeedbackProgression() {
+    const game = createAttributeMatchingWorksheetGame({
+        questionCount: 1,
+        random: createNoShuffleRandom()
+    });
 
-    assert(hints.length === 3, 'Question should provide three progressive hints');
-    assert(hints[0] === 'Look carefully.', 'First hint should be general');
-    assert(hints[1] === 'Think about the color.', 'Second hint should focus the attribute domain');
-    assert(hints[2] === 'Find another red item.', 'Third hint should restate the target attribute');
-    console.log('Hint progression data test passed');
+    const first = game.selectAnswer('Blue');
+    assert(first.result === 'incorrect', 'Incorrect answer should return incorrect');
+    assert(first.state.feedbackMessage === 'Let\'s look again.', 'First incorrect attempt should show retry feedback');
+    assert(first.state.visualHint === false, 'First incorrect attempt should not show visual hint');
+
+    const second = game.selectAnswer('Blue');
+    assert(second.state.feedbackMessage === 'What color do you see?', 'Second incorrect attempt should show contextual hint');
+
+    const third = game.selectAnswer('Blue');
+    assert(third.state.visualHint === true, 'Third incorrect attempt should reveal visual hint');
+
+    const fourth = game.selectAnswer('Blue');
+    assert(fourth.state.answerRevealed === true, 'Fourth incorrect attempt should reveal answer');
+    assert(fourth.state.feedbackMessage === 'The answer is Red.', 'Fourth incorrect attempt should name correct answer');
+    console.log('Attribute Matching incorrect feedback progression test passed');
+}
+
+function testCompletionAndAccuracyCalculation() {
+    const game = createAttributeMatchingWorksheetGame({
+        questionCount: 2,
+        random: createNoShuffleRandom()
+    });
+
+    game.selectAnswer('Red');
+    assert(game.advanceAfterFeedback().result === 'advanced', 'First correct answer should advance');
+    game.selectAnswer('Blue');
+    const completion = game.advanceAfterFeedback();
+    const summary = game.getCompletionSummary();
+
+    assert(completion.result === 'complete', 'Final correct answer should complete session');
+    assert(completion.state.completed === true, 'Completed state should be true');
+    assert(summary.questionsAnswered === 2, 'Summary should include questions answered');
+    assert(summary.correctAnswers === 2, 'Summary should include correct answers');
+    assert(summary.accuracyPercent === 100, 'Summary should calculate accuracy percentage');
+    console.log('Attribute Matching completion summary test passed');
+}
+
+function testPartialAccuracyCalculation() {
+    const summary = createAttributeMatchingCompletionSummary({
+        questions: [{}, {}, {}],
+        correctAnswers: 2
+    });
+
+    assert(summary.accuracyPercent === 67, 'Partial accuracy should round to nearest percent');
+    console.log('Attribute Matching partial accuracy test passed');
 }
 
 function runAllTests() {
     console.log('=== Attribute Matching Worksheet Unit Tests ===');
-    testQuestionCreation();
-    testCorrectAnswerDetection();
-    testDeterministicDataset();
-    testSingleSelectGameFlow();
-    testNextRoundProgression();
-    testHintProgressionData();
+    testColorDatasetLoads();
+    testQuestionCreationRandomizesOptions();
+    testQuestionRendersInState();
+    testCorrectAnswerAdvancesAfterFeedback();
+    testIncorrectFeedbackProgression();
+    testCompletionAndAccuracyCalculation();
+    testPartialAccuracyCalculation();
     console.log('=== All Attribute Matching Worksheet Unit Tests Passed ===');
 }
 

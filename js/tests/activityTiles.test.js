@@ -72,6 +72,26 @@ function testSchulteLandingPageTileTerminology() {
     console.log('Schulte landing page tile terminology test passed');
 }
 
+function testMatchingWorksheetsTileLaunchMarkup() {
+    const recommendedGroup = ACTIVITY_TILE_GROUPS.find(group => group.category === 'Recommended');
+    const tile = getTile('attributeMatchingWorksheet');
+    const markup = renderActivityTile(tile);
+
+    assert(recommendedGroup, 'Recommended activity group should exist');
+    assert(tile, 'Matching Worksheets tile should exist');
+    assert(recommendedGroup.tiles.includes(tile), 'Matching Worksheets tile should appear in Recommended group');
+    assert(tile.status === 'available', 'Matching Worksheets tile should be available');
+    assert(tile.learnerName === 'Matching Worksheets', 'Matching Worksheets tile should show activity family name');
+    assert(tile.subtitle === 'Attribute Matching V1', 'Matching Worksheets tile should show Attribute Matching V1 subtitle');
+    assert(getActivityTileTestId(tile) === 'activity-tile-attribute-matching', 'Matching Worksheets tile should preserve stable test id');
+    assert(markup.includes('class="btn-launch-game'), 'Available Matching Worksheets tile should render as launch button');
+    assert(markup.includes('data-game="attributeMatchingWorksheet"'), 'Matching Worksheets tile should launch attribute matching route');
+    assert(markup.includes('Matching Worksheets'), 'Matching Worksheets tile should show learner-facing name');
+    assert(markup.includes('Attribute Matching V1'), 'Matching Worksheets tile should show launched activity subtitle');
+    assert(markup.includes('aria-label="Start Matching Worksheets: Attribute Matching V1"'), 'Matching Worksheets tile accessible label should include activity name');
+    console.log('Matching Worksheets tile launch markup test passed');
+}
+
 function createFakeElement() {
     return {
         innerHTML: '',
@@ -84,6 +104,7 @@ function runAllTests() {
     testSchulteTileIsAvailableInAttentionGroup();
     testSchulteTileLaunchMarkup();
     testSchulteLandingPageTileTerminology();
+    testMatchingWorksheetsTileLaunchMarkup();
     console.log('=== All Activity Tile Tests Passed ===');
 }
 

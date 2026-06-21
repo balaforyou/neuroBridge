@@ -6,6 +6,13 @@ This document records learner-facing and implementation-facing changes for the M
 
 ## Unreleased
 
+### Added
+
+- Worksheet Engine Foundation
+- Color Attribute Pack
+- Activity launcher integration
+- Completion screen integration
+
 ### Documentation
 
 - Created activity-specific documentation folder.
