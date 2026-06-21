@@ -41,6 +41,30 @@ Notes:
 - Completion screens should remain visible until Play Again, Return Home, Continue, or an applicable parent/dashboard action.
 - Do not redesign activity result screens in this audit unless promoted into specific implementation packets.
 
+### NB-QA-001 Playwright End-to-End Test Foundation
+
+Priority: P2
+Status: Backlog
+Goal:
+Create a Playwright-based E2E automation foundation for NeuroBridge learner journeys.
+Initial coverage:
+- Login / learner landing page
+- Activity tile launch
+- Schulte Table golden path
+- Ascending phase
+- Descending phase
+- Listen & Find phase
+- Completion summary persistence
+- Play Again action
+- Return Home action
+Why:
+- Manual testing caught important learner-flow issues in Schulte, including mode exposure gaps, prompt synchronization mismatch, Listen & Find early completion, and completion summary disappearing.
+- Playwright should automate these checks for future regression protection.
+Out of scope:
+- Implementing Playwright tests now
+- Changing existing test runners
+- Modifying app code
+
 ### SCH-004.2.1 Practice Lab Mode Selector
 
 Priority: Unassigned  
