@@ -1,5 +1,6 @@
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
+import { COLOR_ATTRIBUTE_QUESTIONS } from '../game.js';
 
 const ACTIVITY_URL = 'http://127.0.0.1:5501/games/attributeMatchingWorksheet/index.html';
 
@@ -70,16 +71,11 @@ async function testAttributeMatchingLearnerFlow() {
         await page.getByTestId('attribute-choice-blue').click();
         assert(await page.getByTestId('attribute-matching-feedback').innerText() === 'The answer is Red.', 'Fourth incorrect answer should reveal correct answer');
 
-        await answerQuestion(page, 'Red', 'Question 2 of 10');
-        await answerQuestion(page, 'Blue', 'Question 3 of 10');
-        await answerQuestion(page, 'Green', 'Question 4 of 10');
-        await answerQuestion(page, 'Yellow', 'Question 5 of 10');
-        await answerQuestion(page, 'Orange', 'Question 6 of 10');
-        await answerQuestion(page, 'Purple', 'Question 7 of 10');
-        await answerQuestion(page, 'Brown', 'Question 8 of 10');
-        await answerQuestion(page, 'White', 'Question 9 of 10');
-        await answerQuestion(page, 'Black', 'Question 10 of 10');
-        await answerFinalQuestion(page, 'Pink');
+        const answers = COLOR_ATTRIBUTE_QUESTIONS.map(question => question.correctAnswer);
+        for (let index = 0; index < answers.length - 1; index += 1) {
+            await answerQuestion(page, answers[index], `Question ${index + 2} of ${answers.length}`);
+        }
+        await answerFinalQuestion(page, answers[answers.length - 1]);
 
         await page.getByTestId('attribute-matching-completion').waitFor();
         const completionText = await page.getByTestId('attribute-matching-completion').innerText();

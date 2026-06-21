@@ -19,6 +19,10 @@ This document records learner-facing and implementation-facing changes for the M
 - Improved question card and answer choice alignment.
 - Reduced visual imbalance in the worksheet panel.
 
+### Fixed
+
+- Fixed Color Attribute Pack entries so displayed images match expected color answers.
+
 ### Documentation
 
 - Created activity-specific documentation folder.

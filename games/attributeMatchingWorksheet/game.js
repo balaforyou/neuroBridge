@@ -24,8 +24,8 @@ export const COLOR_ATTRIBUTE_QUESTIONS = [
     createColorQuestion('color-orange-carrot', 'Orange Carrot', '\u{1F955}', 'Orange', ['Orange', 'White', 'Brown']),
     createColorQuestion('color-purple-grapes', 'Purple Grapes', '\u{1F347}', 'Purple', ['Purple', 'Green', 'Red']),
     createColorQuestion('color-brown-coconut', 'Brown Coconut', '\u{1F965}', 'Brown', ['Brown', 'Blue', 'Yellow']),
-    createColorQuestion('color-white-egg', 'White Egg', '\u{1F95A}', 'White', ['White', 'Orange', 'Black']),
-    createColorQuestion('color-black-crow', 'Black Crow', '\u{1F426}', 'Black', ['Black', 'Pink', 'Green']),
+    createColorQuestion('color-black-circle', 'Black Circle', '\u{26AB}', 'Black', ['Black', 'Pink', 'Green']),
+    createColorQuestion('color-white-circle', 'White Circle', '\u{26AA}', 'White', ['White', 'Orange', 'Black']),
     createColorQuestion('color-pink-flower', 'Pink Flower', '\u{1F338}', 'Pink', ['Pink', 'Brown', 'Blue'])
 ];
 

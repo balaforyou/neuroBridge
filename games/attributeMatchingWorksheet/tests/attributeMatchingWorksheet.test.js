@@ -16,6 +16,19 @@ function createNoShuffleRandom() {
     return () => 0.99;
 }
 
+const VISIBLE_COLOR_BY_IMAGE = {
+    '\u{1F34E}': 'Red',
+    '\u{1F535}': 'Blue',
+    '\u{1F343}': 'Green',
+    '\u{1F34C}': 'Yellow',
+    '\u{1F955}': 'Orange',
+    '\u{1F347}': 'Purple',
+    '\u{1F965}': 'Brown',
+    '\u{26AB}': 'Black',
+    '\u{26AA}': 'White',
+    '\u{1F338}': 'Pink'
+};
+
 function testColorDatasetLoads() {
     assert(COLOR_ATTRIBUTE_QUESTIONS.length === 10, 'Color pack should include ten questions');
     assert(COLOR_ATTRIBUTE_QUESTIONS[0].prompt === 'Red Apple', 'First color question should be Red Apple');
@@ -23,6 +36,20 @@ function testColorDatasetLoads() {
     assert(COLOR_ATTRIBUTE_QUESTIONS.every(question => question.attributeType === ATTRIBUTE_GROUP_COLOR), 'Color pack should only include color questions');
     assert(COLOR_ATTRIBUTE_QUESTIONS.every(question => question.options.length === 3), 'Each color question should include three options');
     console.log('Attribute Matching color dataset load test passed');
+}
+
+function testColorDatasetVisualConsistency() {
+    COLOR_ATTRIBUTE_QUESTIONS.forEach(question => {
+        assert(VISIBLE_COLOR_BY_IMAGE[question.image], `Color question ${question.id} should use a visually audited image`);
+        assert(question.correctAnswer === VISIBLE_COLOR_BY_IMAGE[question.image], `Color question ${question.id} image should match correct answer`);
+        assert(question.prompt.startsWith(question.correctAnswer), `Color question ${question.id} prompt should begin with correct color`);
+        assert(question.options.includes(question.correctAnswer), `Color question ${question.id} options should include correct answer`);
+    });
+
+    const questionIds = COLOR_ATTRIBUTE_QUESTIONS.map(question => question.id);
+    assert(!questionIds.includes('color-white-egg'), 'Color pack should not use the inconsistent white egg entry');
+    assert(!questionIds.includes('color-black-crow'), 'Color pack should not use the inconsistent black crow entry');
+    console.log('Attribute Matching color visual consistency test passed');
 }
 
 function testQuestionCreationRandomizesOptions() {
@@ -128,6 +155,7 @@ function testPartialAccuracyCalculation() {
 function runAllTests() {
     console.log('=== Attribute Matching Worksheet Unit Tests ===');
     testColorDatasetLoads();
+    testColorDatasetVisualConsistency();
     testQuestionCreationRandomizesOptions();
     testQuestionRendersInState();
     testCorrectAnswerAdvancesAfterFeedback();
