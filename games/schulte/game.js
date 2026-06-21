@@ -413,16 +413,17 @@ function mountSchulteActivity() {
         transitionTargetMode: null,
         transientPulseCellId: null,
         lastSpokenListenFindKey: null,
-        analyticsSubmitted: false
+        analyticsSubmitted: false,
+        completionSummary: null
     };
     let session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, handleFeedback);
     const listenFindSpeaker = createListenFindSpeaker();
-    const analyticsTracker = createSchulteAnalyticsTracker();
+    let analyticsTracker = createSchulteAnalyticsTracker();
     const homeButton = document.getElementById('home-button');
 
     if (homeButton) {
         homeButton.addEventListener('click', () => {
-            window.parent?.postMessage({ type: 'SIRAASH_ACTIVITY_HOME' }, '*');
+            navigateHome();
         });
     }
 
@@ -440,36 +441,36 @@ function mountSchulteActivity() {
         }
     }
 
+    function navigateHome() {
+        window.parent?.postMessage({ type: 'SIRAASH_ACTIVITY_HOME' }, '*');
+    }
+
     function render() {
         const state = session.getState();
         const showTransition = pageState.awaitingTransitionStart;
         const showCompletion = isLearnerFlowComplete(state, showTransition);
         root.innerHTML = `
             <section data-testid="schulte-activity" class="flex h-full min-h-0 flex-col gap-3">
-                <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-cyan-200 bg-white px-4 py-3 shadow-sm">
-                    <div>
-                        <p class="text-xs font-black uppercase tracking-[0.14em] text-cyan-700">Grid Vision</p>
-                        <h2 class="text-xl font-black text-slate-950">Schulte Table</h2>
+                ${showCompletion ? renderCompletionSummary(pageState.completionSummary || analyticsTracker.createPayload()) : `
+                    <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-cyan-200 bg-white px-4 py-3 shadow-sm">
+                        <div>
+                            <p class="text-xs font-black uppercase tracking-[0.14em] text-cyan-700">Grid Vision</p>
+                            <h2 class="text-xl font-black text-slate-950">Schulte Table</h2>
+                        </div>
+                        <div class="flex gap-2 text-sm font-black text-slate-800">
+                            <span data-testid="schulte-mode-label" class="rounded-full border border-cyan-200 bg-white px-3 py-1.5">Mode: ${getModeLabel(state.mode)}</span>
+                            <span data-testid="schulte-board-counter" class="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5">Board ${state.boardNumber} / ${state.boardCount}</span>
+                        </div>
                     </div>
-                    <div class="flex gap-2 text-sm font-black text-slate-800">
-                        <span data-testid="schulte-mode-label" class="rounded-full border border-cyan-200 bg-white px-3 py-1.5">Mode: ${getModeLabel(state.mode)}</span>
-                        <span data-testid="schulte-board-counter" class="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5">Board ${state.boardNumber} / ${state.boardCount}</span>
-                    </div>
-                </div>
 
-                ${renderActivePrompt(state, showTransition)}
+                    ${renderActivePrompt(state, showTransition)}
 
-                ${showTransition ? renderModeTransition() : `
-                    <div data-testid="schulte-grid" class="grid flex-1 min-h-0 gap-2" style="grid-template-columns: repeat(${state.currentBoard.gridSize}, minmax(0, 1fr));">
-                        ${state.currentBoard.cells.map(cell => renderCell(cell, state.completed, state.memoryMode)).join('')}
-                    </div>
+                    ${showTransition ? renderModeTransition() : `
+                        <div data-testid="schulte-grid" class="grid flex-1 min-h-0 gap-2" style="grid-template-columns: repeat(${state.currentBoard.gridSize}, minmax(0, 1fr));">
+                            ${state.currentBoard.cells.map(cell => renderCell(cell, state.completed, state.memoryMode)).join('')}
+                        </div>
+                    `}
                 `}
-
-                ${showCompletion ? `
-                    <div data-testid="schulte-completion" class="rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 text-center text-xl font-black text-emerald-900">
-                        Great work! You finished Schulte Table.
-                    </div>
-                ` : ''}
             </section>
         `;
 
@@ -489,6 +490,15 @@ function mountSchulteActivity() {
         root.querySelector('[data-schulte-start-next-mode]')?.addEventListener('click', () => {
             startNextMode();
             render();
+        });
+
+        root.querySelector('[data-schulte-play-again]')?.addEventListener('click', () => {
+            resetLearnerFlow();
+            render();
+        });
+
+        root.querySelector('[data-schulte-return-home]')?.addEventListener('click', () => {
+            navigateHome();
         });
 
         speakListenFindPromptIfNeeded(state, showTransition);
@@ -523,6 +533,7 @@ function mountSchulteActivity() {
 
         pageState.analyticsSubmitted = true;
         const payload = analyticsTracker.createPayload();
+        pageState.completionSummary = payload;
         try {
             window.parent?.postMessage({
                 type: GAME_EVENTS.COMPLETE,
@@ -531,6 +542,19 @@ function mountSchulteActivity() {
         } catch {
             // Analytics should never block the learner completion state.
         }
+    }
+
+    function resetLearnerFlow() {
+        pageState.mode = SCHULTE_ASCENDING_MODE;
+        pageState.memoryMode = true;
+        pageState.awaitingTransitionStart = false;
+        pageState.transitionTargetMode = null;
+        pageState.transientPulseCellId = null;
+        pageState.lastSpokenListenFindKey = null;
+        pageState.analyticsSubmitted = false;
+        pageState.completionSummary = null;
+        session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, handleFeedback);
+        analyticsTracker = createSchulteAnalyticsTracker();
     }
 
     function startNextMode() {
@@ -590,6 +614,47 @@ function mountSchulteActivity() {
                     class="min-h-[48px] rounded-xl bg-emerald-700 px-5 py-2 text-base font-black text-white shadow-sm transition focus:outline-none focus:ring-4 focus:ring-emerald-300">
                     Continue
                 </button>
+            </div>
+        `;
+    }
+
+    function renderCompletionSummary(summary) {
+        const durationSeconds = clampNonNegativeInteger(summary.durationSeconds);
+        const boardsCompleted = clampNonNegativeInteger(summary.boardsCompleted);
+        const totalBoards = SCHULTE_ASCENDING_BOARD_COUNT * 3;
+
+        return `
+            <div data-testid="schulte-completion" class="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 rounded-2xl border-4 border-emerald-300 bg-emerald-50 px-4 py-5 text-center text-slate-950">
+                <div>
+                    <p class="text-3xl font-black text-emerald-900 sm:text-4xl"><span aria-hidden="true">&#127881;</span> Great Work!</p>
+                    <p data-testid="schulte-completion-accuracy" class="mt-2 text-4xl font-black text-emerald-950 sm:text-5xl">${summary.accuracyPercent}% Accuracy</p>
+                </div>
+                <div class="grid w-full max-w-xl grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div class="px-4 py-2">
+                        <p data-testid="schulte-completion-correct" class="text-2xl font-black text-emerald-900 sm:text-3xl">${summary.correctSelections} Correct</p>
+                    </div>
+                    <div class="px-4 py-2">
+                        <p data-testid="schulte-completion-incorrect" class="text-2xl font-black text-orange-900 sm:text-3xl">${summary.incorrectSelections} Incorrect</p>
+                    </div>
+                </div>
+                <p data-testid="schulte-completion-duration" class="text-2xl font-black text-slate-900 sm:text-3xl">${durationSeconds} Seconds</p>
+                <p data-testid="schulte-completion-boards" class="text-2xl font-black text-cyan-900 sm:text-3xl">${boardsCompleted} / ${totalBoards} Boards Completed</p>
+                <div class="flex w-full max-w-xl flex-col gap-3 sm:flex-row">
+                    <button
+                        type="button"
+                        data-schulte-play-again
+                        data-testid="schulte-play-again"
+                        class="min-h-[52px] flex-1 rounded-xl bg-emerald-700 px-5 py-3 text-lg font-black text-white shadow-sm transition focus:outline-none focus:ring-4 focus:ring-emerald-300">
+                        Play Again
+                    </button>
+                    <button
+                        type="button"
+                        data-schulte-return-home
+                        data-testid="schulte-return-home"
+                        class="min-h-[52px] flex-1 rounded-xl border-2 border-cyan-300 bg-white px-5 py-3 text-lg font-black text-cyan-900 shadow-sm transition focus:outline-none focus:ring-4 focus:ring-cyan-200">
+                        Return Home
+                    </button>
+                </div>
             </div>
         `;
     }

@@ -45,6 +45,14 @@ async function testAutomaticAscendingToDescendingFlow() {
     await page.addInitScript(() => {
         window.__schulteListenFindSpeechRequests = [];
         window.__schulteAnalyticsPayloads = [];
+        window.__schulteHomeMessages = [];
+        const originalPostMessage = window.postMessage.bind(window);
+        window.postMessage = (message, targetOrigin, transfer) => {
+            if (message?.type === 'SIRAASH_ACTIVITY_HOME') {
+                window.__schulteHomeMessages.push(message);
+            }
+            return originalPostMessage(message, targetOrigin, transfer);
+        };
         class MockSpeechSynthesisUtterance {
             constructor(text) {
                 this.text = text;
@@ -195,6 +203,10 @@ async function testAutomaticAscendingToDescendingFlow() {
         }
 
         await page.getByTestId('schulte-completion').waitFor();
+        assert(await page.getByTestId('schulte-mode-label').count() === 0, 'Completion summary should hide mode badge');
+        assert(await page.getByTestId('schulte-board-counter').count() === 0, 'Completion summary should hide board badge');
+        assert(await page.getByTestId('schulte-target').count() === 0, 'Completion summary should hide active prompt');
+        assert(await page.getByTestId('schulte-grid').count() === 0, 'Completion summary should hide active grid');
         assertSpeechRequests(
             await getListenFindSpeechRequests(page),
             createExpectedListenFindSpeechRequests(2),
@@ -203,10 +215,21 @@ async function testAutomaticAscendingToDescendingFlow() {
         const analyticsPayloads = await getSchulteAnalyticsPayloads(page);
         assert(analyticsPayloads.length === 1, 'Schulte should submit one analytics record on final completion');
         assertSchulteAnalyticsPayload(analyticsPayloads[0]);
+        await assertSchulteCompletionSummary(page);
         assert(
-            (await page.getByTestId('schulte-completion').innerText()).includes('Great work! You finished Schulte Table.'),
-            'Final completion should show Schulte Table after ascending, descending, and Listen & Find sessions complete'
+            (await page.getByTestId('schulte-completion').innerText()).includes('Great Work!'),
+            'Final completion should show learner-friendly Great Work summary after all phases complete'
         );
+
+        await page.getByTestId('schulte-return-home').click();
+        assert((await getSchulteHomeMessages(page)).length === 1, 'Return Home should post the activity home event');
+
+        await page.getByTestId('schulte-play-again').click();
+        assert(await page.getByTestId('schulte-completion').count() === 0, 'Play Again should hide completion summary');
+        assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Ascending', 'Play Again should restart Ascending mode');
+        assert(await page.getByTestId('schulte-board-counter').innerText() === 'Board 1 / 2', 'Play Again should restart at Board 1');
+        await assertSingleFindPrompt(page, 'Find 1');
+        assert(await page.getByTestId('schulte-grid').count() === 1, 'Play Again should render a fresh playable grid');
     } finally {
         await browser.close();
         if (server) {
@@ -234,6 +257,22 @@ async function getListenFindSpeechRequests(page) {
 
 async function getSchulteAnalyticsPayloads(page) {
     return page.evaluate(() => window.__schulteAnalyticsPayloads.slice());
+}
+
+async function getSchulteHomeMessages(page) {
+    return page.evaluate(() => window.__schulteHomeMessages.slice());
+}
+
+async function assertSchulteCompletionSummary(page) {
+    const completionText = await page.getByTestId('schulte-completion').innerText();
+
+    assert(completionText.includes('96% Accuracy'), 'Completion summary should show accuracy prominently');
+    assert(completionText.includes('54 Correct'), 'Completion summary should show correct selections');
+    assert(completionText.includes('2 Incorrect'), 'Completion summary should show incorrect selections');
+    assert(/\d+ Seconds/.test(completionText), 'Completion summary should show duration in seconds');
+    assert(completionText.includes('6 / 6 Boards Completed'), 'Completion summary should show boards completed');
+    assert(await page.getByTestId('schulte-play-again').count() === 1, 'Completion summary should show Play Again button');
+    assert(await page.getByTestId('schulte-return-home').count() === 1, 'Completion summary should show Return Home button');
 }
 
 function assertSchulteAnalyticsPayload(payload) {

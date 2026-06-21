@@ -324,6 +324,14 @@ Depends On:
 
 Closure note: Added foundational Schulte Table learner-flow analytics collection and shell persistence payloads covering activity name, session timestamp, mode, boards completed, correct and incorrect selections, accuracy percentage, duration seconds, and completion status without adding learner-facing analytics screens, parent dashboard changes, or adaptive progression.
 
+### SCH-007.1 Completion Summary Screen
+
+Status: Done
+Depends On:
+- `SCH-007`
+
+Closure note: Added learner-facing Schulte completion summary using SCH-007 analytics data, hiding the active mode, board, prompt, and grid after final Listen & Find completion while showing accuracy, correct and incorrect selections, duration, boards completed, Play Again, and Return Home.
+
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
 Status: Done  
