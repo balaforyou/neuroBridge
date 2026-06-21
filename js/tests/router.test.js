@@ -12,16 +12,17 @@ function testCompletionScreenActivitiesStayVisible() {
     console.log('Router completion screen activity test passed');
 }
 
-function testOtherActivitiesAutoExitAfterCompletion() {
-    assert(shouldAutoExitAfterCompletion('attributeExplorer') === true, 'Attribute Explorer should keep existing auto-exit behavior');
-    assert(shouldAutoExitAfterCompletion('matrixReasoning') === true, 'Matrix Reasoning should keep existing auto-exit behavior');
-    console.log('Router completion auto-exit regression test passed');
+function testCompletionPolicyDoesNotAutoExitOtherActivities() {
+    assert(shouldAutoExitAfterCompletion('attributeExplorer') === false, 'Attribute Explorer should not auto-exit after completion');
+    assert(shouldAutoExitAfterCompletion('matrixReasoning') === false, 'Matrix Reasoning should not auto-exit after completion');
+    assert(shouldAutoExitAfterCompletion('unknownActivity') === false, 'Unknown activities should default to persistent completion behavior');
+    console.log('Router completion persistence policy test passed');
 }
 
 function runAllTests() {
     console.log('=== Router Unit Tests ===');
     testCompletionScreenActivitiesStayVisible();
-    testOtherActivitiesAutoExitAfterCompletion();
+    testCompletionPolicyDoesNotAutoExitOtherActivities();
     console.log('=== All Router Tests Passed ===');
 }
 

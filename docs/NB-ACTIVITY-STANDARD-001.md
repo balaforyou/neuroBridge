@@ -398,6 +398,9 @@ Great work!
 
 Completion rules:
 
+- Completion screens must persist until the learner or parent explicitly chooses an action.
+- Completion screens must not auto-disappear, auto-reset, or auto-navigate after analytics submission or timing delays.
+- Valid completion actions include Play Again, Return Home, Continue, or a parent/dashboard action where applicable.
 - Accuracy should be prominent when accuracy is part of the learner's expectation.
 - Score should remain visible when the activity has correct/total scoring.
 - Progress indication should be simple, such as level, board, round, or session completion.

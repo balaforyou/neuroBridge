@@ -220,6 +220,10 @@ async function testAutomaticAscendingToDescendingFlow() {
             (await page.getByTestId('schulte-completion').innerText()).includes('Great Work!'),
             'Final completion should show learner-friendly Great Work summary after all phases complete'
         );
+        await page.waitForTimeout(250);
+        assert(await page.getByTestId('schulte-completion').count() === 1, 'Completion summary should remain visible until learner action');
+        assert(await page.getByTestId('schulte-grid').count() === 0, 'Completion summary should not auto-reset to the grid');
+        assert((await getSchulteHomeMessages(page)).length === 0, 'Completion summary should not auto-return home');
 
         await page.getByTestId('schulte-return-home').click();
         assert((await getSchulteHomeMessages(page)).length === 1, 'Return Home should post the activity home event');

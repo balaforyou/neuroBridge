@@ -32,6 +32,15 @@ Notes:
 - Consider shared tile component, icons, badges, progress indicators, hover/focus states, and mobile-friendly layout.
 - Do not implement now.
 
+### NB-UI-002 Completion Screen Persistence Audit
+
+Priority: Unassigned
+Status: Backlog
+Notes:
+- Audit existing NeuroBridge activities for completion/result screens that may need persistent in-frame summaries after the NB-ACTIVITY-STANDARD-001 completion persistence rule.
+- Completion screens should remain visible until Play Again, Return Home, Continue, or an applicable parent/dashboard action.
+- Do not redesign activity result screens in this audit unless promoted into specific implementation packets.
+
 ### SCH-004.2.1 Practice Lab Mode Selector
 
 Priority: Unassigned  
@@ -331,6 +340,14 @@ Depends On:
 - `SCH-007`
 
 Closure note: Added learner-facing Schulte completion summary using SCH-007 analytics data, hiding the active mode, board, prompt, and grid after final Listen & Find completion while showing accuracy, correct and incorrect selections, duration, boards completed, Play Again, and Return Home.
+
+### SCH-007.2 Completion Summary Persistence Fix
+
+Status: Done
+Depends On:
+- `SCH-007.1`
+
+Closure note: Standardized completion-screen persistence so completion events do not auto-navigate, documented the persistence rule in `NB-ACTIVITY-STANDARD-001`, and added Schulte regression coverage proving the completion summary remains visible until Play Again or Return Home.
 
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
