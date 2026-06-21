@@ -19,6 +19,34 @@ Activity docs: `docs/activities/matching-worksheets/`
 
 Valid ideas that are not ready for implementation yet.
 
+### NB-PARENT-002 Parent Insight Dashboard
+
+Priority: P2
+Status: Backlog
+
+Goal:
+Evolve the Parent Dashboard from a recent-session summary into a parent-decision-oriented insight dashboard.
+
+Rationale:
+Current dashboard shows sessions, accuracy, speed, peak level, best score and recent sessions. These are useful, but future dashboard refinements should better answer:
+- Is the learner improving?
+- Which activities were practiced recently?
+- Which activities are becoming easy or difficult?
+- Are hints and corrections reducing over time?
+- Which activities are being neglected?
+- What should the parent offer next?
+
+Planned Sub-items:
+- NB-PARENT-002.1 Activity Mix
+- NB-PARENT-002.2 Learning Trends
+- NB-PARENT-002.3 Cognitive Snapshot
+- NB-PARENT-002.4 Improvement Signals
+- NB-PARENT-002.5 Recommended Next Activities
+- NB-PARENT-002.6 Learner Streaks & Consistency
+
+Notes:
+Do not implement immediately. Revisit after more usage data is available from Number Bridges, Schulte Family, Matching Worksheets and future Directions activity.
+
 ### SCH-001.1 Square Grid Size Expansion Contract
 
 Priority: Unassigned  
