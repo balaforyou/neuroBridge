@@ -44,11 +44,17 @@ async function testAutomaticAscendingToDescendingFlow() {
     const page = await browser.newPage({ viewport: { width: 1000, height: 800 } });
     await page.addInitScript(() => {
         window.__schulteListenFindSpeechRequests = [];
+        window.__schulteAnalyticsPayloads = [];
         class MockSpeechSynthesisUtterance {
             constructor(text) {
                 this.text = text;
             }
         }
+        window.addEventListener('message', event => {
+            if (event.data?.type === 'GAME_OVER_SUBMIT_SCORE') {
+                window.__schulteAnalyticsPayloads.push(event.data.payload);
+            }
+        });
         Object.defineProperty(window, 'SpeechSynthesisUtterance', {
             configurable: true,
             value: MockSpeechSynthesisUtterance
@@ -194,6 +200,9 @@ async function testAutomaticAscendingToDescendingFlow() {
             createExpectedListenFindSpeechRequests(2),
             'Listen & Find should speak Find 1 through Find 9 on both boards'
         );
+        const analyticsPayloads = await getSchulteAnalyticsPayloads(page);
+        assert(analyticsPayloads.length === 1, 'Schulte should submit one analytics record on final completion');
+        assertSchulteAnalyticsPayload(analyticsPayloads[0]);
         assert(
             (await page.getByTestId('schulte-completion').innerText()).includes('Great work! You finished Schulte Table.'),
             'Final completion should show Schulte Table after ascending, descending, and Listen & Find sessions complete'
@@ -221,6 +230,25 @@ async function assertSingleFindPrompt(page, expectedText) {
 
 async function getListenFindSpeechRequests(page) {
     return page.evaluate(() => window.__schulteListenFindSpeechRequests.slice());
+}
+
+async function getSchulteAnalyticsPayloads(page) {
+    return page.evaluate(() => window.__schulteAnalyticsPayloads.slice());
+}
+
+function assertSchulteAnalyticsPayload(payload) {
+    assert(payload.gameId === 'schulte', 'Analytics payload should use Schulte route game id');
+    assert(payload.activityId === 'schulte-v1', 'Analytics payload should include Schulte activity id');
+    assert(payload.activityName === 'Schulte Table', 'Analytics payload should include activity name');
+    assert(typeof payload.sessionTimestamp === 'string' && payload.sessionTimestamp.length > 0, 'Analytics payload should include session timestamp');
+    assert(payload.mode === 'learner-flow', 'Analytics payload should capture learner flow mode');
+    assert(payload.boardsCompleted === 6, 'Analytics payload should capture six completed boards');
+    assert(payload.correctSelections === 54, 'Analytics payload should capture all correct selections');
+    assert(payload.incorrectSelections === 2, 'Analytics payload should capture incorrect selections across play');
+    assert(payload.totalQuestions === 56, 'Analytics payload should capture total selection attempts');
+    assert(payload.accuracyPercent === 96, 'Analytics payload should capture rounded accuracy percentage');
+    assert(Number.isFinite(payload.durationSeconds), 'Analytics payload should capture duration seconds');
+    assert(payload.completionStatus === 'completed', 'Analytics payload should capture completion status');
 }
 
 function createExpectedListenFindSpeechRequests(boardCount) {

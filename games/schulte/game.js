@@ -1,12 +1,16 @@
 import { createListenFindSpeaker } from '../../js/listenFindSpeech.js';
+import { GAME_EVENTS } from '../../js/constants.js';
 
 export const SCHULTE_ACTIVITY_ID = 'schulte-v1';
+export const SCHULTE_GAME_ID = 'schulte';
+export const SCHULTE_ACTIVITY_NAME = 'Schulte Table';
 export const SCHULTE_CORE_GRID_SIZE = 3;
 export const SCHULTE_CORE_CELL_COUNT = SCHULTE_CORE_GRID_SIZE * SCHULTE_CORE_GRID_SIZE;
 export const SCHULTE_ASCENDING_MODE = 'ascending';
 export const SCHULTE_DESCENDING_MODE = 'descending';
 export const SCHULTE_LISTEN_FIND_MODE = 'listen-find';
 export const SCHULTE_MEMORY_MODE = 'memory';
+export const SCHULTE_LEARNER_FLOW_MODE = 'learner-flow';
 export const SCHULTE_ASCENDING_BOARD_COUNT = 2;
 export const SCHULTE_FEEDBACK = {
     CLICK: 'click',
@@ -294,6 +298,109 @@ export function renderSchulteGridMarkup(stateOrBoard) {
     `;
 }
 
+export function createSchulteAnalyticsTracker(config = {}) {
+    const now = typeof config.now === 'function' ? config.now : Date.now;
+    const startedAtMs = normalizeTimestampMs(now(), Date.now());
+    const state = {
+        activityName: SCHULTE_ACTIVITY_NAME,
+        sessionTimestamp: new Date(startedAtMs).toISOString(),
+        startedAtMs,
+        modesPlayed: [],
+        boardsCompleted: 0,
+        correctSelections: 0,
+        incorrectSelections: 0,
+        completed: false
+    };
+
+    function recordOutcome(outcome) {
+        if (!outcome || typeof outcome !== 'object') {
+            return getState();
+        }
+
+        const mode = outcome.state?.mode;
+        if (mode && !state.modesPlayed.includes(mode)) {
+            state.modesPlayed.push(mode);
+        }
+
+        if (isCorrectSchulteSelectionResult(outcome.result)) {
+            state.correctSelections += 1;
+        } else if (outcome.result === 'incorrect') {
+            state.incorrectSelections += 1;
+        }
+
+        if (outcome.result === 'board-complete' || outcome.result === 'session-complete') {
+            state.boardsCompleted += 1;
+        }
+
+        if (outcome.result === 'session-complete' && outcome.state?.mode === SCHULTE_LISTEN_FIND_MODE) {
+            state.completed = true;
+        }
+
+        return getState();
+    }
+
+    function createPayload(options = {}) {
+        const endedAtMs = normalizeTimestampMs(options.endedAtMs ?? now(), startedAtMs);
+        return createSchulteAnalyticsPayload({
+            ...state,
+            endedAtMs
+        });
+    }
+
+    function getState() {
+        return {
+            ...state,
+            modesPlayed: state.modesPlayed.slice()
+        };
+    }
+
+    return {
+        createPayload,
+        getState,
+        recordOutcome
+    };
+}
+
+export function createSchulteAnalyticsPayload(summary = {}) {
+    const correctSelections = clampNonNegativeInteger(summary.correctSelections);
+    const incorrectSelections = clampNonNegativeInteger(summary.incorrectSelections);
+    const totalSelections = correctSelections + incorrectSelections;
+    const accuracyPercent = totalSelections
+        ? Math.round((correctSelections / totalSelections) * 100)
+        : 0;
+    const startedAtMs = normalizeTimestampMs(summary.startedAtMs, Date.now());
+    const endedAtMs = normalizeTimestampMs(summary.endedAtMs, startedAtMs);
+    const durationSeconds = Math.max(0, Math.round((endedAtMs - startedAtMs) / 1000));
+    const completionStatus = summary.completed === true ? 'completed' : 'incomplete';
+
+    return {
+        gameId: SCHULTE_GAME_ID,
+        activityId: SCHULTE_ACTIVITY_ID,
+        activityName: SCHULTE_ACTIVITY_NAME,
+        sessionTimestamp: summary.sessionTimestamp || new Date(startedAtMs).toISOString(),
+        mode: SCHULTE_LEARNER_FLOW_MODE,
+        modesPlayed: Array.isArray(summary.modesPlayed) ? summary.modesPlayed.slice() : [],
+        boardsCompleted: clampNonNegativeInteger(summary.boardsCompleted),
+        completedBoards: clampNonNegativeInteger(summary.boardsCompleted),
+        correctSelections,
+        incorrectSelections,
+        score: correctSelections,
+        correctCount: correctSelections,
+        totalQuestions: totalSelections,
+        accuracy: accuracyPercent / 100,
+        accuracyPercent,
+        durationSeconds,
+        sessionLengthSeconds: durationSeconds,
+        completionStatus,
+        completed: summary.completed === true,
+        mistakeCount: incorrectSelections,
+        highestLevelReached: 1,
+        level: 1,
+        levelLabel: 'Schulte Table V1',
+        trials: []
+    };
+}
+
 function mountSchulteActivity() {
     const root = document.getElementById('schulte-root');
     if (!root) return;
@@ -305,10 +412,12 @@ function mountSchulteActivity() {
         awaitingTransitionStart: false,
         transitionTargetMode: null,
         transientPulseCellId: null,
-        lastSpokenListenFindKey: null
+        lastSpokenListenFindKey: null,
+        analyticsSubmitted: false
     };
     let session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, handleFeedback);
     const listenFindSpeaker = createListenFindSpeaker();
+    const analyticsTracker = createSchulteAnalyticsTracker();
     const homeButton = document.getElementById('home-button');
 
     if (homeButton) {
@@ -367,10 +476,12 @@ function mountSchulteActivity() {
         root.querySelectorAll('[data-schulte-cell-id]').forEach(button => {
             button.addEventListener('click', () => {
                 const outcome = session.selectCell(button.getAttribute('data-schulte-cell-id'));
+                analyticsTracker.recordOutcome(outcome);
                 pageState.transientPulseCellId = outcome.result === 'incorrect'
                     ? outcome.cell.cellId
                     : null;
                 prepareModeTransitionIfNeeded(outcome);
+                submitAnalyticsIfComplete(outcome.state);
                 render();
             });
         });
@@ -403,6 +514,23 @@ function mountSchulteActivity() {
         }
 
         pageState.transientPulseCellId = null;
+    }
+
+    function submitAnalyticsIfComplete(state) {
+        if (pageState.analyticsSubmitted || !isLearnerFlowComplete(state, false)) {
+            return;
+        }
+
+        pageState.analyticsSubmitted = true;
+        const payload = analyticsTracker.createPayload();
+        try {
+            window.parent?.postMessage({
+                type: GAME_EVENTS.COMPLETE,
+                payload
+            }, '*');
+        } catch {
+            // Analytics should never block the learner completion state.
+        }
     }
 
     function startNextMode() {
@@ -497,6 +625,28 @@ function isLearnerFlowComplete(state, showTransition) {
         && state.completed === true
         && state.completedBoards === state.boardCount
         && state.mode === SCHULTE_LISTEN_FIND_MODE;
+}
+
+function isCorrectSchulteSelectionResult(result) {
+    return result === 'selected' || result === 'board-complete' || result === 'session-complete';
+}
+
+function clampNonNegativeInteger(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number) || number < 0) {
+        return 0;
+    }
+
+    return Math.round(number);
+}
+
+function normalizeTimestampMs(value, fallback) {
+    const number = Number(value);
+    if (Number.isFinite(number) && number > 0) {
+        return number;
+    }
+
+    return fallback;
 }
 
 function getModeLabel(mode) {

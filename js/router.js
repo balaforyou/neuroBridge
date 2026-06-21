@@ -4,6 +4,7 @@ import { AppState } from './app.js';
 import { getGameConfiguration, commitScoreLog } from './database.js';
 import { GAME_EVENTS, USER_ROLES } from './constants.js';
 import { renderStudentMetrics } from './dashboard.js';
+import { shouldAutoExitAfterCompletion } from './activityCompletion.js';
 
 const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
 const SHELL_MANAGED_ACTIVITIES = new Set(['attributeExplorer', 'matrixReasoning', 'matchingWorksheet', 'attributeMatchingWorksheet', 'kumonQuiz', 'schulte']);
@@ -102,7 +103,7 @@ console.log('Trials received:', payload.trials);
 
     if (AppState.user === USER_ROLES.PARENT) {
         console.log('Parent sandbox detected. Suppressing score save.');
-        if (payload.gameId !== 'kumonQuiz') {
+        if (shouldAutoExitAfterCompletion(payload.gameId)) {
             switchView('parent');
         }
         return;
@@ -120,7 +121,7 @@ console.log('Trials received:', payload.trials);
         console.error('Failed to save student score:', error);
     }
 
-    if (payload.gameId !== 'kumonQuiz') {
+    if (shouldAutoExitAfterCompletion(payload.gameId)) {
         switchView('student');
     }
 }

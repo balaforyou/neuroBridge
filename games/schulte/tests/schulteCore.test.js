@@ -1,5 +1,7 @@
 import {
     createSchulteAscendingSession,
+    createSchulteAnalyticsPayload,
+    createSchulteAnalyticsTracker,
     createSchulteBoard,
     createSchulteCoreGridEngine,
     createSchulteDescendingSession,
@@ -9,7 +11,9 @@ import {
     SCHULTE_ASCENDING_BOARD_COUNT,
     SCHULTE_CORE_CELL_COUNT,
     SCHULTE_CORE_GRID_SIZE,
+    SCHULTE_DESCENDING_MODE,
     SCHULTE_FEEDBACK,
+    SCHULTE_LEARNER_FLOW_MODE,
     SCHULTE_LISTEN_FIND_MODE
 } from '../game.js';
 
@@ -526,6 +530,68 @@ function testListenFindSecondBoardStartsFresh() {
     console.log('Schulte Listen & Find second board reset test passed');
 }
 
+function testSchulteAnalyticsPayloadCalculation() {
+    const payload = createSchulteAnalyticsPayload({
+        startedAtMs: Date.parse('2026-06-21T10:00:00.000Z'),
+        endedAtMs: Date.parse('2026-06-21T10:00:24.000Z'),
+        sessionTimestamp: '2026-06-21T10:00:00.000Z',
+        modesPlayed: ['ascending', 'descending', 'listen-find'],
+        boardsCompleted: 6,
+        correctSelections: 54,
+        incorrectSelections: 6,
+        completed: true
+    });
+
+    assert(payload.gameId === 'schulte', 'Schulte analytics should use shell route game id');
+    assert(payload.activityId === 'schulte-v1', 'Schulte analytics should preserve stable activity id');
+    assert(payload.activityName === 'Schulte Table', 'Schulte analytics should capture activity name');
+    assert(payload.sessionTimestamp === '2026-06-21T10:00:00.000Z', 'Schulte analytics should capture session timestamp');
+    assert(payload.mode === SCHULTE_LEARNER_FLOW_MODE, 'Schulte analytics should capture learner-flow mode');
+    assert(payload.boardsCompleted === 6, 'Schulte analytics should capture completed boards');
+    assert(payload.correctSelections === 54, 'Schulte analytics should capture correct selections');
+    assert(payload.incorrectSelections === 6, 'Schulte analytics should capture incorrect selections');
+    assert(payload.accuracyPercent === 90, 'Schulte analytics should round accuracy percentage');
+    assert(payload.durationSeconds === 24, 'Schulte analytics should capture duration seconds');
+    assert(payload.completionStatus === 'completed', 'Schulte analytics should capture completion status');
+    console.log('Schulte analytics payload calculation test passed');
+}
+
+function testSchulteAnalyticsTrackerRecordsPlay() {
+    let nowMs = Date.parse('2026-06-21T10:00:00.000Z');
+    const tracker = createSchulteAnalyticsTracker({
+        now: () => nowMs
+    });
+
+    tracker.recordOutcome({
+        result: 'selected',
+        state: { mode: 'ascending' }
+    });
+    tracker.recordOutcome({
+        result: 'incorrect',
+        state: { mode: SCHULTE_DESCENDING_MODE }
+    });
+    tracker.recordOutcome({
+        result: 'board-complete',
+        state: { mode: SCHULTE_LISTEN_FIND_MODE }
+    });
+    tracker.recordOutcome({
+        result: 'session-complete',
+        state: { mode: SCHULTE_LISTEN_FIND_MODE }
+    });
+
+    nowMs += 12500;
+    const payload = tracker.createPayload();
+
+    assert(payload.correctSelections === 3, 'Tracker should count selected, board-complete, and session-complete as correct selections');
+    assert(payload.incorrectSelections === 1, 'Tracker should count incorrect selections');
+    assert(payload.boardsCompleted === 2, 'Tracker should count board and session completion as completed boards');
+    assert(payload.accuracyPercent === 75, 'Tracker should calculate accuracy from correct and incorrect selections');
+    assert(payload.durationSeconds === 13, 'Tracker should round duration seconds');
+    assert(payload.completionStatus === 'completed', 'Tracker should mark completed after final Listen & Find session');
+    assert(payload.modesPlayed.join(',') === 'ascending,descending,listen-find', 'Tracker should capture modes played in order');
+    console.log('Schulte analytics tracker record test passed');
+}
+
 function runAllTests() {
     console.log('=== Schulte Core Grid Unit Tests ===');
     testNumberSetCreatesThreeByThreeRange();
@@ -553,6 +619,8 @@ function runAllTests() {
     testListenFindSessionUsesOrderedOneToNineValidation();
     testListenFindSessionCompletesAfterTwoBoards();
     testListenFindSecondBoardStartsFresh();
+    testSchulteAnalyticsPayloadCalculation();
+    testSchulteAnalyticsTrackerRecordsPlay();
     console.log('=== All Schulte Core Grid Tests Passed ===');
 }
 

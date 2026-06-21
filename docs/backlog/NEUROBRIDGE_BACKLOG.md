@@ -10,13 +10,6 @@ This file is the lightweight source of truth for deferred NeuroBridge work.
 
 Items frozen enough for Codex handover.
 
-### SCH-007 Analytics Foundation
-
-Priority: P2  
-Status: Ready  
-Depends On:  
-- `SCH-002`
-
 ## Backlog
 
 Valid ideas that are not ready for implementation yet.
@@ -321,6 +314,15 @@ Depends On:
 - `SCH-006`
 
 Closure note: Hardened Listen & Find final-completion gating so completion requires all Listen & Find boards to be complete, and added regression coverage proving Board 2 starts fresh at Find 1 with a playable grid before final completion appears.
+
+### SCH-007 Analytics Foundation
+
+Priority: P2
+Status: Done
+Depends On:
+- `SCH-002`
+
+Closure note: Added foundational Schulte Table learner-flow analytics collection and shell persistence payloads covering activity name, session timestamp, mode, boards completed, correct and incorrect selections, accuracy percentage, duration seconds, and completion status without adding learner-facing analytics screens, parent dashboard changes, or adaptive progression.
 
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
