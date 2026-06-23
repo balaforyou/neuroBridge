@@ -175,6 +175,34 @@ Status: Deferred
 Goal:
 Explore future visual-spatial pattern rotation variants and related scaffolds.
 
+### PM-BL-009 Activity Family Retrospective
+
+Status: Deferred
+
+Goal:
+Capture lessons learned from designing PM-001 and use them to improve future NeuroBridge activity creation.
+
+Topics To Review:
+
+- Activity documentation sequence effectiveness
+- Level design workflow
+- Scaffold architecture workflow
+- Skill evidence alignment process
+- Analytics design workflow
+- Test matrix value
+- Activity backlog structure
+- Common backlog vs activity backlog ownership
+- Areas where architectural clarification was required
+- Opportunities to improve future activity templates
+
+Expected Outcome:
+
+Refinements to the NeuroBridge activity-family template and implementation process.
+
+Trigger:
+
+Complete after PM-001 reaches stable learner usage and at least one additional activity family has been designed using the same process.
+
 ## Done
 
 ### PM-001.01 Activity Brief and Product Requirements
