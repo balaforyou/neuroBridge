@@ -92,6 +92,24 @@ function testMatchingWorksheetsTileLaunchMarkup() {
     console.log('Matching Worksheets tile launch markup test passed');
 }
 
+function testPatternMemoryTileLaunchMarkup() {
+    const recommendedGroup = ACTIVITY_TILE_GROUPS.find(group => group.category === 'Recommended');
+    const tile = getTile('patternMemory');
+    const markup = renderActivityTile(tile);
+
+    assert(recommendedGroup, 'Recommended activity group should exist');
+    assert(tile, 'Pattern Memory tile should exist');
+    assert(recommendedGroup.tiles.includes(tile), 'Pattern Memory tile should appear in Recommended group');
+    assert(tile.status === 'available', 'Pattern Memory tile should be available');
+    assert(tile.learnerName === 'Pattern Memory', 'Pattern Memory tile should show activity name');
+    assert(tile.subtitle === 'Copy Mode', 'Pattern Memory tile should show Copy Mode subtitle');
+    assert(getActivityTileTestId(tile) === 'activity-tile-pattern-memory', 'Pattern Memory tile should expose stable test id');
+    assert(markup.includes('class="btn-launch-game'), 'Available Pattern Memory tile should render as launch button');
+    assert(markup.includes('data-game="patternMemory"'), 'Pattern Memory tile should launch pattern memory route');
+    assert(markup.includes('aria-label="Start Pattern Memory: Copy Mode"'), 'Pattern Memory tile accessible label should include mode');
+    console.log('Pattern Memory tile launch markup test passed');
+}
+
 function createFakeElement() {
     return {
         innerHTML: '',
@@ -105,6 +123,7 @@ function runAllTests() {
     testSchulteTileLaunchMarkup();
     testSchulteLandingPageTileTerminology();
     testMatchingWorksheetsTileLaunchMarkup();
+    testPatternMemoryTileLaunchMarkup();
     console.log('=== All Activity Tile Tests Passed ===');
 }
 

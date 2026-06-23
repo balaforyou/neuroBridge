@@ -15,6 +15,7 @@ export const GAME_IDS = {
     MATRIX_REASONING: 'matrixReasoning',
     ATTRIBUTE_EXPLORER: 'attributeExplorer',
     ATTRIBUTE_MATCHING_WORKSHEET: 'attributeMatchingWorksheet',
+    PATTERN_MEMORY: 'patternMemory',
     KUMON_QUIZ: 'kumonQuiz'
 };
 

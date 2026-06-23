@@ -25,15 +25,18 @@ function testGamesExist() {
     const matrix = getGameById('matrixReasoning');
     const attribute = getGameById('attributeExplorer');
     const matchingWorksheets = getGameById('attributeMatchingWorksheet');
+    const patternMemory = getGameById('patternMemory');
     const kumon = getGameById('kumonQuiz');
 
     assert(matrix, 'Matrix Reasoning metadata should exist');
     assert(attribute, 'Attribute Explorer metadata should exist');
     assert(matchingWorksheets, 'Matching Worksheets metadata should exist');
+    assert(patternMemory, 'Pattern Memory metadata should exist');
     assert(kumon, 'Kumon Quiz metadata should exist');
     assert(matrix.name === 'Matrix Reasoning', 'Matrix should have a name');
     assert(attribute.name === 'Attribute Explorer', 'Attribute Explorer should have a name');
     assert(matchingWorksheets.name === 'Matching Worksheets', 'Matching Worksheets should have a family name');
+    assert(patternMemory.title === 'Pattern Memory', 'Pattern Memory should have a learner-facing title');
     assert(kumon.title === 'Number Bridges', 'Kumon Quiz should use learner-facing Number Bridges title');
 
     console.log('Games exist test passed');
@@ -48,6 +51,7 @@ function testValidDomainMapping() {
     assert(getGameById('matrixReasoning').domain === 'reasoning', 'Matrix Reasoning should map to reasoning');
     assert(getGameById('attributeExplorer').domain === 'concept-formation', 'Attribute Explorer should map to concept-formation');
     assert(getGameById('attributeMatchingWorksheet').domain === 'concept-formation', 'Matching Worksheets should map to concept-formation');
+    assert(getGameById('patternMemory').domain === 'memory', 'Pattern Memory should map to memory');
     assert(getGameById('kumonQuiz').domain === 'numeracy', 'Kumon Quiz should map to numeracy');
 
     console.log('Valid domain mapping test passed');
@@ -78,6 +82,10 @@ function testDashboardViewTypeContract() {
     assert(
         getGameById('attributeMatchingWorksheet').dashboardViewType === DASHBOARD_VIEW_TYPES.TRIAL_BREAKDOWN,
         'Matching Worksheets should use trialBreakdown for recent activity details'
+    );
+    assert(
+        getGameById('patternMemory').dashboardViewType === DASHBOARD_VIEW_TYPES.TRIAL_BREAKDOWN,
+        'Pattern Memory should use trialBreakdown for recent activity details'
     );
 
     console.log('Dashboard view type contract test passed');
@@ -123,6 +131,7 @@ function testGetGamesByDomain() {
     assert(reasoningGames.some(game => game.gameId === 'matrixReasoning'), 'Reasoning domain should include Matrix Reasoning');
     assert(conceptGames.some(game => game.gameId === 'attributeExplorer'), 'Concept Formation domain should include Attribute Explorer');
     assert(conceptGames.some(game => game.gameId === 'attributeMatchingWorksheet'), 'Concept Formation domain should include Matching Worksheets');
+    assert(getGamesByDomain('memory').some(game => game.gameId === 'patternMemory'), 'Memory domain should include Pattern Memory');
     assert(numeracyGames.some(game => game.gameId === 'kumonQuiz'), 'Numeracy domain should include Kumon Quiz');
     assert(getGamesByDomain('unknown-domain').length === 0, 'Unknown domain should return an empty array');
 

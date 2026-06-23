@@ -7,7 +7,7 @@ import { renderStudentMetrics } from './dashboard.js';
 import { shouldAutoExitAfterCompletion } from './activityCompletion.js';
 
 const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
-const SHELL_MANAGED_ACTIVITIES = new Set(['attributeExplorer', 'matrixReasoning', 'matchingWorksheet', 'attributeMatchingWorksheet', 'kumonQuiz', 'schulte']);
+const SHELL_MANAGED_ACTIVITIES = new Set(['attributeExplorer', 'matrixReasoning', 'matchingWorksheet', 'attributeMatchingWorksheet', 'patternMemory', 'kumonQuiz', 'schulte']);
 
 export function initRouter() {
     document.addEventListener('click', (e) => {
@@ -129,6 +129,7 @@ console.log('Trials received:', payload.trials);
 function formatActivityName(gameId) {
     if (gameId === 'attributeExplorer') return 'Attribute Explorer';
     if (gameId === 'matrixReasoning') return 'Matrix Reasoning';
+    if (gameId === 'patternMemory') return 'Pattern Memory';
     if (gameId === 'schulte') return 'Schulte Table';
 
     return gameId

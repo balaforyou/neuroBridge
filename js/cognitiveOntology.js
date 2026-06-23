@@ -65,6 +65,24 @@ export const COGNITIVE_ONTOLOGY = [
         ]
     },
     {
+        skillId: 'visual-encoding',
+        cognitiveTargets: [
+            'visual-information-encoding'
+        ]
+    },
+    {
+        skillId: 'spatial-memory',
+        cognitiveTargets: [
+            'spatial-location-memory'
+        ]
+    },
+    {
+        skillId: 'pattern-reproduction',
+        cognitiveTargets: [
+            'visual-spatial-reconstruction'
+        ]
+    },
+    {
         skillId: 'distractor-filtering',
         cognitiveTargets: [
             'inhibition'

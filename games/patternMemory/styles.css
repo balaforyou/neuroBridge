@@ -1,0 +1,19 @@
+.pattern-memory-grid {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.pattern-memory-cell {
+    aspect-ratio: 1 / 1;
+    min-height: 3.25rem;
+}
+
+@media (min-width: 640px) {
+    .pattern-memory-cell {
+        min-height: 4rem;
+    }
+}
+
+.pattern-memory-cell--blue {
+    background: linear-gradient(135deg, #2563eb, #38bdf8);
+}

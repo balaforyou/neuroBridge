@@ -76,6 +76,28 @@ export const GAME_REGISTRY = [
         version: '1.0.0'
     },
     {
+        gameId: GAME_IDS.PATTERN_MEMORY,
+        id: GAME_IDS.PATTERN_MEMORY,
+        name: 'Pattern Memory',
+        title: 'Pattern Memory',
+        folder: 'patternMemory',
+        enabled: true,
+        domain: 'memory',
+        description: 'Copy visual patterns to build visual encoding, spatial mapping, and pattern reproduction.',
+        skills: [
+            'visual-encoding',
+            'spatial-memory',
+            'pattern-reproduction'
+        ],
+        maxStage: 1,
+        maxLevel: 4,
+        maxDifficulty: 4,
+        supportsScaffolds: true,
+        supportsDifficulty: true,
+        dashboardViewType: DASHBOARD_VIEW_TYPES.TRIAL_BREAKDOWN,
+        version: '1.0.0'
+    },
+    {
         gameId: GAME_IDS.KUMON_QUIZ,
         id: GAME_IDS.KUMON_QUIZ,
         name: 'Kumon Quiz',

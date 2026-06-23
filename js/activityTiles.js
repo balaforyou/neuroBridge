@@ -31,6 +31,20 @@ export const ACTIVITY_TILE_GROUPS = [
                 actionClass: 'bg-rose-600 group-hover:bg-rose-500',
                 domain: 'executive-function',
                 skills: ['attribute-matching', 'visual-discrimination', 'early-abstraction']
+            },
+            {
+                activityId: 'patternMemory',
+                parentName: 'Pattern Memory',
+                learnerName: 'Pattern Memory',
+                subtitle: 'Copy Mode',
+                icon: '&#9638;',
+                description: 'Copy the blue pattern into your grid.',
+                status: 'available',
+                identityClass: 'from-blue-100 via-sky-50 to-emerald-50 border-blue-300',
+                iconClass: 'from-blue-300 via-sky-200 to-emerald-200',
+                actionClass: 'bg-blue-600 group-hover:bg-blue-500',
+                domain: 'memory',
+                skills: ['visual-encoding', 'spatial-memory', 'pattern-reproduction']
             }
         ]
     },
@@ -261,6 +275,7 @@ export function getActivityTileTestId(tile) {
         attributeExplorer: 'activity-tile-look-closely',
         matchingWorksheet: 'activity-tile-matching-worksheet',
         attributeMatchingWorksheet: 'activity-tile-attribute-matching',
+        patternMemory: 'activity-tile-pattern-memory',
         kumonQuiz: 'activity-tile-number-bridges',
         schulte: 'activity-tile-grid-vision'
     };

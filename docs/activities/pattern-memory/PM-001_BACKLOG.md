@@ -14,36 +14,6 @@ docs/neurobridge-knowledge/BACKLOG.md
 
 ## Ready
 
-### PM-001.1 Copy Mode Foundation
-
-Status: Ready
-
-Goal:
-Implement the first playable Pattern Memory Copy Mode foundation.
-
-Scope:
-
-- Copy Mode only
-- Levels C1-C4
-- Blue single-color patterns only
-- 10 questions per session
-- Reference grid remains visible
-- Learner copies into target grid
-- Immediate feedback
-- Standard result screen reuse
-
-Out of Scope:
-
-- Memory Mode
-- Multi-color palette
-- Adaptive progression
-- Adaptive scaffolds
-- Parent controls
-- Full analytics evidence weighting
-
-Notes:
-This packet validates grid rendering, pattern generation, pattern validation, session flow, feedback, and result screen reuse.
-
 ## Backlog
 
 ### PM-BL-001 Peek and Submission Review Composition
@@ -204,6 +174,13 @@ Trigger:
 Complete after PM-001 reaches stable learner usage and at least one additional activity family has been designed using the same process.
 
 ## Done
+
+### PM-001.1 Copy Mode Foundation
+
+Status: Done
+
+Closure:
+Implemented the first playable Pattern Memory Copy Mode foundation with C1-C4, blue-only pattern generation, target-grid toggling, immediate validation, self-correction, 10-question session flow, standard result screen reuse, minimal analytics payload, launcher registration, and unit coverage.
 
 ### PM-001.01 Activity Brief and Product Requirements
 

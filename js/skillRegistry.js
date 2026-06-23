@@ -62,6 +62,24 @@ export const SKILLS = [
         description: 'Remembering and retrieving previously shown items or details.'
     },
     {
+        skillId: 'visual-encoding',
+        name: 'Visual Encoding',
+        domain: 'memory',
+        description: 'Observing and forming a usable mental representation of visual information.'
+    },
+    {
+        skillId: 'spatial-memory',
+        name: 'Spatial Memory',
+        domain: 'memory',
+        description: 'Remembering where visual elements are located in space.'
+    },
+    {
+        skillId: 'pattern-reproduction',
+        name: 'Pattern Reproduction',
+        domain: 'memory',
+        description: 'Recreating a shown pattern accurately from visual-spatial information.'
+    },
+    {
         skillId: 'distractor-filtering',
         name: 'Distractor Filtering',
         domain: 'attention',
