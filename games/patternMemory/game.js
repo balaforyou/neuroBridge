@@ -235,11 +235,11 @@ function mountPatternMemory() {
     function renderActivity() {
         activityContent = document.createElement('div');
         activityContent.setAttribute('data-testid', 'pattern-memory-copy-mode');
-        activityContent.className = 'flex h-full min-h-0 flex-col justify-center px-1 py-1 sm:px-2';
+        activityContent.className = 'flex h-full min-h-0 flex-col overflow-y-auto px-1 py-4 sm:px-2';
 
         questionContent = document.createElement('div');
         questionContent.setAttribute('data-testid', 'pattern-memory-question');
-        questionContent.className = 'flex h-full min-h-0 flex-col justify-center';
+        questionContent.className = 'flex min-h-0 flex-1 flex-col';
 
         completionPanel = document.createElement('div');
         completionPanel.setAttribute('data-testid', 'pattern-memory-completion');
@@ -265,17 +265,19 @@ function mountPatternMemory() {
 
         const stage = document.createElement('div');
         stage.setAttribute('data-testid', 'pattern-memory-stage');
-        stage.className = 'mx-auto flex h-full min-h-0 w-full max-w-[940px] flex-col justify-center gap-3';
+        stage.className = 'mx-auto flex w-full max-w-[940px] flex-col gap-4';
 
         const context = document.createElement('div');
         context.className = 'flex flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-sky-200 bg-sky-50 px-4 py-2 text-sm font-black text-slate-900';
+        context.setAttribute('data-testid', 'pattern-memory-question-strip');
         context.innerHTML = `
             <span data-testid="pattern-memory-progress">Question ${state.currentQuestionIndex + 1} of ${state.questions.length}</span>
             <span data-testid="pattern-memory-level">Copy Mode ${question.levelId}</span>
         `;
 
         const boardLayout = document.createElement('div');
-        boardLayout.className = 'grid w-full grid-cols-1 items-stretch justify-items-center gap-3 md:grid-cols-2';
+        boardLayout.className = 'grid w-full grid-cols-1 items-start justify-items-center gap-4 md:grid-cols-2';
+        boardLayout.setAttribute('data-testid', 'pattern-memory-grid-workspace');
         boardLayout.append(
             renderBoardPanel('Reference Pattern', question, question.filledCells, false),
             renderBoardPanel('Your Pattern', question, state.selectedCells, true)

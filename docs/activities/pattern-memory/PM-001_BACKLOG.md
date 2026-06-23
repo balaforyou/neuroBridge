@@ -202,6 +202,16 @@ Status: Done
 Closure:
 Polished Copy Mode learner layout alignment, strengthened gentle incorrect feedback, added visible success confirmation with check indicator, and increased success dwell before auto-advance.
 
+Commit:
+2e90929 PM-001.1B Polish Pattern Memory copy mode UI and feedback
+
+### PM-001.1C Copy Mode Shell Layout Fix
+
+Status: Done
+
+Closure:
+Fixed rendered Copy Mode shell overlap by separating the worksheet instruction area, question strip, and grid workspace with explicit vertical spacing and bounding-box regression coverage.
+
 ### PM-001.01 Activity Brief and Product Requirements
 
 Status: Done

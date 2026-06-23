@@ -225,21 +225,33 @@ async function assertRenderedCellsAreAccessible(page) {
 
 async function assertCopyModeLayoutAligned(page) {
     const layout = await page.evaluate(() => {
+        const shellHeader = document.querySelector('body > main > header');
+        const instruction = document.querySelector('[data-testid="worksheet-instruction"]');
         const activity = document.querySelector('[data-testid="worksheet-activity"]');
         const stage = document.querySelector('[data-testid="pattern-memory-stage"]');
+        const questionStrip = document.querySelector('[data-testid="pattern-memory-question-strip"]');
+        const gridWorkspace = document.querySelector('[data-testid="pattern-memory-grid-workspace"]');
         const referencePanel = document.querySelector('[data-testid="pattern-memory-reference-panel"]');
         const targetPanel = document.querySelector('[data-testid="pattern-memory-target-panel"]');
         const referenceGrid = document.querySelector('[data-testid="pattern-memory-reference-grid"]');
         const targetGrid = document.querySelector('[data-testid="pattern-memory-target-grid"]');
 
+        const shellHeaderRect = shellHeader.getBoundingClientRect();
+        const instructionRect = instruction.getBoundingClientRect();
         const activityRect = activity.getBoundingClientRect();
         const stageRect = stage.getBoundingClientRect();
+        const questionStripRect = questionStrip.getBoundingClientRect();
+        const gridWorkspaceRect = gridWorkspace.getBoundingClientRect();
         const referenceRect = referencePanel.getBoundingClientRect();
         const targetRect = targetPanel.getBoundingClientRect();
         const referenceGridRect = referenceGrid.getBoundingClientRect();
         const targetGridRect = targetGrid.getBoundingClientRect();
 
         return {
+            shellHeaderBottom: shellHeaderRect.bottom,
+            instructionBottom: instructionRect.bottom,
+            questionStripBottom: questionStripRect.bottom,
+            gridWorkspaceTop: gridWorkspaceRect.top,
             activityCenter: activityRect.left + (activityRect.width / 2),
             stageCenter: stageRect.left + (stageRect.width / 2),
             referenceTop: referenceRect.top,
@@ -253,6 +265,13 @@ async function assertCopyModeLayoutAligned(page) {
     });
 
     assert(Math.abs(layout.stageCenter - layout.activityCenter) < 5, 'Pattern Memory stage should be centered in activity panel');
+    assert(layout.gridWorkspaceTop >= layout.instructionBottom + 16, 'Grid workspace should start at least 16px below instruction block');
+    assert(layout.referenceTop >= layout.instructionBottom + 16, 'Reference panel should not overlap worksheet instruction area');
+    assert(layout.targetTop >= layout.instructionBottom + 16, 'Target panel should not overlap worksheet instruction area');
+    assert(layout.referenceTop > layout.shellHeaderBottom, 'Reference panel should not overlap activity shell header');
+    assert(layout.targetTop > layout.shellHeaderBottom, 'Target panel should not overlap activity shell header');
+    assert(layout.referenceTop >= layout.questionStripBottom + 12, 'Reference panel should sit below question strip with spacing');
+    assert(layout.targetTop >= layout.questionStripBottom + 12, 'Target panel should sit below question strip with spacing');
     assert(Math.abs(layout.referenceTop - layout.targetTop) < 5, 'Reference and target panels should align vertically on desktop');
     assert(Math.abs(layout.referenceWidth - layout.targetWidth) < 5, 'Reference and target panels should have consistent width');
     assert(Math.abs(layout.referenceGridWidth - layout.targetGridWidth) < 5, 'Reference and target grids should have consistent width');
