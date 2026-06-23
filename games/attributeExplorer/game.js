@@ -23,6 +23,12 @@ import {
     getInitialHelpPrompt
 } from './helpNudge.js';
 import { renderSiraashFeedback } from '../../js/siraashFeedback.js';
+import {
+    ATTRIBUTE_EXPLORER_MISTAKE_ADVANCE_DELAY_MS,
+    ATTRIBUTE_EXPLORER_SUCCESS_ADVANCE_DELAY_MS,
+    createAttributeExplorerResultSummary,
+    renderAttributeExplorerResultMarkup
+} from './resultFlow.js';
 
 const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
 
@@ -50,11 +56,13 @@ const gameState = {
     trialBlock: [],
     trialResults: [],
     trialStartTime: 0,
+    sessionStartedAt: Date.now(),
     uiSupportLevel: DEFAULT_UI_SUPPORT_LEVEL,
     isTestSession: false,
     learnerName: 'Learner',
     session: null,
-    hasAnsweredCurrentTrial: false
+    hasAnsweredCurrentTrial: false,
+    completed: false
 };
 
 window.addEventListener('message', event => {
@@ -69,6 +77,8 @@ window.addEventListener('message', event => {
     gameState.currentTrialIndex = 0;
     gameState.trialBlock = [];
     gameState.trialResults = [];
+    gameState.sessionStartedAt = Date.now();
+    gameState.completed = false;
     gameState.session = new GameSession({
         gameId: ATTRIBUTE_EXPLORER_GAME_ID,
         startingLevel: 1,
@@ -102,6 +112,7 @@ function navigateHome() {
 }
 
 function generateProblem() {
+    gameState.completed = false;
     gameState.currentProblem = generateAttributeQuestion();
     gameState.currentTrialId = createTrialId(ATTRIBUTE_EXPLORER_GAME_ID);
     gameState.currentScaffold = createDefaultScaffold();
@@ -112,14 +123,13 @@ function generateProblem() {
 
 function renderProblem() {
     const problem = gameState.currentProblem;
-    if (!problem) return;
+    if (!problem || gameState.completed) return;
 
     gameState.hasAnsweredCurrentTrial = false;
     stopHelpNudge();
 
     const promptEl = document.getElementById('attribute-prompt');
     const feedbackEl = document.getElementById('feedback-text');
-    const celebrationEl = document.getElementById('celebration-burst');
     const itemA = document.getElementById('item-a');
     const itemB = document.getElementById('item-b');
 
@@ -131,11 +141,6 @@ function renderProblem() {
     if (feedbackEl) {
         feedbackEl.innerText = '';
         feedbackEl.className = 'feedback-area text-center text-base sm:text-lg font-black text-amber-700 min-h-[24px]';
-    }
-
-    if (celebrationEl) {
-        celebrationEl.classList.remove('celebrate-pop', 'text-emerald-600');
-        celebrationEl.classList.add('opacity-0');
     }
 
     const hintButton = document.getElementById('hint-button');
@@ -190,7 +195,7 @@ function renderItem(container, item, targetAttribute) {
 
 function processSelection(choice) {
     const problem = gameState.currentProblem;
-    if (!problem) return;
+    if (!problem || gameState.completed) return;
 
     gameState.hasAnsweredCurrentTrial = true;
     stopHelpNudge();
@@ -200,7 +205,6 @@ function processSelection(choice) {
     gameState.currentAttempts++;
     const selectedButton = document.querySelector(`[data-choice="${choice}"]`);
     const feedbackEl = document.getElementById('feedback-text');
-    const celebrationEl = document.getElementById('celebration-burst');
 
     document.querySelectorAll('.answer-button').forEach(button => {
         button.disabled = true;
@@ -228,11 +232,6 @@ function processSelection(choice) {
         feedbackEl.className = isCorrect
             ? 'feedback-area text-center text-emerald-700 min-h-[24px]'
             : 'feedback-area text-center text-amber-700 min-h-[24px]';
-    }
-
-    if (isCorrect && celebrationEl) {
-        celebrationEl.classList.remove('opacity-0');
-        celebrationEl.classList.add('text-emerald-600', 'celebrate-pop');
     }
 
     if (isCorrect) {
@@ -280,7 +279,7 @@ function processSelection(choice) {
         } else {
             generateProblem();
         }
-    }, isCorrect ? 850 : 1400);
+    }, isCorrect ? ATTRIBUTE_EXPLORER_SUCCESS_ADVANCE_DELAY_MS : ATTRIBUTE_EXPLORER_MISTAKE_ADVANCE_DELAY_MS);
 }
 
 function giveHint() {
@@ -362,6 +361,7 @@ function updateHeader() {
 }
 
 function completeGame() {
+    gameState.completed = true;
     const metrics = calculateMetrics(gameState.trialBlock);
     const sessionData = gameState.session
         ? gameState.session.end()
@@ -383,6 +383,86 @@ function completeGame() {
             trials: gameState.trialResults
         }
     }, '*');
+
+    renderResultScreen();
+}
+
+function renderResultScreen() {
+    stopHelpNudge();
+
+    const panelEl = document.getElementById('activity-content-panel');
+    if (!panelEl) return;
+
+    const summary = createAttributeExplorerResultSummary({
+        trials: gameState.trialResults,
+        startedAt: gameState.sessionStartedAt,
+        endedAt: Date.now()
+    });
+
+    panelEl.className = 'activity-content-panel h-full w-full max-w-4xl mx-auto';
+    panelEl.innerHTML = renderAttributeExplorerResultMarkup(summary, getLearnerName());
+
+    panelEl.querySelector('[data-testid="attribute-explorer-next-round-button"]')?.addEventListener('click', () => {
+        restartActivity();
+    });
+
+    panelEl.querySelector('[data-testid="attribute-explorer-home-button"]')?.addEventListener('click', navigateHome);
+}
+
+function restartActivity() {
+    gameState.sessionId = createSessionId(ATTRIBUTE_EXPLORER_GAME_ID);
+    gameState.currentTrialIndex = 0;
+    gameState.trialBlock = [];
+    gameState.trialResults = [];
+    gameState.sessionStartedAt = Date.now();
+    gameState.completed = false;
+    gameState.session = new GameSession({
+        gameId: ATTRIBUTE_EXPLORER_GAME_ID,
+        startingLevel: 1,
+        maxLevel: 1
+    });
+
+    const panelEl = document.getElementById('activity-content-panel');
+    if (panelEl) {
+        panelEl.className = 'activity-content-panel w-full max-w-4xl mx-auto flex flex-col items-center gap-2';
+        panelEl.innerHTML = `
+            <div class="activity-content-area text-center">
+                <div id="attribute-prompt" class="inline-flex items-center justify-center rounded-xl bg-yellow-300 border-4 border-yellow-500 px-6 py-2.5 text-2xl sm:text-3xl font-black text-slate-950 shadow-sm">
+                    LOOK AT COLOR
+                </div>
+            </div>
+
+            <div id="item-stage" class="w-full min-w-0 flex items-center justify-center gap-4 sm:gap-8 overflow-visible">
+                <div id="item-a" class="comparison-card relative rounded-2xl bg-white border-4 border-sky-300 shadow-sm flex items-center justify-center"></div>
+                <div id="item-b" class="comparison-card relative rounded-2xl bg-white border-4 border-sky-300 shadow-sm flex items-center justify-center"></div>
+            </div>
+
+            <div id="answer-area" class="w-full">
+                <div id="answer-dock" class="w-full max-w-xl mx-auto grid grid-cols-2 gap-3 self-end">
+                    <button id="same-button" data-testid="same-button" data-choice="same" class="answer-button rounded-xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-emerald-950 text-xl sm:text-2xl font-black shadow-md border-4 border-emerald-700 transition transform hover:scale-[1.02] focus:outline-none focus:ring-8 focus:ring-emerald-300">
+                        Same
+                    </button>
+                    <button id="different-button" data-testid="different-button" data-choice="different" class="answer-button rounded-xl bg-fuchsia-500 hover:bg-fuchsia-400 active:bg-fuchsia-600 text-fuchsia-950 text-xl sm:text-2xl font-black shadow-md border-4 border-fuchsia-800 transition transform hover:scale-[1.02] focus:outline-none focus:ring-8 focus:ring-fuchsia-300">
+                        Different
+                    </button>
+                </div>
+            </div>
+
+            <div class="need-help-area flex flex-col items-center justify-start gap-1">
+                <button id="clue-control" data-testid="clue-control" type="button" class="clue-control compact-help-control min-h-[40px] max-w-full rounded-full border border-emerald-200 bg-emerald-50/70 px-4 py-1 text-xs sm:text-sm font-black text-emerald-800 transition focus:outline-none focus:ring-4 focus:ring-emerald-300/60">
+                    Need a clue?
+                </button>
+                <div id="feedback-text" class="feedback-area text-center text-base sm:text-lg font-black text-amber-700 min-h-[24px]"></div>
+            </div>
+        `;
+
+        panelEl.querySelectorAll('.answer-button').forEach(button => {
+            button.addEventListener('click', () => processSelection(button.dataset.choice));
+        });
+        panelEl.querySelector('#clue-control')?.addEventListener('click', giveHint);
+    }
+
+    generateProblem();
 }
 
 function getAudioContext() {

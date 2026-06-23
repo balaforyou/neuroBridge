@@ -118,6 +118,55 @@ async function answerNumberBridgeRow(page, rowIndex, answer) {
     await page.getByTestId(testId).press('Enter');
 }
 
+async function getAttributeExplorerCorrectChoice(page) {
+    return page.evaluate(() => {
+        const prompt = document.getElementById('attribute-prompt')?.textContent || '';
+        const itemA = document.getElementById('item-a');
+        const itemB = document.getElementById('item-b');
+
+        function getShape(item) {
+            if (item.querySelector('circle')) return 'circle';
+            if (item.querySelector('rect')) return 'square';
+            if (item.querySelector('polygon')?.getAttribute('points')?.startsWith('50,12')) return 'triangle';
+            return 'star';
+        }
+
+        function getColor(item) {
+            const className = item.querySelector('.attribute-shape')?.className?.baseVal || '';
+            if (className.includes('text-red-500')) return 'red';
+            if (className.includes('text-blue-500')) return 'blue';
+            if (className.includes('text-emerald-500')) return 'green';
+            return 'yellow';
+        }
+
+        function getSize(item) {
+            const svg = item.querySelector('.attribute-shape');
+            return svg?.style?.getPropertyValue('--attribute-shape-size') || svg?.className?.baseVal || '';
+        }
+
+        let first;
+        let second;
+        if (prompt.includes('COLOR')) {
+            first = getColor(itemA);
+            second = getColor(itemB);
+        } else if (prompt.includes('SHAPE')) {
+            first = getShape(itemA);
+            second = getShape(itemB);
+        } else {
+            first = getSize(itemA);
+            second = getSize(itemB);
+        }
+
+        return first === second ? 'same' : 'different';
+    });
+}
+
+async function answerAttributeExplorerCorrectly(page) {
+    const choice = await getAttributeExplorerCorrectChoice(page);
+    await page.getByTestId(`${choice}-button`).click();
+    return choice;
+}
+
 test.describe('SIRAASH Activity Hub', () => {
     test.use({ viewport: DESKTOP });
 
@@ -788,6 +837,38 @@ test.describe('Attribute Explorer viewport smoke', () => {
         await expect(clueControl).toHaveText(`${LEARNER_NAME}, SIRAASH can help you 🌱`);
         await expect(clueControl).toHaveClass(/help-nudge-active/);
         await expect(page.locator('#feedback-text')).toHaveText('');
+    });
+
+    test('shows one success indication before the worksheet result screen', async ({ page }) => {
+        await page.goto('/games/attributeExplorer/');
+        await initializeActivity(page);
+
+        await answerAttributeExplorerCorrectly(page);
+        await expect(page.locator('#feedback-text')).toContainText('Great work!');
+        await expect(page.locator('#celebration-burst')).toHaveCount(0);
+        await expect(page.getByTestId('attribute-explorer-results')).toHaveCount(0);
+        await page.waitForTimeout(1000);
+        await expect(page.locator('#feedback-text')).toContainText('Great work!');
+        await page.waitForTimeout(500);
+
+        for (let trial = 1; trial < 5; trial++) {
+            await answerAttributeExplorerCorrectly(page);
+            if (trial < 4) {
+                await page.waitForTimeout(1500);
+            }
+        }
+
+        await expect(page.getByTestId('attribute-explorer-results')).toBeVisible();
+        await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
+        await expect(page.getByTestId('attribute-explorer-total')).toHaveText('Questions: 5');
+        await expect(page.getByTestId('attribute-explorer-correct-total')).toHaveText('Correct / Total: 5 / 5');
+        await expect(page.getByTestId('attribute-explorer-accuracy')).toHaveText('Accuracy: 100%');
+        await expect(page.getByTestId('attribute-explorer-time-taken')).toContainText(/Time Taken: \d+ sec/);
+        await expect(page.getByTestId('attribute-explorer-average-time')).toContainText(/Average Time: [\d.]+ sec\/question/);
+        await expect(page.getByTestId('attribute-explorer-hints-used')).toHaveText('Hints Used: 0');
+        await expect(page.getByTestId('attribute-explorer-mistakes-corrected')).toHaveText('Mistakes Corrected: 0');
+        await expect(page.getByTestId('attribute-explorer-next-round-button')).toHaveText('Try Again');
+        await expect(page.getByTestId('attribute-explorer-home-button')).toHaveText('Home');
     });
 });
 

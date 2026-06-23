@@ -149,6 +149,15 @@ function testActivityLayoutAvoidsFixedHeightBudgeting() {
     console.log('Activity fixed-height budgeting guard test passed');
 }
 
+function testDuplicateSuccessIndicatorRemoved() {
+    const html = getIndexHtml();
+
+    assert(!html.includes('id="celebration-burst"'), 'Attribute Explorer should not render duplicate success tick card');
+    assert(!html.includes('celebrate-pop'), 'Attribute Explorer should not include duplicate success animation class');
+
+    console.log('Duplicate success indicator removal test passed');
+}
+
 function testParentGameViewAvoidsFixedHeightBudgeting() {
     const html = getProjectIndexHtml();
     const gameViewTag = getElementOpeningTag(html, 'view-game');
@@ -174,6 +183,7 @@ function runAllTests() {
     testHelpControlInitialStateIsCompact();
     testActivityContainersDoNotClipControls();
     testActivityLayoutAvoidsFixedHeightBudgeting();
+    testDuplicateSuccessIndicatorRemoved();
     testParentGameViewAvoidsFixedHeightBudgeting();
     console.log('=== All Attribute Explorer Layout Contract Tests Passed ===');
 }

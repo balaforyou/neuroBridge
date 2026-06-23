@@ -3,6 +3,7 @@ import {
     createWorksheetTemplateState,
     getWorksheetSupportPrompts,
     renderWorksheetCompletion,
+    renderWorksheetResultSummary,
     WORKSHEET_ACTIVITY_TYPES,
     WORKSHEET_TEMPLATE_REGIONS,
     WORKSHEET_TEMPLATE_VERSION
@@ -89,6 +90,36 @@ function testCompletionRendering() {
     console.log('Worksheet completion rendering test passed');
 }
 
+function testResultSummaryRendering() {
+    const html = renderWorksheetResultSummary({
+        learnerName: 'Adarsh',
+        summary: {
+            total: 5,
+            correct: 4,
+            accuracy: 80,
+            timeTakenSeconds: 15,
+            averageTimeSeconds: 3,
+            hintsUsed: 1,
+            mistakeCount: 0
+        },
+        testIdPrefix: 'attribute-explorer',
+        completionMessage: 'You finished Attribute Explorer.',
+        levelLabel: 'Attribute Explorer'
+    });
+
+    assert(html.includes('Great work, Adarsh!'), 'Result summary should personalize learner praise');
+    assert(html.includes('Questions: 5'), 'Result summary should include question count');
+    assert(html.includes('Correct / Total: 4 / 5'), 'Result summary should include correct total');
+    assert(html.includes('Accuracy: 80%'), 'Result summary should include accuracy');
+    assert(html.includes('Time Taken: 15 sec'), 'Result summary should include time taken');
+    assert(html.includes('Average Time: 3 sec/question'), 'Result summary should include average time');
+    assert(html.includes('Hints Used: 1'), 'Result summary should include hints used');
+    assert(html.includes('Mistakes Corrected: 0'), 'Result summary should include mistakes corrected');
+    assert(html.includes('data-testid="attribute-explorer-next-round-button"'), 'Result summary should include Try Again action');
+    assert(html.includes('data-testid="attribute-explorer-home-button"'), 'Result summary should include Home action');
+    console.log('Worksheet result summary rendering test passed');
+}
+
 function runAllTests() {
     console.log('=== Worksheet Template Unit Tests ===');
     testTemplateConstants();
@@ -96,6 +127,7 @@ function runAllTests() {
     testSupportPrompts();
     testHeaderStateApplication();
     testCompletionRendering();
+    testResultSummaryRendering();
     console.log('=== All Worksheet Template Tests Passed ===');
 }
 

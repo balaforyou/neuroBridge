@@ -252,6 +252,12 @@ Status: Deferred
 
 Completed feature IDs and closure notes.
 
+### NB-AE-002 Attribute Explorer Result Flow and Feedback Refinement
+
+Status: Done
+
+Closure note: Aligned Attribute Explorer with the NeuroBridge worksheet result pattern by adding an in-activity result screen with worksheet metrics and Try Again/Home actions, removing the duplicate success tick indicator, and increasing correct-answer dwell time to 1300ms without changing attribute generation, hint logic, dashboard analytics, parent controls, or progression rules.
+
 ### NB-ARCH-004 Activity Skill Mapping Contract
 
 Status: Done
