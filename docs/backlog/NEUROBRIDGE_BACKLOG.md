@@ -151,6 +151,17 @@ Notes:
 - Keep separate from SCH-007 analytics implementation until architecture is explicitly approved.
 - Do not implement now.
 
+### NB-ARCH-004.1 Cognitive Domain Taxonomy Freeze
+
+Priority: Unassigned
+Status: Backlog
+Depends On:
+- `NB-ARCH-004`
+Notes:
+- Freeze the shared cognitive domain, skill, and sub-skill taxonomy before runtime skill evidence mapping is implemented across activities.
+- Use the activity skill mapping contract as input, but do not finalize taxonomy names during NB-ARCH-004.
+- Do not implement now.
+
 ### NB-BL-004 Master Auto Progression
 
 Status: Backlog  
@@ -240,6 +251,17 @@ Status: Deferred
 ## Done
 
 Completed feature IDs and closure notes.
+
+### NB-ARCH-004 Activity Skill Mapping Contract
+
+Status: Done
+Depends On:
+- `NB-STD-001`
+- `NB-ACTIVITY-STANDARD-001`
+- `NB-STD-002-CODEX_PACKET_TEMPLATE`
+- `NB-STD-003-CODEX_COMPLETION_TEMPLATE`
+
+Closure note: Created the NeuroBridge-wide activity skill mapping contract defining skill evidence by activity, mode, level, progression stage, and scaffold state without code changes, Schulte analytics retrofits, parent dashboard changes, or taxonomy finalization.
 
 ### SCH-001 Core Grid Engine
 
