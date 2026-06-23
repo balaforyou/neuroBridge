@@ -146,6 +146,12 @@ Purpose: Capture design-system and UI templating work for NeuroBridge after the 
 
 ## Worksheets And Print
 
+- Story ID: NB-WS-003
+- Title: Worksheet Activity Template V1
+- Priority: P1
+- Status: Done
+- Notes: Defined the canonical Worksheet Activity Template V1 with global header, instruction, workspace, support, feedback, and completion regions plus layout guardrails for worksheet-family activities. See `docs/design-system/WORKSHEET_ACTIVITY_TEMPLATE.md`.
+
 - Story ID: NB-101.4.5.1
 - Title: Worksheet Architecture Specification
 - Priority: High
