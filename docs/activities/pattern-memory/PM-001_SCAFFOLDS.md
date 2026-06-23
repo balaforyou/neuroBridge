@@ -428,6 +428,87 @@ Scaffold changes must not automatically trigger:
 
 Level progression and scaffold progression are independent systems.
 
+## Skill Evidence Contract Alignment
+
+PM-001 scaffold metadata must align with:
+
+NB-ARCH-004 Activity Skill Mapping Contract.
+
+Pattern Memory should publish skill evidence using the NeuroBridge experience-slice model.
+
+Skill evidence must be interpreted from:
+
+```text
+activity
++
+mode
++
+level
++
+progressionStage
++
+scaffoldState
+```
+
+Scaffolded and independent performance must not be treated as equivalent evidence.
+
+The same learner performance may produce different evidence depending on the scaffold state under which it was achieved.
+
+### Required Metadata Support
+
+Future PM-001 metadata should support:
+
+- activityId
+- activityFamily
+- activityName
+- mode
+- level
+- progressionStage
+- primaryDomain
+- primarySkill
+- subSkills
+- evidenceWeight
+- scaffoldState
+- analyticsTags
+
+### Pattern Memory Mapping Guidance
+
+Example:
+
+```text
+PM-001
+Memory Mode
+M8
+Practice
+Ready Button Enabled
+```
+
+should produce different evidence than:
+
+```text
+PM-001
+Memory Mode
+M8
+Practice
+No Scaffolds
+```
+
+even if learner accuracy is identical.
+
+### Analytics Guidance
+
+Future analytics consumers should use scaffold state as part of the evidence context.
+
+Examples:
+
+- Parent Dashboard
+- Cognitive Snapshot
+- Learning Signals
+- Adaptive Progression
+- SIRAASH Recommendations
+
+Scaffold state should not be discarded when interpreting learner performance.
+
 ## 13. Scaffold Metadata
 
 Each scaffold should support metadata.
@@ -468,14 +549,33 @@ Future scaffolds may include:
 
 Do not define future scaffold implementations in this document.
 
+## Acceptance Checks
+
+- PM-001_SCAFFOLDS.md created.
+- Scaffold philosophy documented.
+- Scaffold families documented.
+- Adaptive scaffold rules documented.
+- Parent controls documented.
+- Scaffold assignment model documented.
+- Level-to-scaffold mappings documented.
+- Implementation requirements documented.
+- Scaffold metadata documented.
+- Skill Evidence Contract Alignment documented.
+- Experience-slice model documented.
+- Scaffold state documented as part of evidence context.
+- No application code changes.
+
 ## Out of Scope
 
 Do not:
 
+- Modify NB-ARCH-004
 - Implement scaffolds
 - Create UI
+- Implement analytics changes
 - Create analytics screens
 - Create parent dashboard screens
+- Implement metadata changes
 - Create backlog items
 
 Documentation only.
