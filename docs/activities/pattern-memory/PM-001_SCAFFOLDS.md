@@ -1,0 +1,481 @@
+# PM-001 Pattern Memory Scaffold Architecture
+
+## 1. Scaffold Philosophy
+
+### Purpose
+
+Scaffolds exist to:
+
+- Reduce frustration
+- Increase success
+- Reveal learner strengths
+- Support skill acquisition
+- Gradually fade as mastery increases
+
+Scaffolds are temporary supports.
+
+They should be progressively removed as learner confidence and performance improve.
+
+### NeuroBridge Principle
+
+Pattern Memory separates:
+
+```text
+Level Difficulty
+```
+
+from
+
+```text
+Scaffold Support
+```
+
+A learner's level determines the challenge.
+
+Scaffolds determine the amount of support provided while attempting that challenge.
+
+The adaptive engine may add or remove scaffolds without changing the learner's level.
+
+## 2. Cognitive Flow Model
+
+Pattern Memory follows:
+
+```text
+Observe
+-> Encode
+-> Retain
+-> Recall
+-> Reproduce
+```
+
+Each scaffold should support one or more stages of this flow.
+
+## 3. Encoding Scaffolds
+
+Supports:
+
+- Visual Encoding
+- Observation Accuracy
+
+### SC-ENC-001 Ready Button
+
+Flow:
+
+```text
+Pattern Visible
+-> Ready Button
+-> Pattern Disappears
+-> Reproduce
+```
+
+Purpose:
+
+- Reduce pressure
+- Support encoding
+- Increase confidence
+
+### SC-ENC-002 Extended Display Time
+
+Supported display durations:
+
+- 15 seconds
+- 12 seconds
+- 10 seconds
+
+Purpose:
+
+Support slower visual encoding.
+
+### SC-ENC-003 Pattern Review Countdown
+
+Display:
+
+```text
+3
+2
+1
+```
+
+before pattern disappearance.
+
+Purpose:
+
+Prepare learner for recall.
+
+## 4. Recall Scaffolds
+
+Supports:
+
+- Visual Retention
+- Recall Accuracy
+
+### SC-REC-001 Peek Support
+
+Allow one temporary pattern reveal.
+
+Example:
+
+```text
+Show Pattern
+2 seconds
+```
+
+Maximum:
+
+1 peek per question.
+
+### SC-REC-002 Hint Cell
+
+Reveal one correct cell position.
+
+Purpose:
+
+Reduce recall burden.
+
+### SC-REC-003 Color Reminder
+
+Display colors used.
+
+Example:
+
+```text
+Blue
+Red
+```
+
+without revealing locations.
+
+Purpose:
+
+Support Color Recall.
+
+## 5. Reproduction Scaffolds
+
+Supports:
+
+- Pattern Reconstruction
+
+### SC-REP-001 Cell Count Hint
+
+Display:
+
+```text
+4 colored cells
+```
+
+Purpose:
+
+Support reconstruction without revealing positions.
+
+### SC-REP-002 Color Count Hint
+
+Display:
+
+```text
+2 Blue
+1 Red
+```
+
+Purpose:
+
+Support working memory.
+
+### SC-REP-003 Grid Highlight
+
+Highlight learner-selected cells.
+
+Purpose:
+
+Reduce accidental omissions.
+
+## 6. Complexity Scaffolds
+
+Supports:
+
+- Overall Task Difficulty
+
+### SC-CMP-001 Structured Patterns
+
+Prefer:
+
+- Rows
+- Columns
+- Corners
+- Simple shapes
+
+Used for beginner levels.
+
+### SC-CMP-002 Semi-Random Patterns
+
+Mix:
+
+- 50% Structured
+- 50% Random
+
+### SC-CMP-003 Random Patterns
+
+No placement restrictions.
+
+Used for advanced levels.
+
+## 7. Color Scaffolds
+
+Supports:
+
+- Color Recall
+
+### SC-COL-001 Single Color
+
+Blue only.
+
+### SC-COL-002 Two Colors
+
+Blue + Red.
+
+### SC-COL-003 Three Colors
+
+Blue + Red + Green.
+
+## 8. Error Scaffolds
+
+Supports:
+
+- Self-Correction
+- Error Awareness
+
+### SC-ERR-001 Immediate Feedback
+
+Copy Mode only.
+
+Incorrect selections are identified immediately.
+
+Learner can correct before continuing.
+
+### SC-ERR-002 Submission Review
+
+Memory Mode only.
+
+After submission display:
+
+- Correct Cells
+- Missing Cells
+- Extra Cells
+
+### SC-ERR-003 Mistake Replay
+
+Display:
+
+```text
+Your Answer
+vs
+Correct Answer
+```
+
+Purpose:
+
+Support learning through comparison.
+
+## 9. Adaptive Scaffold Rules
+
+### Automatic Enable
+
+Enable support when:
+
+- Accuracy < 60%
+- Two consecutive sessions
+
+Suggested supports:
+
+- Ready Button
+- Extended Display Time
+- Peek Support
+- Structured Patterns
+
+without changing level.
+
+### Automatic Removal
+
+Remove support when:
+
+- Accuracy > 90%
+- Three consecutive sessions
+
+Recommended removal order:
+
+```text
+Peek Support
+-> Hint Cell
+-> Ready Button
+-> Extended Display Time
+```
+
+without changing level.
+
+## 10. Parent Controls
+
+### Auto Scaffolds
+
+```text
+ON / OFF
+```
+
+System manages scaffolds automatically.
+
+### Manual Override
+
+Parent may manually enable:
+
+- Ready Button
+- Peek Support
+- Extended Display Time
+- Structured Patterns
+- Hint Cell
+- Color Reminder
+
+for testing or learner support.
+
+## 11. Scaffold Assignment Model
+
+### Philosophy
+
+```text
+Level defines the challenge.
+
+Scaffold defines the support condition.
+
+Adaptive engine decides whether to keep,
+add, or remove support.
+```
+
+Example:
+
+```text
+M8
+```
+
+may be attempted by two learners.
+
+Learner A:
+
+```text
+M8
+No scaffolds
+```
+
+Learner B:
+
+```text
+M8
+Ready Button
+Peek Support
+Color Reminder
+```
+
+Both learners remain at M8.
+
+Only support differs.
+
+### Copy Track Scaffold Mapping
+
+| Level Range | Default Scaffold | Optional Scaffold | Removed When |
+| ----------- | ---------------- | ----------------- | ------------ |
+| C1-C6 | Immediate Feedback | Structured Patterns | Accuracy > 90% for 3 sessions |
+| C7-C13 | Immediate Feedback + Color Palette | Structured Patterns, Color Count Hint | Accuracy > 90% for 3 sessions |
+| C14-C16 | Immediate Feedback | Manual Override Only | Elite Levels |
+
+### Copy Track Notes
+
+Focus:
+
+- Visual Encoding
+- Spatial Mapping
+- Pattern Reproduction
+
+Memory scaffolds should not be applied to Copy Mode.
+
+### Memory Track Scaffold Mapping
+
+| Level Range | Default Scaffold | Optional Scaffold | Removed When |
+| ----------- | ---------------- | ----------------- | ------------ |
+| M1-M2 | Ready Button | Extended Display Time, Peek Support | Accuracy > 90% for 3 sessions |
+| M3-M6 | Ready Button + 10s Display | Peek Support, Cell Count Hint | Accuracy > 90% for 3 sessions |
+| M7-M9 | Ready Button + 8s/6s Display | Color Reminder, Peek Support | Accuracy > 90% for 3 sessions |
+| M10-M13 | Timed Display | Peek Support, Cell Count Hint | Accuracy > 90% for 3 sessions |
+| M14-M16 | No Ready Button | None by Default | Elite Levels |
+
+## 12. Implementation Requirement
+
+The implementation must treat:
+
+```text
+Level
+```
+
+and
+
+```text
+Scaffold State
+```
+
+as separate concepts.
+
+A learner may remain at the same level while scaffold support changes dynamically.
+
+Scaffold changes must not automatically trigger:
+
+- Level Promotion
+- Level Fallback
+
+Level progression and scaffold progression are independent systems.
+
+## 13. Scaffold Metadata
+
+Each scaffold should support metadata.
+
+Fields:
+
+- Scaffold ID
+- Scaffold Category
+- Supported Skills
+- Difficulty Impact
+- Auto Enable Eligible
+- Auto Removal Eligible
+
+Example:
+
+```text
+SC-ENC-001
+
+Category:
+Encoding
+
+Supports:
+Visual Encoding
+
+Impact:
+Low
+```
+
+## 14. Future Expansion
+
+Future scaffolds may include:
+
+- Pattern Rotation Assistance
+- Shape Memory Support
+- Progressive Hint Chains
+- AI-Driven Scaffold Recommendations
+- SIRAASH Scaffold Selection
+
+Do not define future scaffold implementations in this document.
+
+## Out of Scope
+
+Do not:
+
+- Implement scaffolds
+- Create UI
+- Create analytics screens
+- Create parent dashboard screens
+- Create backlog items
+
+Documentation only.
