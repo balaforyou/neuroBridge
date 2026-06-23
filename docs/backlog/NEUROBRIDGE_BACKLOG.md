@@ -224,9 +224,10 @@ Pick up after Division L1-L9 progression is introduced and stable.
 
 Items explicitly parked until promoted.
 
-### SCH-008 Honeycomb Layout
+### SCH-008.1 Honeycomb Layout
 
 Status: Deferred
+Note: Previously recorded as `SCH-008`, but `SCH-008` is now assigned to Level 2 Square Grid Expansion. Honeycomb remains deferred and out of scope for the square grid packet.
 
 ### SCH-009 Multiples Mode
 
@@ -433,6 +434,19 @@ Depends On:
 - `SCH-007.1`
 
 Closure note: Standardized completion-screen persistence so completion events do not auto-navigate, documented the persistence rule in `NB-ACTIVITY-STANDARD-001`, and added Schulte regression coverage proving the completion summary remains visible until Play Again or Return Home.
+
+### SCH-008 Level 2 Square Grid Expansion
+
+Status: Done
+Depends On:
+- `SCH-001`
+- `SCH-002`
+- `SCH-004`
+- `SCH-005`
+- `SCH-006`
+- `SCH-007`
+
+Closure note: Added Level 2 Schulte Table support using a 4x4 square grid with numbers 1-16 across the existing Ascending, Descending, Memory, Listen & Find, and completion summary learner flow while preserving Level 1 3x3 behavior and keeping Honeycomb, Multiples, Random Listen & Find, Peripheral, Gorbov, timer/adaptive fluency, and Parent Practice Lab out of scope.
 
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 

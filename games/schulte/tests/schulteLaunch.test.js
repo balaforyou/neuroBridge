@@ -244,6 +244,112 @@ async function testAutomaticAscendingToDescendingFlow() {
     console.log('Schulte automatic ascending-to-descending flow test passed');
 }
 
+async function testLevelTwoSquareGridLearnerFlow() {
+    const server = await ensureStaticServer();
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage({ viewport: { width: 1100, height: 850 } });
+    await page.addInitScript(() => {
+        window.__schulteListenFindSpeechRequests = [];
+        window.__schulteAnalyticsPayloads = [];
+        class MockSpeechSynthesisUtterance {
+            constructor(text) {
+                this.text = text;
+            }
+        }
+        window.addEventListener('message', event => {
+            if (event.data?.type === 'GAME_OVER_SUBMIT_SCORE') {
+                window.__schulteAnalyticsPayloads.push(event.data.payload);
+            }
+        });
+        Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+            configurable: true,
+            value: MockSpeechSynthesisUtterance
+        });
+        Object.defineProperty(window, 'speechSynthesis', {
+            configurable: true,
+            value: {
+                cancel: () => {},
+                speak: utterance => window.__schulteListenFindSpeechRequests.push(utterance.text)
+            }
+        });
+    });
+
+    try {
+        await page.goto('http://127.0.0.1:5501/games/schulte/index.html');
+        await page.getByTestId('schulte-activity').waitFor();
+        await page.evaluate(() => {
+            window.postMessage({
+                type: 'INITIALIZE_GAME_RULES',
+                payload: {
+                    level: 2
+                },
+                learnerName: 'Adarsh',
+                isTestSession: true
+            }, '*');
+        });
+
+        await page.getByTestId('schulte-level-label').waitFor();
+        assert(await page.getByTestId('schulte-level-label').innerText() === 'Level 2', 'Level 2 flow should show level context');
+        assert(await page.getByTestId('schulte-mode-label').innerText() === 'Mode: Ascending', 'Level 2 should start in Ascending mode');
+        assert(await page.locator('[data-schulte-cell-id]').count() === 16, 'Level 2 should render 16 Schulte cells');
+        await assertGridNumbers(page, 16);
+        await assertSingleFindPrompt(page, 'Find 1');
+
+        await playOrderedValues(page, 1, 16, 1);
+        await playOrderedValues(page, 1, 16, 1);
+        await page.getByTestId('schulte-descending-transition').waitFor();
+        assert(
+            (await page.getByTestId('schulte-descending-transition').innerText()).includes('Start from 16 and go backwards.'),
+            'Level 2 descending transition should start from 16'
+        );
+
+        await page.getByTestId('schulte-start-next-mode').click();
+        await assertSingleFindPrompt(page, 'Find 16');
+        await playOrderedValues(page, 16, 1, -1);
+        await playOrderedValues(page, 16, 1, -1);
+        await page.getByTestId('schulte-descending-transition').waitFor();
+        assert(
+            (await page.getByTestId('schulte-descending-transition').innerText()).includes('Follow the ordered prompts from 1 to 16.'),
+            'Level 2 Listen & Find transition should explain 1 to 16 prompts'
+        );
+
+        await page.getByTestId('schulte-start-next-mode').click();
+        await assertSingleFindPrompt(page, 'Find 1');
+        assertSpeechRequests(await getListenFindSpeechRequests(page), ['Find 1'], 'Level 2 Listen & Find should speak first target');
+        await playOrderedValues(page, 1, 16, 1);
+        await assertSingleFindPrompt(page, 'Find 1');
+        assertSpeechRequests(
+            await getListenFindSpeechRequests(page),
+            [...createExpectedListenFindSpeechRequests(1, 16), 'Find 1'],
+            'Level 2 Listen & Find Board 2 should restart speech at Find 1'
+        );
+        await playOrderedValues(page, 1, 16, 1);
+
+        await page.getByTestId('schulte-completion').waitFor();
+        const completionText = await page.getByTestId('schulte-completion').innerText();
+        assert(completionText.includes('100% Accuracy'), 'Level 2 completion should show perfect accuracy for correct flow');
+        assert(completionText.includes('96 Correct'), 'Level 2 completion should show 96 correct selections');
+        assert(completionText.includes('0 Incorrect'), 'Level 2 completion should show zero incorrect selections');
+        assert(completionText.includes('6 / 6 Boards Completed'), 'Level 2 completion should preserve six-board learner flow');
+
+        const analyticsPayloads = await getSchulteAnalyticsPayloads(page);
+        assert(analyticsPayloads.length === 1, 'Level 2 should submit one analytics record on completion');
+        assert(analyticsPayloads[0].level === 2, 'Level 2 analytics should capture level 2');
+        assert(analyticsPayloads[0].gridSize === 4, 'Level 2 analytics should capture 4x4 grid size');
+        assert(analyticsPayloads[0].boardsCompleted === 6, 'Level 2 analytics should capture six completed boards');
+        assert(analyticsPayloads[0].correctSelections === 96, 'Level 2 analytics should capture all 96 correct selections');
+        assert(analyticsPayloads[0].totalQuestions === 96, 'Level 2 analytics should capture total selection attempts');
+        assert(analyticsPayloads[0].accuracyPercent === 100, 'Level 2 analytics should capture 100 percent accuracy');
+    } finally {
+        await browser.close();
+        if (server) {
+            server.kill();
+        }
+    }
+
+    console.log('Schulte Level 2 square grid learner flow test passed');
+}
+
 async function assertSingleFindPrompt(page, expectedText) {
     const prompt = page.getByTestId('schulte-target');
     assert(await prompt.count() === 1, 'Only one active Find prompt should be rendered');
@@ -265,6 +371,21 @@ async function getSchulteAnalyticsPayloads(page) {
 
 async function getSchulteHomeMessages(page) {
     return page.evaluate(() => window.__schulteHomeMessages.slice());
+}
+
+async function assertGridNumbers(page, maxNumber) {
+    const numbers = await page.locator('[data-schulte-cell-id]').evaluateAll(elements => (
+        elements.map(element => Number(element.getAttribute('data-schulte-number'))).sort((a, b) => a - b)
+    ));
+    const expected = Array.from({ length: maxNumber }, (_, index) => index + 1);
+
+    assert(numbers.join(',') === expected.join(','), `Grid should contain each number 1 through ${maxNumber} exactly once`);
+}
+
+async function playOrderedValues(page, startValue, endValue, step) {
+    for (let value = startValue; step > 0 ? value <= endValue : value >= endValue; value += step) {
+        await page.locator(`[data-schulte-number="${value}"]`).click();
+    }
 }
 
 async function assertSchulteCompletionSummary(page) {
@@ -294,10 +415,10 @@ function assertSchulteAnalyticsPayload(payload) {
     assert(payload.completionStatus === 'completed', 'Analytics payload should capture completion status');
 }
 
-function createExpectedListenFindSpeechRequests(boardCount) {
+function createExpectedListenFindSpeechRequests(boardCount, maxNumber = 9) {
     const requests = [];
     for (let board = 0; board < boardCount; board += 1) {
-        for (let target = 1; target <= 9; target += 1) {
+        for (let target = 1; target <= maxNumber; target += 1) {
             requests.push(`Find ${target}`);
         }
     }
@@ -314,6 +435,7 @@ function assertSpeechRequests(actual, expected, message) {
 async function runAllTests() {
     console.log('=== Schulte Launch Tests ===');
     await testAutomaticAscendingToDescendingFlow();
+    await testLevelTwoSquareGridLearnerFlow();
     console.log('=== All Schulte Launch Tests Passed ===');
 }
 

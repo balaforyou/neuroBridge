@@ -6,6 +6,12 @@ export const SCHULTE_GAME_ID = 'schulte';
 export const SCHULTE_ACTIVITY_NAME = 'Schulte Table';
 export const SCHULTE_CORE_GRID_SIZE = 3;
 export const SCHULTE_CORE_CELL_COUNT = SCHULTE_CORE_GRID_SIZE * SCHULTE_CORE_GRID_SIZE;
+export const SCHULTE_LEVEL_1 = 1;
+export const SCHULTE_LEVEL_2 = 2;
+export const SCHULTE_LEVEL_GRID_SIZES = {
+    [SCHULTE_LEVEL_1]: 3,
+    [SCHULTE_LEVEL_2]: 4
+};
 export const SCHULTE_ASCENDING_MODE = 'ascending';
 export const SCHULTE_DESCENDING_MODE = 'descending';
 export const SCHULTE_LISTEN_FIND_MODE = 'listen-find';
@@ -134,9 +140,12 @@ function createSchulteOrderedSession(config = {}) {
         mode,
         memoryMode,
         boardCount: SCHULTE_ASCENDING_BOARD_COUNT,
+        level: normalizeSchulteLevel(config.level),
+        gridSize: boards[0].gridSize,
+        maxNumber: boards[0].cellCount,
         currentBoardIndex: 0,
         completedBoards: 0,
-        expectedNumber: getInitialExpectedNumber(mode),
+        expectedNumber: getInitialExpectedNumber(mode, boards[0].cellCount),
         currentBoardMistakes: 0,
         completed: false,
         lastResult: null,
@@ -252,7 +261,7 @@ function createSchulteOrderedSession(config = {}) {
             boardNumber: state.currentBoardIndex + 1
         });
         state.currentBoardIndex += 1;
-        state.expectedNumber = getInitialExpectedNumber(mode);
+        state.expectedNumber = getInitialExpectedNumber(mode, boards[state.currentBoardIndex].cellCount);
         state.currentBoardMistakes = 0;
         currentBoardEngine = createSchulteCoreGridEngine({ board: boards[state.currentBoardIndex] });
         state.lastResult = 'board-complete';
@@ -301,8 +310,11 @@ export function renderSchulteGridMarkup(stateOrBoard) {
 export function createSchulteAnalyticsTracker(config = {}) {
     const now = typeof config.now === 'function' ? config.now : Date.now;
     const startedAtMs = normalizeTimestampMs(now(), Date.now());
+    const level = normalizeSchulteLevel(config.level);
     const state = {
         activityName: SCHULTE_ACTIVITY_NAME,
+        level,
+        gridSize: getSchulteGridSizeForLevel(level),
         sessionTimestamp: new Date(startedAtMs).toISOString(),
         startedAtMs,
         modesPlayed: [],
@@ -394,9 +406,10 @@ export function createSchulteAnalyticsPayload(summary = {}) {
         completionStatus,
         completed: summary.completed === true,
         mistakeCount: incorrectSelections,
-        highestLevelReached: 1,
-        level: 1,
-        levelLabel: 'Schulte Table V1',
+        highestLevelReached: normalizeSchulteLevel(summary.level),
+        level: normalizeSchulteLevel(summary.level),
+        gridSize: normalizeSchulteGridSize(summary.gridSize),
+        levelLabel: `Schulte Table Level ${normalizeSchulteLevel(summary.level)}`,
         trials: []
     };
 }
@@ -408,6 +421,7 @@ function mountSchulteActivity() {
     const pageState = {
         learnerName: 'Learner',
         mode: SCHULTE_ASCENDING_MODE,
+        level: SCHULTE_LEVEL_1,
         memoryMode: true,
         awaitingTransitionStart: false,
         transitionTargetMode: null,
@@ -416,7 +430,7 @@ function mountSchulteActivity() {
         analyticsSubmitted: false,
         completionSummary: null
     };
-    let session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, handleFeedback);
+    let session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, pageState.level, handleFeedback);
     const listenFindSpeaker = createListenFindSpeaker();
     let analyticsTracker = createSchulteAnalyticsTracker();
     const homeButton = document.getElementById('home-button');
@@ -429,7 +443,10 @@ function mountSchulteActivity() {
 
     window.addEventListener('message', (event) => {
         if (event.data?.type !== 'INITIALIZE_GAME_RULES') return;
+        const rules = event.data.payload || {};
         pageState.learnerName = normalizeLearnerName(event.data.learnerName);
+        pageState.level = normalizeSchulteLevel(rules.level || rules.schulteLevel || rules.schulteTableLevel);
+        resetLearnerFlow();
         render();
     });
 
@@ -457,7 +474,8 @@ function mountSchulteActivity() {
                             <p class="text-xs font-black uppercase tracking-[0.14em] text-cyan-700">Grid Vision</p>
                             <h2 class="text-xl font-black text-slate-950">Schulte Table</h2>
                         </div>
-                        <div class="flex gap-2 text-sm font-black text-slate-800">
+                        <div class="flex flex-wrap gap-2 text-sm font-black text-slate-800">
+                            <span data-testid="schulte-level-label" class="rounded-full border border-cyan-200 bg-white px-3 py-1.5">Level ${state.level}</span>
                             <span data-testid="schulte-mode-label" class="rounded-full border border-cyan-200 bg-white px-3 py-1.5">Mode: ${getModeLabel(state.mode)}</span>
                             <span data-testid="schulte-board-counter" class="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5">Board ${state.boardNumber} / ${state.boardCount}</span>
                         </div>
@@ -467,7 +485,7 @@ function mountSchulteActivity() {
 
                     ${showTransition ? renderModeTransition() : `
                         <div data-testid="schulte-grid" class="grid flex-1 min-h-0 gap-2" style="grid-template-columns: repeat(${state.currentBoard.gridSize}, minmax(0, 1fr));">
-                            ${state.currentBoard.cells.map(cell => renderCell(cell, state.completed, state.memoryMode)).join('')}
+                            ${state.currentBoard.cells.map(cell => renderCell(cell, state.completed, state.memoryMode, state.currentBoard.gridSize)).join('')}
                         </div>
                     `}
                 `}
@@ -553,13 +571,13 @@ function mountSchulteActivity() {
         pageState.lastSpokenListenFindKey = null;
         pageState.analyticsSubmitted = false;
         pageState.completionSummary = null;
-        session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, handleFeedback);
-        analyticsTracker = createSchulteAnalyticsTracker();
+        session = createVisibleSchulteSession(pageState.mode, pageState.memoryMode, pageState.level, handleFeedback);
+        analyticsTracker = createSchulteAnalyticsTracker({ level: pageState.level });
     }
 
     function startNextMode() {
         const nextMode = pageState.transitionTargetMode || SCHULTE_DESCENDING_MODE;
-        session = createVisibleSchulteSession(nextMode, pageState.memoryMode, handleFeedback);
+        session = createVisibleSchulteSession(nextMode, pageState.memoryMode, pageState.level, handleFeedback);
         pageState.mode = session.getState().mode;
         pageState.awaitingTransitionStart = false;
         pageState.transitionTargetMode = null;
@@ -599,7 +617,7 @@ function mountSchulteActivity() {
     }
 
     function renderModeTransition() {
-        const transitionCopy = getTransitionCopy(pageState.transitionTargetMode);
+        const transitionCopy = getTransitionCopy(pageState.transitionTargetMode, pageState.level);
 
         return `
             <div data-testid="schulte-descending-transition" class="flex flex-1 flex-col items-center justify-center gap-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-5 py-6 text-center text-slate-950">
@@ -659,8 +677,11 @@ function mountSchulteActivity() {
         `;
     }
 
-    function renderCell(cell, sessionComplete, memoryMode) {
+    function renderCell(cell, sessionComplete, memoryMode, gridSize) {
         const isPulse = pageState.transientPulseCellId === cell.cellId;
+        const sizeClass = gridSize >= 4
+            ? 'min-h-[54px] text-2xl sm:min-h-[64px] sm:text-3xl'
+            : 'min-h-[72px] text-3xl';
         const selectedClass = cell.selected
             ? 'border-emerald-400 bg-emerald-50 text-emerald-950'
             : 'border-cyan-200 bg-white text-slate-950';
@@ -677,7 +698,7 @@ function mountSchulteActivity() {
                 data-schulte-number="${cell.value}"
                 data-schulte-memory-mode="${memoryMode ? 'true' : 'false'}"
                 ${disabled ? 'disabled' : ''}
-                class="min-h-[72px] rounded-xl border-4 ${pulseClass} text-3xl font-black shadow-sm transition focus:outline-none focus:ring-4 focus:ring-cyan-300 disabled:opacity-100"
+                class="${sizeClass} rounded-xl border-4 ${pulseClass} font-black shadow-sm transition focus:outline-none focus:ring-4 focus:ring-cyan-300 disabled:opacity-100"
                 aria-label="Schulte number ${cell.value}">
                 ${cell.value}
             </button>
@@ -725,8 +746,13 @@ function normalizeLearnerName(learnerName) {
     return trimmed || 'Learner';
 }
 
-function createVisibleSchulteSession(mode, memoryMode, onFeedback) {
-    const config = { memoryMode, onFeedback };
+function createVisibleSchulteSession(mode, memoryMode, level, onFeedback) {
+    const config = {
+        memoryMode,
+        onFeedback,
+        level,
+        gridSize: getSchulteGridSizeForLevel(level)
+    };
     if (mode === SCHULTE_DESCENDING_MODE) {
         return createSchulteDescendingSession(config);
     }
@@ -738,17 +764,19 @@ function createVisibleSchulteSession(mode, memoryMode, onFeedback) {
     return createSchulteAscendingSession(config);
 }
 
-function getTransitionCopy(targetMode) {
+function getTransitionCopy(targetMode, level = SCHULTE_LEVEL_1) {
+    const maxNumber = getSchulteGridSizeForLevel(level) * getSchulteGridSizeForLevel(level);
+
     if (targetMode === SCHULTE_LISTEN_FIND_MODE) {
         return {
             title: 'Great work! Now let\'s listen and find.',
-            body: 'Follow the ordered prompts from 1 to 9.'
+            body: `Follow the ordered prompts from 1 to ${maxNumber}.`
         };
     }
 
     return {
         title: 'Great work! Now let\'s try descending.',
-        body: 'Start from 9 and go backwards.'
+        body: `Start from ${maxNumber} and go backwards.`
     };
 }
 
@@ -760,8 +788,8 @@ function createOrderedSessionBoards(config) {
     return Array.from({ length: SCHULTE_ASCENDING_BOARD_COUNT }, () => createSchulteBoard(config));
 }
 
-function getInitialExpectedNumber(mode) {
-    return mode === SCHULTE_DESCENDING_MODE ? SCHULTE_CORE_CELL_COUNT : 1;
+function getInitialExpectedNumber(mode, maxNumber = SCHULTE_CORE_CELL_COUNT) {
+    return mode === SCHULTE_DESCENDING_MODE ? maxNumber : 1;
 }
 
 function getNextExpectedNumber(mode, currentValue) {
@@ -776,6 +804,15 @@ function normalizeSchulteMode(mode) {
     if (mode === SCHULTE_DESCENDING_MODE) return SCHULTE_DESCENDING_MODE;
     if (mode === SCHULTE_LISTEN_FIND_MODE) return SCHULTE_LISTEN_FIND_MODE;
     return SCHULTE_ASCENDING_MODE;
+}
+
+function normalizeSchulteLevel(level = SCHULTE_LEVEL_1) {
+    const number = Number(level);
+    return number === SCHULTE_LEVEL_2 ? SCHULTE_LEVEL_2 : SCHULTE_LEVEL_1;
+}
+
+function getSchulteGridSizeForLevel(level = SCHULTE_LEVEL_1) {
+    return SCHULTE_LEVEL_GRID_SIZES[normalizeSchulteLevel(level)];
 }
 
 function createFeedbackEmitter(config) {
@@ -795,7 +832,8 @@ function createFeedbackEmitter(config) {
 }
 
 function normalizeSchulteGridSize(gridSize = SCHULTE_CORE_GRID_SIZE) {
-    return gridSize === SCHULTE_CORE_GRID_SIZE ? SCHULTE_CORE_GRID_SIZE : SCHULTE_CORE_GRID_SIZE;
+    const number = Number(gridSize);
+    return Object.values(SCHULTE_LEVEL_GRID_SIZES).includes(number) ? number : SCHULTE_CORE_GRID_SIZE;
 }
 
 function shuffleNumbers(numbers, random) {

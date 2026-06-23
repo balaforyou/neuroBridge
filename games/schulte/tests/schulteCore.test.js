@@ -11,6 +11,7 @@ import {
     SCHULTE_ASCENDING_BOARD_COUNT,
     SCHULTE_CORE_CELL_COUNT,
     SCHULTE_CORE_GRID_SIZE,
+    SCHULTE_LEVEL_2,
     SCHULTE_DESCENDING_MODE,
     SCHULTE_FEEDBACK,
     SCHULTE_LEARNER_FLOW_MODE,
@@ -28,15 +29,16 @@ function createFixedRandom(values) {
     return () => values[index++ % values.length];
 }
 
-function createOrderedBoard(prefix = 'board') {
+function createOrderedBoard(prefix = 'board', gridSize = SCHULTE_CORE_GRID_SIZE) {
+    const cellCount = gridSize * gridSize;
     return {
-        gridSize: SCHULTE_CORE_GRID_SIZE,
-        cellCount: SCHULTE_CORE_CELL_COUNT,
-        cells: createSchulteNumberSet().map((value, index) => ({
+        gridSize,
+        cellCount,
+        cells: createSchulteNumberSet(gridSize).map((value, index) => ({
             cellId: `${prefix}-cell-${value}`,
             value,
-            row: Math.floor(index / SCHULTE_CORE_GRID_SIZE),
-            column: index % SCHULTE_CORE_GRID_SIZE,
+            row: Math.floor(index / gridSize),
+            column: index % gridSize,
             selected: false
         }))
     };
@@ -71,6 +73,21 @@ function testBoardGenerationCreatesRandomizedThreeByThreeCells() {
     assert(board.cells[8].row === 2 && board.cells[8].column === 2, 'Last cell should include row and column placement');
     assert(board.cells.every(cell => cell.selected === false), 'Cells should begin unselected');
     console.log('Schulte board generation test passed');
+}
+
+function testLevelTwoBoardGenerationCreatesFourByFourCells() {
+    const board = createSchulteBoard({
+        gridSize: 4,
+        random: createFixedRandom([0, 0.25, 0.5, 0.75, 0.99])
+    });
+    const values = board.cells.map(cell => cell.value);
+    const sortedValues = values.slice().sort((a, b) => a - b);
+
+    assert(board.gridSize === 4, 'Level 2 board should use 4x4 grid size');
+    assert(board.cellCount === 16, 'Level 2 board should expose 16 cells');
+    assert(sortedValues.join(',') === '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16', 'Level 2 board should place each number 1 through 16 exactly once');
+    assert(board.cells[15].row === 3 && board.cells[15].column === 3, 'Level 2 last cell should include 4x4 row and column placement');
+    console.log('Schulte Level 2 board generation test passed');
 }
 
 function testCoreGridSelectionMarksCell() {
@@ -135,6 +152,16 @@ function testRenderSchulteGridMarkup() {
         assert(markup.includes(`data-schulte-number="${cell.value}"`), `Markup should include number ${cell.value}`);
     });
     console.log('Schulte grid markup test passed');
+}
+
+function testRenderSchulteLevelTwoGridMarkup() {
+    const board = createSchulteBoard({ gridSize: 4, random: createFixedRandom([0]) });
+    const markup = renderSchulteGridMarkup(board);
+
+    assert(markup.includes('grid-template-columns: repeat(4'), 'Level 2 markup should render as a 4-column grid');
+    assert((markup.match(/data-schulte-cell-id=/g) || []).length === 16, 'Level 2 markup should include 16 cells');
+    assert(markup.includes('data-schulte-number="16"'), 'Level 2 markup should include number 16');
+    console.log('Schulte Level 2 grid markup test passed');
 }
 
 function testAscendingSessionStartsWithTwoBoardStructure() {
@@ -213,6 +240,41 @@ function testAscendingSessionCompletesAfterTwoBoards() {
     assert(session.isComplete() === true, 'Session should report complete');
     assert(session.selectCell('two-cell-1').reason === 'session-complete', 'Selections after session completion should be ignored');
     console.log('Schulte ascending session completion test passed');
+}
+
+function testLevelTwoAscendingSessionUsesOneToSixteenOrder() {
+    const session = createSchulteAscendingSession({
+        level: SCHULTE_LEVEL_2,
+        gridSize: 4,
+        boards: [createOrderedBoard('one', 4), createOrderedBoard('two', 4)]
+    });
+    const initialState = session.getState();
+    const initialBoard = initialState.currentBoard;
+    const twoCellId = getCellIdByValue(initialBoard, 2);
+    const oneCellId = getCellIdByValue(initialBoard, 1);
+    let outcome = session.selectCell(twoCellId);
+
+    assert(initialState.level === SCHULTE_LEVEL_2, 'Level 2 ascending session should expose level 2');
+    assert(initialBoard.gridSize === 4, 'Level 2 ascending session should use a 4x4 board');
+    assert(initialBoard.cellCount === 16, 'Level 2 ascending session should expose 16 cells');
+    assert(outcome.result === 'incorrect', 'Selecting 2 before 1 should be incorrect on Level 2');
+    assert(outcome.expectedNumber === 1, 'Level 2 ascending should start at 1');
+
+    outcome = session.selectCell(oneCellId);
+    assert(outcome.result === 'selected', 'Selecting 1 first should be accepted on Level 2');
+    assert(outcome.state.expectedNumber === 2, 'Level 2 ascending should advance to 2');
+
+    for (let boardIndex = 0; boardIndex < SCHULTE_ASCENDING_BOARD_COUNT; boardIndex += 1) {
+        const startValue = boardIndex === 0 ? 2 : 1;
+        for (let value = startValue; value <= 16; value += 1) {
+            const board = session.getState().currentBoard;
+            outcome = session.selectCell(getCellIdByValue(board, value));
+        }
+    }
+
+    assert(outcome.result === 'session-complete', 'Level 2 ascending final selection should complete session');
+    assert(outcome.state.completedBoards === SCHULTE_ASCENDING_BOARD_COUNT, 'Level 2 ascending should complete both boards');
+    console.log('Schulte Level 2 ascending session test passed');
 }
 
 function testMemoryModeKeepsInternalSelectionState() {
@@ -367,6 +429,38 @@ function testDescendingSessionStartsAtNine() {
     assert(state.expectedNumber === 9, 'Descending session should expect 9 first');
     assert(state.completed === false, 'Descending session should start incomplete');
     console.log('Schulte descending start state test passed');
+}
+
+function testLevelTwoDescendingSessionUsesSixteenToOneOrder() {
+    const session = createSchulteDescendingSession({
+        level: SCHULTE_LEVEL_2,
+        gridSize: 4,
+        boards: [createOrderedBoard('one', 4), createOrderedBoard('two', 4)]
+    });
+    const initialBoard = session.getState().currentBoard;
+    const fifteenCellId = getCellIdByValue(initialBoard, 15);
+    const sixteenCellId = getCellIdByValue(initialBoard, 16);
+    let outcome = session.selectCell(fifteenCellId);
+
+    assert(session.getState().expectedNumber === 16, 'Level 2 descending should start at 16');
+    assert(outcome.result === 'incorrect', 'Selecting 15 before 16 should be incorrect on Level 2');
+    assert(outcome.expectedNumber === 16, 'Incorrect Level 2 descending selection should expose 16');
+
+    outcome = session.selectCell(sixteenCellId);
+    assert(outcome.result === 'selected', 'Selecting 16 first should be accepted on Level 2');
+    assert(outcome.state.expectedNumber === 15, 'Level 2 descending should advance downward to 15');
+
+    for (let boardIndex = 0; boardIndex < SCHULTE_ASCENDING_BOARD_COUNT; boardIndex += 1) {
+        const startValue = boardIndex === 0 ? 15 : 16;
+        for (let value = startValue; value >= 1; value -= 1) {
+            const board = session.getState().currentBoard;
+            outcome = session.selectCell(getCellIdByValue(board, value));
+        }
+    }
+
+    assert(outcome.result === 'session-complete', 'Level 2 descending final selection should complete session');
+    assert(outcome.state.completedBoards === SCHULTE_ASCENDING_BOARD_COUNT, 'Level 2 descending should complete both boards');
+    console.log('Schulte Level 2 descending session test passed');
 }
 
 function testDescendingSessionEnforcesNineToOneOrder() {
@@ -530,6 +624,38 @@ function testListenFindSecondBoardStartsFresh() {
     console.log('Schulte Listen & Find second board reset test passed');
 }
 
+function testLevelTwoListenFindUsesOrderedOneToSixteenValidation() {
+    const session = createSchulteListenFindSession({
+        level: SCHULTE_LEVEL_2,
+        gridSize: 4,
+        boards: [createOrderedBoard('one', 4), createOrderedBoard('two', 4)]
+    });
+    const initialBoard = session.getState().currentBoard;
+    const twoCellId = getCellIdByValue(initialBoard, 2);
+    const oneCellId = getCellIdByValue(initialBoard, 1);
+    let outcome = session.selectCell(twoCellId);
+
+    assert(session.getState().expectedNumber === 1, 'Level 2 Listen & Find should start at 1');
+    assert(outcome.result === 'incorrect', 'Selecting 2 before 1 should be incorrect in Level 2 Listen & Find');
+    assert(outcome.expectedNumber === 1, 'Incorrect Level 2 Listen & Find selection should expose expected number 1');
+
+    outcome = session.selectCell(oneCellId);
+    assert(outcome.result === 'selected', 'Selecting 1 first should be accepted in Level 2 Listen & Find');
+    assert(outcome.state.expectedNumber === 2, 'Level 2 Listen & Find should advance to target 2');
+
+    for (let boardIndex = 0; boardIndex < SCHULTE_ASCENDING_BOARD_COUNT; boardIndex += 1) {
+        const startValue = boardIndex === 0 ? 2 : 1;
+        for (let value = startValue; value <= 16; value += 1) {
+            const board = session.getState().currentBoard;
+            outcome = session.selectCell(getCellIdByValue(board, value));
+        }
+    }
+
+    assert(outcome.result === 'session-complete', 'Level 2 Listen & Find final selection should complete session');
+    assert(outcome.state.completedBoards === SCHULTE_ASCENDING_BOARD_COUNT, 'Level 2 Listen & Find should complete both boards');
+    console.log('Schulte Level 2 Listen & Find session test passed');
+}
+
 function testSchulteAnalyticsPayloadCalculation() {
     const payload = createSchulteAnalyticsPayload({
         startedAtMs: Date.parse('2026-06-21T10:00:00.000Z'),
@@ -596,14 +722,17 @@ function runAllTests() {
     console.log('=== Schulte Core Grid Unit Tests ===');
     testNumberSetCreatesThreeByThreeRange();
     testBoardGenerationCreatesRandomizedThreeByThreeCells();
+    testLevelTwoBoardGenerationCreatesFourByFourCells();
     testCoreGridSelectionMarksCell();
     testCoreGridRejectsInvalidAndDuplicateSelections();
     testCoreGridDetectsBoardCompletion();
     testRenderSchulteGridMarkup();
+    testRenderSchulteLevelTwoGridMarkup();
     testAscendingSessionStartsWithTwoBoardStructure();
     testAscendingSessionEnforcesOneToNineOrder();
     testAscendingSessionAdvancesAfterFirstBoard();
     testAscendingSessionCompletesAfterTwoBoards();
+    testLevelTwoAscendingSessionUsesOneToSixteenOrder();
     testMemoryModeKeepsInternalSelectionState();
     testCorrectAscendingSelectionTriggersClickFeedback();
     testWrongAscendingSelectionTriggersOrangePulseFeedback();
@@ -611,6 +740,7 @@ function runAllTests() {
     testImperfectBoardSkipsSuccessFeedbackButStillAdvances();
     testSessionCompletionTriggersCelebrationFeedback();
     testDescendingSessionStartsAtNine();
+    testLevelTwoDescendingSessionUsesSixteenToOneOrder();
     testDescendingSessionEnforcesNineToOneOrder();
     testDescendingSessionAdvancesAfterFirstBoard();
     testDescendingSessionCompletesAfterTwoBoards();
@@ -619,6 +749,7 @@ function runAllTests() {
     testListenFindSessionUsesOrderedOneToNineValidation();
     testListenFindSessionCompletesAfterTwoBoards();
     testListenFindSecondBoardStartsFresh();
+    testLevelTwoListenFindUsesOrderedOneToSixteenValidation();
     testSchulteAnalyticsPayloadCalculation();
     testSchulteAnalyticsTrackerRecordsPlay();
     console.log('=== All Schulte Core Grid Tests Passed ===');
