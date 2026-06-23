@@ -77,10 +77,10 @@ async function testPatternMemoryCopyModeLearnerFlow() {
         assert(await page.getByTestId('pattern-memory-reference-grid').count() === 1, 'Reference grid should be visible');
         assert(await page.getByTestId('pattern-memory-target-grid').count() === 1, 'Target grid should be visible');
         await assertInternalQuestionStripRemoved(page);
+        await assertInstructionCardCompact(page);
         await assertRenderedCellsAreAccessible(page);
         await assertCopyModeLayoutAligned(page);
-        await assertSupportPanelVisible(page);
-        await assertFeedbackVisible(page, 'Ready when you are.');
+        await assertFeedbackVisible(page, 'Tap on the grid to fill or clear a cell.');
 
         await createIntentionalCorrection(page);
 
@@ -88,6 +88,7 @@ async function testPatternMemoryCopyModeLearnerFlow() {
         await page.getByTestId('pattern-memory-success-check').waitFor();
         await assertSuccessLocalFeedbackVisible(page);
         assert((await page.getByTestId('pattern-memory-feedback').innerText()).includes('Great work!'), 'Correct completion should show success confirmation');
+        assert((await page.getByTestId('pattern-memory-feedback').innerText()).includes('\u2713'), 'Success confirmation should include check mark in feedback row');
         await assertFeedbackVisible(page, 'Great work!');
         await page.waitForTimeout(1000);
         assert(await page.locator('#ui-question').innerText() === '1', 'Success confirmation should dwell before advancing');
@@ -190,8 +191,7 @@ async function testPatternMemoryCompactViewportFit() {
         await page.goto(ACTIVITY_URL);
         await page.getByTestId('pattern-memory-copy-mode').waitFor();
         await assertCopyModeLayoutAligned(page);
-        await assertSupportPanelVisible(page);
-        await assertFeedbackVisible(page, 'Ready when you are.');
+        await assertFeedbackVisible(page, 'Tap on the grid to fill or clear a cell.');
     } finally {
         await browser.close();
         if (server) {
@@ -214,16 +214,23 @@ async function createIntentionalCorrection(page) {
         'Incorrect target cell should show local orange retry feedback'
     );
     assert(
+        await page.getByTestId(`pattern-memory-target-cell-${wrongIndex}`).getAttribute('aria-pressed') === 'false',
+        'Incorrect target cell should not remain selected blue'
+    );
+    assert(
         (await page.getByTestId('pattern-memory-feedback').innerText()).includes('Try that spot again.'),
         'Incorrect target cell should show gentle correction'
     );
     await assertFeedbackVisible(page, 'Try that spot again.');
-    await page.getByTestId(`pattern-memory-target-cell-${wrongIndex}`).click();
+    await page.waitForTimeout(800);
     assert(
-        (await page.getByTestId('pattern-memory-feedback').innerText()).includes('Ready when you are.'),
-        'Removing incorrect cell should restore calm feedback banner'
+        await page.getByTestId(`pattern-memory-target-cell-${wrongIndex}`).getAttribute('data-local-feedback') === null,
+        'Incorrect local feedback marker should clear after orange pulse'
     );
-    await assertSupportPanelVisible(page);
+    assert(
+        await page.getByTestId(`pattern-memory-target-cell-${wrongIndex}`).getAttribute('aria-pressed') === 'false',
+        'Incorrect target cell should stay cleared after pulse'
+    );
 }
 
 async function copyCurrentReferencePattern(page) {
@@ -269,6 +276,16 @@ async function assertInternalQuestionStripRemoved(page) {
     assert(!activeQuestionText.includes('Copy Mode C1'), 'Activity body should not duplicate global level text');
 }
 
+async function assertInstructionCardCompact(page) {
+    const instruction = await page.getByTestId('worksheet-instruction').evaluate(element => ({
+        text: element.textContent,
+        titleVisible: window.getComputedStyle(element.querySelector('h2')).display !== 'none'
+    }));
+
+    assert(instruction.text.includes('Copy the blue pattern into your grid.'), 'Instruction card should show Copy Mode instruction');
+    assert(instruction.titleVisible === false, 'Instruction card should not show duplicate Pattern Memory title');
+}
+
 async function assertCopyModeLayoutAligned(page) {
     const layout = await page.evaluate(() => {
         const copyMode = document.querySelector('[data-testid="pattern-memory-copy-mode"]');
@@ -278,7 +295,6 @@ async function assertCopyModeLayoutAligned(page) {
         const stage = document.querySelector('[data-testid="pattern-memory-stage"]');
         const workspaceCard = document.querySelector('[data-testid="pattern-memory-workspace-card"]');
         const gridWorkspace = document.querySelector('[data-testid="pattern-memory-grid-workspace"]');
-        const support = document.querySelector('[data-testid="pattern-memory-support-panel"]');
         const feedback = document.querySelector('[data-testid="pattern-memory-feedback"]');
         const referencePanel = document.querySelector('[data-testid="pattern-memory-reference-panel"]');
         const targetPanel = document.querySelector('[data-testid="pattern-memory-target-panel"]');
@@ -294,7 +310,6 @@ async function assertCopyModeLayoutAligned(page) {
         const stageRect = stage.getBoundingClientRect();
         const workspaceCardRect = workspaceCard.getBoundingClientRect();
         const gridWorkspaceRect = gridWorkspace.getBoundingClientRect();
-        const supportRect = support.getBoundingClientRect();
         const feedbackRect = feedback.getBoundingClientRect();
         const referenceRect = referencePanel.getBoundingClientRect();
         const targetRect = targetPanel.getBoundingClientRect();
@@ -305,7 +320,6 @@ async function assertCopyModeLayoutAligned(page) {
         const copyModeStyle = window.getComputedStyle(copyMode);
         const workspaceCardStyle = window.getComputedStyle(workspaceCard);
         const gridWorkspaceStyle = window.getComputedStyle(gridWorkspace);
-        const supportStyle = window.getComputedStyle(support);
 
         function isInside(outer, inner) {
             return inner.top >= outer.top - 1
@@ -320,7 +334,7 @@ async function assertCopyModeLayoutAligned(page) {
             copyModeOverflowY: copyModeStyle.overflowY,
             workspaceCardOverflowY: workspaceCardStyle.overflowY,
             gridWorkspaceOverflowY: gridWorkspaceStyle.overflowY,
-            supportDisplay: supportStyle.display,
+            supportPanelCount: document.querySelectorAll('[data-testid="pattern-memory-support-panel"]').length,
             copyModeScrollHeight: copyMode.scrollHeight,
             copyModeClientHeight: copyMode.clientHeight,
             copyModeBottom: copyModeRect.bottom,
@@ -334,9 +348,6 @@ async function assertCopyModeLayoutAligned(page) {
             workspaceCardHeight: workspaceCardRect.height,
             gridWorkspaceTop: gridWorkspaceRect.top,
             gridWorkspaceBottom: gridWorkspaceRect.bottom,
-            supportTop: supportRect.top,
-            supportBottom: supportRect.bottom,
-            supportHeight: supportRect.height,
             feedbackTop: feedbackRect.top,
             feedbackBottom: feedbackRect.bottom,
             feedbackHeight: feedbackRect.height,
@@ -372,13 +383,11 @@ async function assertCopyModeLayoutAligned(page) {
     assert(Math.abs(layout.referenceTop - layout.targetTop) < 5, 'Reference and target panels should align vertically on desktop');
     assert(Math.abs(layout.referenceWidth - layout.targetWidth) < 5, 'Reference and target panels should have consistent width');
     assert(Math.abs(layout.referenceGridWidth - layout.targetGridWidth) < 5, 'Reference and target grids should have consistent width');
-    assert(layout.supportDisplay !== 'none', 'Support panel should be visible');
-    assert(layout.supportTop >= layout.workspaceCardBottom + 8, 'Support panel should sit below the workspace card');
-    assert(layout.feedbackTop >= layout.supportBottom + 8, 'Feedback banner should sit below the support panel');
+    assert(layout.supportPanelCount === 0, 'Pattern Memory should use one merged support/feedback row');
+    assert(layout.feedbackTop >= layout.workspaceCardBottom + 8, 'Merged feedback row should sit below the workspace card');
     assert(layout.feedbackBottom <= layout.viewportHeight, 'Feedback banner should be visible without scrolling');
     assert(layout.feedbackBottom <= layout.shellBottom, 'Feedback banner should remain inside the worksheet shell');
     assert(layout.workspaceCardHeight > layout.instructionHeight, 'Workspace card should be larger than the instruction region');
-    assert(layout.workspaceCardHeight > layout.supportHeight, 'Workspace card should be larger than the support region');
     assert(layout.workspaceCardHeight > layout.feedbackHeight, 'Workspace card should be larger than the feedback region');
     assert(layout.referenceHeadingVisible, 'Reference Pattern heading should be fully visible inside its panel');
     assert(layout.targetHeadingVisible, 'Your Pattern heading should be fully visible inside its panel');
@@ -415,28 +424,6 @@ async function assertFeedbackVisible(page, expectedText) {
     assert(feedback.text.includes(expectedText), 'Gentle correction feedback should include expected learner copy');
     assert(feedback.visible, 'Gentle correction feedback should be visible in the viewport');
     assert(feedback.overflowX === false, 'Feedback state should not create horizontal overflow');
-}
-
-async function assertSupportPanelVisible(page) {
-    const support = await page.getByTestId('pattern-memory-support-panel').evaluate(element => {
-        const rect = element.getBoundingClientRect();
-        const style = window.getComputedStyle(element);
-
-        return {
-            text: element.textContent,
-            visible: rect.width > 0
-                && rect.height > 0
-                && rect.top >= 0
-                && rect.left >= 0
-                && rect.bottom <= window.innerHeight
-                && rect.right <= window.innerWidth
-                && style.visibility !== 'hidden'
-                && style.display !== 'none'
-        };
-    });
-
-    assert(support.text.includes('Tap on the grid to fill or clear a cell.'), 'Support panel should show Copy Mode helper copy');
-    assert(support.visible, 'Support panel should be visible without scrolling');
 }
 
 async function assertSuccessLocalFeedbackVisible(page) {

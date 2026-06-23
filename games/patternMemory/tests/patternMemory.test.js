@@ -108,10 +108,12 @@ function testIncorrectCellAllowsSelfCorrection() {
     assert(incorrect.state.feedbackMessage === 'Try that spot again.', 'Incorrect selected cell should use gentle correction copy');
     assert(incorrect.state.completed === false, 'Incorrect selected cell should not complete question');
     assert(incorrect.state.mistakeCount === 1, 'Incorrect selected cell should count as mistake corrected');
+    assert(incorrect.state.selectedCells.includes(1) === false, 'Incorrect selected cell should not remain selected');
+    assert(incorrect.state.retryCellIndex === 1, 'Incorrect selected cell should expose transient retry marker');
 
-    const removed = game.toggleCell(1);
-    assert(removed.result === 'incomplete', 'Removing incorrect cell should continue interaction');
-    assert(removed.state.feedbackMessage === '', 'Removing incorrect cell should clear feedback');
+    const cleared = game.clearRetryFeedbackMarker();
+    assert(cleared.state.retryCellIndex === null, 'Retry marker should clear after pulse');
+    assert(cleared.state.selectedCells.includes(1) === false, 'Clearing retry marker should keep incorrect cell unselected');
 
     const correct = game.toggleCell(0);
     assert(correct.result === 'correct', 'Learner should be able to self-correct to success');

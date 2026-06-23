@@ -1,6 +1,6 @@
 .pattern-memory-grid {
     display: grid;
-    width: min(100%, clamp(9rem, 22vh, 13rem));
+    width: min(100%, clamp(10rem, 25vh, 15rem));
     gap: clamp(0.25rem, 0.8vh, 0.5rem);
 }
 
@@ -14,12 +14,12 @@
 }
 
 .pattern-memory-shell .worksheet-shell__instruction h2 {
-    font-size: 1.125rem;
+    display: none;
 }
 
 .pattern-memory-shell .worksheet-shell__instruction p {
-    margin-top: 0.125rem;
-    font-size: 0.9375rem;
+    margin-top: 0;
+    font-size: 1rem;
 }
 
 .pattern-memory-cell {
@@ -32,6 +32,7 @@
 }
 
 .pattern-memory-cell--retry {
+    background: #fff7ed;
     border-color: #f59e0b;
     box-shadow: 0 0 0 0.25rem rgba(245, 158, 11, 0.28);
     animation: pattern-memory-retry-pulse 600ms ease-out 1;

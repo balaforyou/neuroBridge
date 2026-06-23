@@ -51,6 +51,7 @@ export function createPatternMemoryCopyGame(config = {}) {
         pendingAdvance: false,
         feedbackType: null,
         feedbackMessage: '',
+        retryCellIndex: null,
         startedAtMs: normalizeTimestampMs(config.startedAtMs, Date.now()),
         learnerName: normalizeWorksheetLearnerName(config.learnerName || 'Adarsh'),
         trials: []
@@ -78,9 +79,19 @@ export function createPatternMemoryCopyGame(config = {}) {
             return { result: 'ignored', reason: 'unknown-cell', state: getState() };
         }
 
+        state.retryCellIndex = null;
+
         if (state.selectedCells.includes(cellIndex)) {
             state.selectedCells = state.selectedCells.filter(index => index !== cellIndex);
         } else {
+            if (!question.filledCells.includes(cellIndex)) {
+                state.mistakeCount += 1;
+                state.feedbackType = 'retry';
+                state.feedbackMessage = 'Try that spot again.';
+                state.retryCellIndex = cellIndex;
+                return { result: 'incorrect', state: getState() };
+            }
+
             state.selectedCells = [...state.selectedCells, cellIndex].sort((a, b) => a - b);
         }
 
@@ -97,13 +108,20 @@ export function createPatternMemoryCopyGame(config = {}) {
             state.pendingAdvance = true;
             state.feedbackType = 'success';
             state.feedbackMessage = 'Great work!';
+            state.retryCellIndex = null;
             state.trials.push(createTrialRecord(question, true));
             return { result: 'correct', state: getState() };
         }
 
         state.feedbackType = null;
         state.feedbackMessage = '';
+        state.retryCellIndex = null;
         return { result: 'incomplete', state: getState() };
+    }
+
+    function clearRetryFeedbackMarker() {
+        state.retryCellIndex = null;
+        return { result: 'cleared', state: getState() };
     }
 
     function advanceAfterFeedback() {
@@ -114,6 +132,7 @@ export function createPatternMemoryCopyGame(config = {}) {
         state.pendingAdvance = false;
         state.feedbackType = null;
         state.feedbackMessage = '';
+        state.retryCellIndex = null;
         state.selectedCells = [];
 
         if (state.currentQuestionIndex >= state.questions.length - 1) {
@@ -131,6 +150,7 @@ export function createPatternMemoryCopyGame(config = {}) {
 
     return {
         advanceAfterFeedback,
+        clearRetryFeedbackMarker,
         getCurrentQuestion,
         getResultSummary,
         getState,
@@ -201,6 +221,7 @@ function mountPatternMemory() {
     const pageState = {
         learnerName: 'Adarsh',
         advanceTimer: null,
+        retryFeedbackTimer: null,
         completionSubmitted: false
     };
     let game = createPatternMemoryCopyGame({
@@ -275,15 +296,10 @@ function mountPatternMemory() {
         boardLayout.className = 'grid w-full grid-cols-1 items-start justify-items-center gap-3 md:grid-cols-2';
         boardLayout.setAttribute('data-testid', 'pattern-memory-grid-workspace');
         boardLayout.append(
-            renderBoardPanel('Reference Pattern', question, question.filledCells, false, state.feedbackType),
-            renderBoardPanel('Your Pattern', question, state.selectedCells, true, state.feedbackType)
+            renderBoardPanel('Reference Pattern', question, question.filledCells, false, state.feedbackType, state.retryCellIndex),
+            renderBoardPanel('Your Pattern', question, state.selectedCells, true, state.feedbackType, state.retryCellIndex)
         );
         workspaceCard.append(boardLayout);
-
-        const support = document.createElement('aside');
-        support.setAttribute('data-testid', 'pattern-memory-support-panel');
-        support.className = 'rounded-xl border-2 border-amber-200 bg-amber-50 px-4 py-1.5 text-center text-sm font-black text-amber-900 sm:text-base';
-        support.textContent = 'Tap on the grid to fill or clear a cell.';
 
         const feedback = document.createElement('div');
         feedback.setAttribute('data-testid', 'pattern-memory-feedback');
@@ -292,20 +308,20 @@ function mountPatternMemory() {
         if (state.feedbackType === 'success') {
             const check = document.createElement('span');
             check.setAttribute('data-testid', 'pattern-memory-success-check');
-            check.className = 'mr-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-xl font-black text-white';
+            check.className = 'ml-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-600 text-lg font-black text-white';
             check.textContent = '\u2713';
-            feedback.append(check, document.createTextNode(state.feedbackMessage));
+            feedback.append(document.createTextNode(state.feedbackMessage), check);
         } else {
-            feedback.textContent = state.feedbackMessage || 'Ready when you are.';
+            feedback.textContent = state.feedbackMessage || 'Tap on the grid to fill or clear a cell.';
         }
 
-        stage.append(workspaceCard, support, feedback);
+        stage.append(workspaceCard, feedback);
         questionContent.append(stage);
     }
 
-    function renderBoardPanel(title, question, selectedCells, interactive, feedbackType) {
+    function renderBoardPanel(title, question, selectedCells, interactive, feedbackType, retryCellIndex) {
         const panel = document.createElement('section');
-        panel.className = 'flex w-full max-w-[350px] flex-col justify-start rounded-2xl border-4 border-emerald-200 bg-white p-2 shadow-sm';
+        panel.className = 'flex w-full max-w-[390px] flex-col justify-start rounded-2xl border-4 border-emerald-200 bg-white p-2 shadow-sm';
         panel.setAttribute('data-testid', interactive ? 'pattern-memory-target-panel' : 'pattern-memory-reference-panel');
 
         const heading = document.createElement('h3');
@@ -328,6 +344,7 @@ function mountPatternMemory() {
                 index,
                 interactive,
                 isBlue,
+                retryCellIndex,
                 question
             });
             cell.className = getCellClass(isBlue, interactive, localFeedback);
@@ -387,8 +404,17 @@ function mountPatternMemory() {
     }
 
     function handleCellToggle(cellIndex) {
+        clearRetryFeedbackTimer();
         const outcome = game.toggleCell(cellIndex);
         renderQuestion();
+
+        if (outcome.result === 'incorrect') {
+            pageState.retryFeedbackTimer = setTimeout(() => {
+                game.clearRetryFeedbackMarker();
+                pageState.retryFeedbackTimer = null;
+                renderQuestion();
+            }, 700);
+        }
 
         if (outcome.result === 'correct') {
             clearPendingAdvanceTimer();
@@ -407,6 +433,7 @@ function mountPatternMemory() {
 
     function restartSession() {
         clearPendingAdvanceTimer();
+        clearRetryFeedbackTimer();
         pageState.completionSubmitted = false;
         game = createPatternMemoryCopyGame({
             learnerName: pageState.learnerName
@@ -435,6 +462,13 @@ function mountPatternMemory() {
 
         clearTimeout(pageState.advanceTimer);
         pageState.advanceTimer = null;
+    }
+
+    function clearRetryFeedbackTimer() {
+        if (!pageState.retryFeedbackTimer) return;
+
+        clearTimeout(pageState.retryFeedbackTimer);
+        pageState.retryFeedbackTimer = null;
     }
 
     function updateHeader() {
@@ -574,17 +608,18 @@ function getLocalFeedbackMarker({
     index,
     interactive,
     isBlue,
+    retryCellIndex,
     question
 }) {
-    if (!interactive || !isBlue) {
+    if (!interactive) {
         return null;
     }
 
-    if (feedbackType === 'retry' && !question.filledCells.includes(index)) {
+    if (feedbackType === 'retry' && retryCellIndex === index) {
         return 'retry';
     }
 
-    if (feedbackType === 'success') {
+    if (feedbackType === 'success' && isBlue && question.filledCells.includes(index)) {
         return 'success';
     }
 

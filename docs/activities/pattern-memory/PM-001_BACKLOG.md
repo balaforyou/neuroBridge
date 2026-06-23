@@ -236,6 +236,13 @@ Status: Done
 Closure:
 Adjusted Pattern Memory Copy Mode to fit the real visible browser viewport by making the workspace grid viewport-aware, compacting the Pattern Memory worksheet instruction region, preserving support and feedback visibility without scrolling, and adding compact viewport regression coverage plus a viewport-only screenshot artifact.
 
+### PM-001.1G Pattern Memory Compact Worksheet Correction
+
+Status: Done
+
+Closure:
+Removed the duplicate visible Pattern Memory title from the instruction card, merged support and feedback into one shared row, increased workspace size with the freed vertical space, and changed incorrect tile behavior so wrong tiles pulse orange without remaining selected blue while correct tiles remain blue.
+
 ### PM-001.01 Activity Brief and Product Requirements
 
 Status: Done
