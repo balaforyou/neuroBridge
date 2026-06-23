@@ -184,6 +184,7 @@ async function createIntentionalCorrection(page) {
         (await page.getByTestId('pattern-memory-feedback').innerText()).includes('Try that spot again.'),
         'Incorrect target cell should show gentle correction'
     );
+    await assertFeedbackVisible(page, 'Try that spot again.');
     await page.getByTestId(`pattern-memory-target-cell-${wrongIndex}`).click();
     assert(await page.getByTestId('pattern-memory-feedback').innerText() === '', 'Removing incorrect cell should clear feedback');
 }
@@ -225,6 +226,7 @@ async function assertRenderedCellsAreAccessible(page) {
 
 async function assertCopyModeLayoutAligned(page) {
     const layout = await page.evaluate(() => {
+        const copyMode = document.querySelector('[data-testid="pattern-memory-copy-mode"]');
         const shellHeader = document.querySelector('body > main > header');
         const instruction = document.querySelector('[data-testid="worksheet-instruction"]');
         const activity = document.querySelector('[data-testid="worksheet-activity"]');
@@ -235,7 +237,10 @@ async function assertCopyModeLayoutAligned(page) {
         const targetPanel = document.querySelector('[data-testid="pattern-memory-target-panel"]');
         const referenceGrid = document.querySelector('[data-testid="pattern-memory-reference-grid"]');
         const targetGrid = document.querySelector('[data-testid="pattern-memory-target-grid"]');
+        const referenceHeading = referencePanel.querySelector('h3');
+        const targetHeading = targetPanel.querySelector('h3');
 
+        const copyModeRect = copyMode.getBoundingClientRect();
         const shellHeaderRect = shellHeader.getBoundingClientRect();
         const instructionRect = instruction.getBoundingClientRect();
         const activityRect = activity.getBoundingClientRect();
@@ -246,24 +251,51 @@ async function assertCopyModeLayoutAligned(page) {
         const targetRect = targetPanel.getBoundingClientRect();
         const referenceGridRect = referenceGrid.getBoundingClientRect();
         const targetGridRect = targetGrid.getBoundingClientRect();
+        const referenceHeadingRect = referenceHeading.getBoundingClientRect();
+        const targetHeadingRect = targetHeading.getBoundingClientRect();
+        const copyModeStyle = window.getComputedStyle(copyMode);
+        const gridWorkspaceStyle = window.getComputedStyle(gridWorkspace);
+
+        function isInside(outer, inner) {
+            return inner.top >= outer.top - 1
+                && inner.left >= outer.left - 1
+                && inner.right <= outer.right + 1
+                && inner.bottom <= outer.bottom + 1;
+        }
 
         return {
+            viewportHeight: window.innerHeight,
+            copyModeOverflowY: copyModeStyle.overflowY,
+            gridWorkspaceOverflowY: gridWorkspaceStyle.overflowY,
+            copyModeScrollHeight: copyMode.scrollHeight,
+            copyModeClientHeight: copyMode.clientHeight,
+            copyModeBottom: copyModeRect.bottom,
             shellHeaderBottom: shellHeaderRect.bottom,
             instructionBottom: instructionRect.bottom,
             questionStripBottom: questionStripRect.bottom,
             gridWorkspaceTop: gridWorkspaceRect.top,
+            gridWorkspaceBottom: gridWorkspaceRect.bottom,
             activityCenter: activityRect.left + (activityRect.width / 2),
             stageCenter: stageRect.left + (stageRect.width / 2),
             referenceTop: referenceRect.top,
+            referenceBottom: referenceRect.bottom,
             targetTop: targetRect.top,
+            targetBottom: targetRect.bottom,
             referenceWidth: referenceRect.width,
             targetWidth: targetRect.width,
             referenceGridWidth: referenceGridRect.width,
             targetGridWidth: targetGridRect.width,
+            referenceHeadingVisible: referenceHeadingRect.height > 0 && isInside(referenceRect, referenceHeadingRect),
+            targetHeadingVisible: targetHeadingRect.height > 0 && isInside(targetRect, targetHeadingRect),
+            referenceGridVisible: referenceGridRect.height > 0 && isInside(referenceRect, referenceGridRect),
+            targetGridVisible: targetGridRect.height > 0 && isInside(targetRect, targetGridRect),
             bodyOverflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth
         };
     });
 
+    assert(!['auto', 'scroll'].includes(layout.copyModeOverflowY), 'Copy Mode content should not create an internal vertical scroll container');
+    assert(!['auto', 'scroll'].includes(layout.gridWorkspaceOverflowY), 'Grid workspace should not create an internal vertical scroll container');
+    assert(layout.copyModeScrollHeight <= layout.copyModeClientHeight + 1, 'Copy Mode content should fit without internal scrolling');
     assert(Math.abs(layout.stageCenter - layout.activityCenter) < 5, 'Pattern Memory stage should be centered in activity panel');
     assert(layout.gridWorkspaceTop >= layout.instructionBottom + 16, 'Grid workspace should start at least 16px below instruction block');
     assert(layout.referenceTop >= layout.instructionBottom + 16, 'Reference panel should not overlap worksheet instruction area');
@@ -275,7 +307,38 @@ async function assertCopyModeLayoutAligned(page) {
     assert(Math.abs(layout.referenceTop - layout.targetTop) < 5, 'Reference and target panels should align vertically on desktop');
     assert(Math.abs(layout.referenceWidth - layout.targetWidth) < 5, 'Reference and target panels should have consistent width');
     assert(Math.abs(layout.referenceGridWidth - layout.targetGridWidth) < 5, 'Reference and target grids should have consistent width');
+    assert(layout.referenceHeadingVisible, 'Reference Pattern heading should be fully visible inside its panel');
+    assert(layout.targetHeadingVisible, 'Your Pattern heading should be fully visible inside its panel');
+    assert(layout.referenceGridVisible, 'Reference Pattern grid should be fully visible inside its panel');
+    assert(layout.targetGridVisible, 'Your Pattern grid should be fully visible inside its panel');
+    assert(layout.referenceBottom <= layout.viewportHeight, 'Reference panel should not be clipped below the viewport');
+    assert(layout.targetBottom <= layout.viewportHeight, 'Target panel should not be clipped below the viewport');
+    assert(layout.gridWorkspaceBottom <= layout.viewportHeight, 'Grid workspace should fit inside the desktop viewport');
     assert(layout.bodyOverflowX === false, 'Pattern Memory layout should avoid horizontal scrolling');
+}
+
+async function assertFeedbackVisible(page, expectedText) {
+    const feedback = await page.getByTestId('pattern-memory-feedback').evaluate((element, text) => {
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+
+        return {
+            text: element.textContent,
+            visible: rect.width > 0
+                && rect.height > 0
+                && rect.top >= 0
+                && rect.left >= 0
+                && rect.bottom <= window.innerHeight
+                && rect.right <= window.innerWidth
+                && style.visibility !== 'hidden'
+                && style.display !== 'none',
+            overflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth
+        };
+    }, expectedText);
+
+    assert(feedback.text.includes(expectedText), 'Gentle correction feedback should include expected learner copy');
+    assert(feedback.visible, 'Gentle correction feedback should be visible in the viewport');
+    assert(feedback.overflowX === false, 'Feedback state should not create horizontal overflow');
 }
 
 function assertPatternMemoryPayload(payload) {

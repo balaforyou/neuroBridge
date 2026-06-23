@@ -164,6 +164,12 @@ Purpose: Capture design-system and UI templating work for NeuroBridge after the 
 - Status: Done
 - Notes: Implemented single-select attribute matching with deterministic color, shape, and size prompts using the worksheet shell, shared SIRAASH feedback, progressive hints, inactive celebration placeholder, Node regression tests, and browser viewport smoke coverage.
 
+- Story ID: NB-WS-002
+- Title: Worksheet Activity Layout Guardrails
+- Priority: P1
+- Status: Done
+- Notes: Added worksheet activity layout guardrails to `docs/design-system/ACTIVITY_ARCHITECTURE.md` and reinforced Pattern Memory Copy Mode regression coverage with bounding-box checks for internal scroll, clipping, panel headings, feedback visibility, and horizontal overflow.
+
 - Story ID: NB-110
 - Title: Printable worksheet support
 - Priority: Medium

@@ -235,11 +235,11 @@ function mountPatternMemory() {
     function renderActivity() {
         activityContent = document.createElement('div');
         activityContent.setAttribute('data-testid', 'pattern-memory-copy-mode');
-        activityContent.className = 'flex h-full min-h-0 flex-col overflow-y-auto px-1 py-4 sm:px-2';
+        activityContent.className = 'flex min-h-0 flex-col px-1 py-2 sm:px-2';
 
         questionContent = document.createElement('div');
         questionContent.setAttribute('data-testid', 'pattern-memory-question');
-        questionContent.className = 'flex min-h-0 flex-1 flex-col';
+        questionContent.className = 'flex min-h-0 flex-col';
 
         completionPanel = document.createElement('div');
         completionPanel.setAttribute('data-testid', 'pattern-memory-completion');
@@ -265,7 +265,7 @@ function mountPatternMemory() {
 
         const stage = document.createElement('div');
         stage.setAttribute('data-testid', 'pattern-memory-stage');
-        stage.className = 'mx-auto flex w-full max-w-[940px] flex-col gap-4';
+        stage.className = 'mx-auto flex w-full max-w-[900px] flex-col gap-3';
 
         const context = document.createElement('div');
         context.className = 'flex flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-sky-200 bg-sky-50 px-4 py-2 text-sm font-black text-slate-900';
@@ -276,7 +276,7 @@ function mountPatternMemory() {
         `;
 
         const boardLayout = document.createElement('div');
-        boardLayout.className = 'grid w-full grid-cols-1 items-start justify-items-center gap-4 md:grid-cols-2';
+        boardLayout.className = 'grid w-full grid-cols-1 items-start justify-items-center gap-3 md:grid-cols-2';
         boardLayout.setAttribute('data-testid', 'pattern-memory-grid-workspace');
         boardLayout.append(
             renderBoardPanel('Reference Pattern', question, question.filledCells, false),
@@ -302,15 +302,15 @@ function mountPatternMemory() {
 
     function renderBoardPanel(title, question, selectedCells, interactive) {
         const panel = document.createElement('section');
-        panel.className = 'flex w-full max-w-[420px] flex-col justify-start rounded-2xl border-4 border-emerald-200 bg-white p-3 shadow-sm';
+        panel.className = 'flex w-full max-w-[350px] flex-col justify-start rounded-2xl border-4 border-emerald-200 bg-white p-2.5 shadow-sm';
         panel.setAttribute('data-testid', interactive ? 'pattern-memory-target-panel' : 'pattern-memory-reference-panel');
 
         const heading = document.createElement('h3');
-        heading.className = 'mb-3 text-center text-lg font-black text-slate-950';
+        heading.className = 'mb-2 text-center text-lg font-black text-slate-950';
         heading.textContent = title;
 
         const grid = document.createElement('div');
-        grid.className = 'pattern-memory-grid mx-auto w-full max-w-[320px]';
+        grid.className = 'pattern-memory-grid mx-auto w-full max-w-[240px]';
         grid.style.gridTemplateColumns = `repeat(${question.gridSize}, minmax(0, 1fr))`;
         grid.setAttribute('data-testid', interactive ? 'pattern-memory-target-grid' : 'pattern-memory-reference-grid');
         grid.setAttribute('aria-label', title);

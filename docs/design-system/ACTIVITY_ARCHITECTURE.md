@@ -221,6 +221,21 @@ The Activity Family and Worksheet Family should remain distinct, but they can re
 
 Activities often develop attention, response control, search strategy, memory, or reasoning foundations. Worksheets often turn those foundations into scaffolded academic, language, or functional tasks.
 
+## Worksheet Activity Layout Guardrails
+
+Worksheet-style activities that render inside the shared worksheet shell must keep the learner-facing task contained, readable, and visible within the worksheet body.
+
+- Activity content must fit inside the worksheet body without internal scrolling unless explicitly approved.
+- Instruction and prompt areas must not overlap task content.
+- Task panels must be fully visible at supported desktop and tablet viewports.
+- Activity-specific content must not create hidden overflow.
+- Feedback must be visible without scrolling.
+- Result screens must remain persistent until learner action.
+- Learners should see one active instruction and one active task area.
+- Any scrollable region inside an activity must be justified by the activity freeze document.
+
+Regression coverage should use rendered layout checks where possible. Bounding boxes, computed overflow styles, viewport visibility, and panel clipping assertions are preferred over DOM text presence alone.
+
 Examples:
 
 ```text

@@ -205,12 +205,15 @@ Polished Copy Mode learner layout alignment, strengthened gentle incorrect feedb
 Commit:
 2e90929 PM-001.1B Polish Pattern Memory copy mode UI and feedback
 
-### PM-001.1C Copy Mode Shell Layout Fix
+### PM-001.1C Copy Mode Layout and Feedback Correction
 
 Status: Done
 
 Closure:
-Fixed rendered Copy Mode shell overlap by separating the worksheet instruction area, question strip, and grid workspace with explicit vertical spacing and bounding-box regression coverage.
+Fixed rendered Copy Mode shell overlap by separating the worksheet instruction area, question strip, and grid workspace with explicit vertical spacing and bounding-box regression coverage. Follow-up NB-WS-002 correction removed the internal Copy Mode scroll container, tightened panel containment, and verified visible gentle correction feedback.
+
+Commit:
+7144789 PM-001.1C Fix Pattern Memory copy mode shell layout overlap
 
 ### PM-001.01 Activity Brief and Product Requirements
 
