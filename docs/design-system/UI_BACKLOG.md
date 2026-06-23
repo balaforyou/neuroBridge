@@ -84,6 +84,12 @@ Purpose: Capture design-system and UI templating work for NeuroBridge after the 
 
 ## Activity Templates
 
+- Story ID: NB-UI-001
+- Title: Activity UI Family Classification
+- Priority: P1
+- Status: Done
+- Notes: Defined the approved NeuroBridge activity UI families for Quiz, Worksheet, Activity, Story, and Assessment templates. New activities must declare a UI family before implementation begins. See `docs/design-system/ACTIVITY_UI_FAMILIES.md`.
+
 - Story ID:
 - Title: GRID activity template
 - Priority: High
