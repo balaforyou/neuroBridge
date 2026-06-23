@@ -144,6 +144,12 @@ export async function commitScoreLog(scoreObject) {
         completionStatus: scoreObject.completionStatus || (scoreObject.completed === true ? 'completed' : null),
         completed: scoreObject.completed === true,
         modesPlayed: Array.isArray(scoreObject.modesPlayed) ? scoreObject.modesPlayed.slice() : [],
+        gridSize: Number(scoreObject.gridSize || 0),
+        masteryAnalytics: scoreObject.masteryAnalytics || null,
+        masteryEvaluation: scoreObject.masteryEvaluation || null,
+        progressionEvaluation: scoreObject.progressionEvaluation || null,
+        masteryStatus: scoreObject.masteryStatus || null,
+        progressionStatus: scoreObject.progressionStatus || null,
 
         createdAt: new Date().toISOString(),
         timestamp: Date.now(),

@@ -1,5 +1,6 @@
 import { createListenFindSpeaker } from '../../js/listenFindSpeech.js';
 import { GAME_EVENTS } from '../../js/constants.js';
+import { createSchulteMasterySnapshot } from './masteryProgression.js';
 
 export const SCHULTE_ACTIVITY_ID = 'schulte-v1';
 export const SCHULTE_GAME_ID = 'schulte';
@@ -385,7 +386,7 @@ export function createSchulteAnalyticsPayload(summary = {}) {
     const durationSeconds = Math.max(0, Math.round((endedAtMs - startedAtMs) / 1000));
     const completionStatus = summary.completed === true ? 'completed' : 'incomplete';
 
-    return {
+    const payload = {
         gameId: SCHULTE_GAME_ID,
         activityId: SCHULTE_ACTIVITY_ID,
         activityName: SCHULTE_ACTIVITY_NAME,
@@ -411,6 +412,20 @@ export function createSchulteAnalyticsPayload(summary = {}) {
         gridSize: normalizeSchulteGridSize(summary.gridSize),
         levelLabel: `Schulte Table Level ${normalizeSchulteLevel(summary.level)}`,
         trials: []
+    };
+    const masterySnapshot = createSchulteMasterySnapshot({
+        sessions: [payload],
+        level: payload.level,
+        targetLevel: payload.level + 1
+    });
+
+    return {
+        ...payload,
+        masteryAnalytics: masterySnapshot.levelAnalytics,
+        masteryEvaluation: masterySnapshot.masteryEvaluation,
+        progressionEvaluation: masterySnapshot.progressionEvaluation,
+        masteryStatus: masterySnapshot.masteryEvaluation.levelStatus,
+        progressionStatus: masterySnapshot.progressionEvaluation.progressionStatus
     };
 }
 

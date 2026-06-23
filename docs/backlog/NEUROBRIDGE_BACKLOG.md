@@ -224,10 +224,10 @@ Pick up after Division L1-L9 progression is introduced and stable.
 
 Items explicitly parked until promoted.
 
-### SCH-008.1 Honeycomb Layout
+### SCH-008.2 Honeycomb Layout
 
 Status: Deferred
-Note: Previously recorded as `SCH-008`, but `SCH-008` is now assigned to Level 2 Square Grid Expansion. Honeycomb remains deferred and out of scope for the square grid packet.
+Note: Previously recorded as `SCH-008`, then `SCH-008.1`, but those IDs are now assigned to Level 2 Square Grid Expansion and Mastery and Progression Framework. Honeycomb remains deferred and out of scope for both packets.
 
 ### SCH-009 Multiples Mode
 
@@ -447,6 +447,15 @@ Depends On:
 - `SCH-007`
 
 Closure note: Added Level 2 Schulte Table support using a 4x4 square grid with numbers 1-16 across the existing Ascending, Descending, Memory, Listen & Find, and completion summary learner flow while preserving Level 1 3x3 behavior and keeping Honeycomb, Multiples, Random Listen & Find, Peripheral, Gorbov, timer/adaptive fluency, and Parent Practice Lab out of scope.
+
+### SCH-008.1 Mastery and Progression Framework
+
+Status: Done
+Depends On:
+- `SCH-008`
+- `NB-ARCH-004`
+
+Closure note: Added a reusable Schulte mastery and progression foundation with level analytics trends, configurable mastery rules, separate mastery/fluency/progression status evaluation, analytics payload metadata, and score-log persistence support without automatic promotion, UI changes, parent controls, dashboard visualization, or additional grid/layout modes.
 
 ### NB-BL-007 Schulte Freeze Sheet and Test Matrix
 
