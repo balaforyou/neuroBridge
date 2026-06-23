@@ -192,6 +192,16 @@ Status: Done
 Closure:
 Verified Pattern Memory activity registration, learner activity tile exposure, direct tile-to-Copy-Mode launch, worksheet shell compliance, feedback/result-screen persistence expectations, and existing analytics flow compatibility without expanding gameplay scope.
 
+Commit:
+3d2d951 PM-001.1A Integrate Pattern Memory into activity hub and worksheet shell
+
+### PM-001.1B Copy Mode UI and Feedback Polish
+
+Status: Done
+
+Closure:
+Polished Copy Mode learner layout alignment, strengthened gentle incorrect feedback, added visible success confirmation with check indicator, and increased success dwell before auto-advance.
+
 ### PM-001.01 Activity Brief and Product Requirements
 
 Status: Done

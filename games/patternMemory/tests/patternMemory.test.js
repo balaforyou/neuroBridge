@@ -1,6 +1,7 @@
 import {
     COPY_LEVELS,
     PATTERN_MEMORY_QUESTION_COUNT,
+    PATTERN_MEMORY_SUCCESS_ADVANCE_DELAY_MS,
     createPatternMemoryCopyGame,
     createPatternMemoryQuestions,
     createPatternMemoryResultSummary,
@@ -71,7 +72,7 @@ function testCorrectCopyAdvancesAfterFeedback() {
 
     assert(state.pendingAdvance === true, 'Correct pattern should wait before advancing');
     assert(state.feedbackType === 'success', 'Correct pattern should show success feedback');
-    assert(state.feedbackMessage === 'Great work, Adarsh!', 'Correct pattern should use learner success message');
+    assert(state.feedbackMessage === 'Great work!', 'Correct pattern should use visible success message');
     assert(state.correctAnswers === 1, 'Correct pattern should increment correct answers');
     assert(state.selectedCells.length === question.filledCells.length, 'Selected cells should match copied pattern');
 
@@ -80,6 +81,12 @@ function testCorrectCopyAdvancesAfterFeedback() {
     assert(advance.state.currentQuestionIndex === 1, 'Current question should advance');
     assert(advance.state.selectedCells.length === 0, 'Target grid should reset after advance');
     console.log('Pattern Memory correct copy advance test passed');
+}
+
+function testSuccessDwellTiming() {
+    assert(PATTERN_MEMORY_SUCCESS_ADVANCE_DELAY_MS >= 1200, 'Success dwell should be at least 1200ms');
+    assert(PATTERN_MEMORY_SUCCESS_ADVANCE_DELAY_MS <= 1500, 'Success dwell should stay within the requested upper range');
+    console.log('Pattern Memory success dwell timing test passed');
 }
 
 function testIncorrectCellAllowsSelfCorrection() {
@@ -98,6 +105,7 @@ function testIncorrectCellAllowsSelfCorrection() {
     const incorrect = game.toggleCell(1);
     assert(incorrect.result === 'incorrect', 'Incorrect selected cell should show correction feedback');
     assert(incorrect.state.feedbackType === 'retry', 'Incorrect selected cell should use retry feedback');
+    assert(incorrect.state.feedbackMessage === 'Try that spot again.', 'Incorrect selected cell should use gentle correction copy');
     assert(incorrect.state.completed === false, 'Incorrect selected cell should not complete question');
     assert(incorrect.state.mistakeCount === 1, 'Incorrect selected cell should count as mistake corrected');
 
@@ -188,6 +196,7 @@ function runAllTests() {
     testCopyLevelsAreConfigured();
     testQuestionGenerationUsesBlueOnlyAndBoundaries();
     testCorrectCopyAdvancesAfterFeedback();
+    testSuccessDwellTiming();
     testIncorrectCellAllowsSelfCorrection();
     testCompletionAndResultSummary();
     testSessionSummaryPayload();

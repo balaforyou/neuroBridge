@@ -75,10 +75,21 @@ async function testPatternMemoryCopyModeLearnerFlow() {
         assert(await page.getByTestId('pattern-memory-reference-grid').count() === 1, 'Reference grid should be visible');
         assert(await page.getByTestId('pattern-memory-target-grid').count() === 1, 'Target grid should be visible');
         await assertRenderedCellsAreAccessible(page);
+        await assertCopyModeLayoutAligned(page);
 
         await createIntentionalCorrection(page);
 
-        for (let questionIndex = 0; questionIndex < 10; questionIndex += 1) {
+        await copyCurrentReferencePattern(page);
+        await page.getByTestId('pattern-memory-success-check').waitFor();
+        assert((await page.getByTestId('pattern-memory-feedback').innerText()).includes('Great work!'), 'Correct completion should show success confirmation');
+        await page.waitForTimeout(1000);
+        assert(await page.getByTestId('pattern-memory-progress').innerText() === 'Question 1 of 10', 'Success confirmation should dwell before advancing');
+        await page.waitForFunction(
+            expectedQuestion => document.querySelector('[data-testid="pattern-memory-progress"]')?.textContent === expectedQuestion,
+            'Question 2 of 10'
+        );
+
+        for (let questionIndex = 1; questionIndex < 10; questionIndex += 1) {
             await copyCurrentReferencePattern(page);
             if (questionIndex < 9) {
                 await page.waitForFunction(
@@ -170,7 +181,7 @@ async function createIntentionalCorrection(page) {
 
     await page.getByTestId(`pattern-memory-target-cell-${wrongIndex}`).click();
     assert(
-        (await page.getByTestId('pattern-memory-feedback').innerText()).includes('fix the blue squares'),
+        (await page.getByTestId('pattern-memory-feedback').innerText()).includes('Try that spot again.'),
         'Incorrect target cell should show gentle correction'
     );
     await page.getByTestId(`pattern-memory-target-cell-${wrongIndex}`).click();
@@ -210,6 +221,42 @@ async function assertRenderedCellsAreAccessible(page) {
         return Math.min(rect.width, rect.height);
     });
     assert(minSize >= 44, 'Target cells should be large enough for touch');
+}
+
+async function assertCopyModeLayoutAligned(page) {
+    const layout = await page.evaluate(() => {
+        const activity = document.querySelector('[data-testid="worksheet-activity"]');
+        const stage = document.querySelector('[data-testid="pattern-memory-stage"]');
+        const referencePanel = document.querySelector('[data-testid="pattern-memory-reference-panel"]');
+        const targetPanel = document.querySelector('[data-testid="pattern-memory-target-panel"]');
+        const referenceGrid = document.querySelector('[data-testid="pattern-memory-reference-grid"]');
+        const targetGrid = document.querySelector('[data-testid="pattern-memory-target-grid"]');
+
+        const activityRect = activity.getBoundingClientRect();
+        const stageRect = stage.getBoundingClientRect();
+        const referenceRect = referencePanel.getBoundingClientRect();
+        const targetRect = targetPanel.getBoundingClientRect();
+        const referenceGridRect = referenceGrid.getBoundingClientRect();
+        const targetGridRect = targetGrid.getBoundingClientRect();
+
+        return {
+            activityCenter: activityRect.left + (activityRect.width / 2),
+            stageCenter: stageRect.left + (stageRect.width / 2),
+            referenceTop: referenceRect.top,
+            targetTop: targetRect.top,
+            referenceWidth: referenceRect.width,
+            targetWidth: targetRect.width,
+            referenceGridWidth: referenceGridRect.width,
+            targetGridWidth: targetGridRect.width,
+            bodyOverflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth
+        };
+    });
+
+    assert(Math.abs(layout.stageCenter - layout.activityCenter) < 5, 'Pattern Memory stage should be centered in activity panel');
+    assert(Math.abs(layout.referenceTop - layout.targetTop) < 5, 'Reference and target panels should align vertically on desktop');
+    assert(Math.abs(layout.referenceWidth - layout.targetWidth) < 5, 'Reference and target panels should have consistent width');
+    assert(Math.abs(layout.referenceGridWidth - layout.targetGridWidth) < 5, 'Reference and target grids should have consistent width');
+    assert(layout.bodyOverflowX === false, 'Pattern Memory layout should avoid horizontal scrolling');
 }
 
 function assertPatternMemoryPayload(payload) {

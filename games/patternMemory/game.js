@@ -14,7 +14,7 @@ export const PATTERN_MEMORY_ACTIVITY_ID = 'pm-001-copy-mode';
 export const PATTERN_MEMORY_ACTIVITY_NAME = 'Pattern Memory';
 export const PATTERN_MEMORY_MODE_COPY = 'copy';
 export const PATTERN_MEMORY_QUESTION_COUNT = 10;
-export const PATTERN_MEMORY_SUCCESS_ADVANCE_DELAY_MS = 900;
+export const PATTERN_MEMORY_SUCCESS_ADVANCE_DELAY_MS = 1300;
 
 const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
 const BLUE = 'blue';
@@ -88,7 +88,7 @@ export function createPatternMemoryCopyGame(config = {}) {
         if (hasIncorrectCells) {
             state.mistakeCount += 1;
             state.feedbackType = 'retry';
-            state.feedbackMessage = 'Look at the reference pattern and fix the blue squares.';
+            state.feedbackMessage = 'Try that spot again.';
             return { result: 'incorrect', state: getState() };
         }
 
@@ -96,7 +96,7 @@ export function createPatternMemoryCopyGame(config = {}) {
             state.correctAnswers += 1;
             state.pendingAdvance = true;
             state.feedbackType = 'success';
-            state.feedbackMessage = `Great work, ${state.learnerName}!`;
+            state.feedbackMessage = 'Great work!';
             state.trials.push(createTrialRecord(question, true));
             return { result: 'correct', state: getState() };
         }
@@ -265,7 +265,7 @@ function mountPatternMemory() {
 
         const stage = document.createElement('div');
         stage.setAttribute('data-testid', 'pattern-memory-stage');
-        stage.className = 'mx-auto flex w-full max-w-[920px] flex-col gap-3';
+        stage.className = 'mx-auto flex h-full min-h-0 w-full max-w-[940px] flex-col justify-center gap-3';
 
         const context = document.createElement('div');
         context.className = 'flex flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-sky-200 bg-sky-50 px-4 py-2 text-sm font-black text-slate-900';
@@ -275,7 +275,7 @@ function mountPatternMemory() {
         `;
 
         const boardLayout = document.createElement('div');
-        boardLayout.className = 'grid grid-cols-1 gap-3 lg:grid-cols-2';
+        boardLayout.className = 'grid w-full grid-cols-1 items-stretch justify-items-center gap-3 md:grid-cols-2';
         boardLayout.append(
             renderBoardPanel('Reference Pattern', question, question.filledCells, false),
             renderBoardPanel('Your Pattern', question, state.selectedCells, true)
@@ -284,7 +284,15 @@ function mountPatternMemory() {
         const feedback = document.createElement('div');
         feedback.setAttribute('data-testid', 'pattern-memory-feedback');
         feedback.className = getFeedbackClass(state.feedbackType);
-        feedback.textContent = state.feedbackMessage;
+        if (state.feedbackType === 'success') {
+            const check = document.createElement('span');
+            check.setAttribute('data-testid', 'pattern-memory-success-check');
+            check.className = 'mr-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-xl font-black text-white';
+            check.textContent = '\u2713';
+            feedback.append(check, document.createTextNode(state.feedbackMessage));
+        } else {
+            feedback.textContent = state.feedbackMessage;
+        }
 
         stage.append(context, boardLayout, feedback);
         questionContent.append(stage);
@@ -292,7 +300,8 @@ function mountPatternMemory() {
 
     function renderBoardPanel(title, question, selectedCells, interactive) {
         const panel = document.createElement('section');
-        panel.className = 'rounded-2xl border-4 border-emerald-200 bg-white p-3 shadow-sm';
+        panel.className = 'flex w-full max-w-[420px] flex-col justify-start rounded-2xl border-4 border-emerald-200 bg-white p-3 shadow-sm';
+        panel.setAttribute('data-testid', interactive ? 'pattern-memory-target-panel' : 'pattern-memory-reference-panel');
 
         const heading = document.createElement('h3');
         heading.className = 'mb-3 text-center text-lg font-black text-slate-950';
@@ -558,16 +567,16 @@ function getCellClass(isBlue, interactive) {
 }
 
 function getFeedbackClass(feedbackType) {
-    const base = 'min-h-[42px] rounded-xl px-4 py-2 text-center text-lg font-black';
+    const base = 'flex min-h-[52px] items-center justify-center rounded-xl border-2 px-4 py-2 text-center text-lg font-black';
     if (feedbackType === 'success') {
-        return `${base} bg-emerald-50 text-emerald-900`;
+        return `${base} border-emerald-300 bg-emerald-50 text-emerald-900`;
     }
 
     if (feedbackType === 'retry') {
-        return `${base} bg-amber-50 text-amber-900`;
+        return `${base} border-amber-300 bg-amber-50 text-amber-900`;
     }
 
-    return `${base} text-slate-700`;
+    return `${base} border-transparent text-slate-700`;
 }
 
 if (typeof document !== 'undefined') {
