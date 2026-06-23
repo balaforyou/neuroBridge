@@ -84,6 +84,12 @@ Purpose: Capture design-system and UI templating work for NeuroBridge after the 
 
 ## Activity Templates
 
+- Story ID: NB-COMP-001
+- Title: Shared Activity Components Standard
+- Priority: P1
+- Status: Done
+- Notes: Defined the shared activity component catalog, platform/activity ownership model, responsive expectations, visual consistency rules, and future component candidates. See `docs/design-system/SHARED_ACTIVITY_COMPONENTS.md`.
+
 - Story ID: NB-FB-001
 - Title: Shared Feedback and Completion Timing Standard
 - Priority: P1
