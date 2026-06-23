@@ -235,11 +235,11 @@ function mountPatternMemory() {
     function renderActivity() {
         activityContent = document.createElement('div');
         activityContent.setAttribute('data-testid', 'pattern-memory-copy-mode');
-        activityContent.className = 'flex min-h-0 flex-col px-1 py-2 sm:px-2';
+        activityContent.className = 'flex min-h-0 w-full flex-col px-1 py-2 sm:px-2';
 
         questionContent = document.createElement('div');
         questionContent.setAttribute('data-testid', 'pattern-memory-question');
-        questionContent.className = 'flex min-h-0 flex-col';
+        questionContent.className = 'flex min-h-0 w-full flex-col';
 
         completionPanel = document.createElement('div');
         completionPanel.setAttribute('data-testid', 'pattern-memory-completion');
@@ -267,13 +267,23 @@ function mountPatternMemory() {
         stage.setAttribute('data-testid', 'pattern-memory-stage');
         stage.className = 'mx-auto flex w-full max-w-[900px] flex-col gap-3';
 
+        const workspaceCard = document.createElement('section');
+        workspaceCard.setAttribute('data-testid', 'pattern-memory-workspace-card');
+        workspaceCard.className = 'rounded-2xl border-2 border-sky-200 bg-sky-50/70 px-3 py-3 shadow-sm';
+
         const boardLayout = document.createElement('div');
         boardLayout.className = 'grid w-full grid-cols-1 items-start justify-items-center gap-3 md:grid-cols-2';
         boardLayout.setAttribute('data-testid', 'pattern-memory-grid-workspace');
         boardLayout.append(
-            renderBoardPanel('Reference Pattern', question, question.filledCells, false),
-            renderBoardPanel('Your Pattern', question, state.selectedCells, true)
+            renderBoardPanel('Reference Pattern', question, question.filledCells, false, state.feedbackType),
+            renderBoardPanel('Your Pattern', question, state.selectedCells, true, state.feedbackType)
         );
+        workspaceCard.append(boardLayout);
+
+        const support = document.createElement('aside');
+        support.setAttribute('data-testid', 'pattern-memory-support-panel');
+        support.className = 'rounded-xl border-2 border-amber-200 bg-amber-50 px-4 py-2 text-center text-base font-black text-amber-900';
+        support.textContent = 'Tap on the grid to fill or clear a cell.';
 
         const feedback = document.createElement('div');
         feedback.setAttribute('data-testid', 'pattern-memory-feedback');
@@ -286,14 +296,14 @@ function mountPatternMemory() {
             check.textContent = '\u2713';
             feedback.append(check, document.createTextNode(state.feedbackMessage));
         } else {
-            feedback.textContent = state.feedbackMessage || 'Tap on the grid to fill or clear a cell.';
+            feedback.textContent = state.feedbackMessage || 'Ready when you are.';
         }
 
-        stage.append(boardLayout, feedback);
+        stage.append(workspaceCard, support, feedback);
         questionContent.append(stage);
     }
 
-    function renderBoardPanel(title, question, selectedCells, interactive) {
+    function renderBoardPanel(title, question, selectedCells, interactive, feedbackType) {
         const panel = document.createElement('section');
         panel.className = 'flex w-full max-w-[350px] flex-col justify-start rounded-2xl border-4 border-emerald-200 bg-white p-2.5 shadow-sm';
         panel.setAttribute('data-testid', interactive ? 'pattern-memory-target-panel' : 'pattern-memory-reference-panel');
@@ -313,9 +323,19 @@ function mountPatternMemory() {
         for (let index = 0; index < totalCells; index += 1) {
             const isBlue = selectedSet.has(index);
             const cell = document.createElement(interactive ? 'button' : 'div');
-            cell.className = getCellClass(isBlue, interactive);
+            const localFeedback = getLocalFeedbackMarker({
+                feedbackType,
+                index,
+                interactive,
+                isBlue,
+                question
+            });
+            cell.className = getCellClass(isBlue, interactive, localFeedback);
             cell.setAttribute('data-testid', `${interactive ? 'pattern-memory-target-cell' : 'pattern-memory-reference-cell'}-${index}`);
             cell.setAttribute('aria-label', `${title} row ${Math.floor(index / question.gridSize) + 1} column ${(index % question.gridSize) + 1}${isBlue ? ', blue' : ', empty'}`);
+            if (localFeedback) {
+                cell.setAttribute('data-local-feedback', localFeedback);
+            }
 
             if (interactive) {
                 cell.type = 'button';
@@ -549,7 +569,29 @@ function normalizeTimestampMs(value, fallback) {
     return fallback;
 }
 
-function getCellClass(isBlue, interactive) {
+function getLocalFeedbackMarker({
+    feedbackType,
+    index,
+    interactive,
+    isBlue,
+    question
+}) {
+    if (!interactive || !isBlue) {
+        return null;
+    }
+
+    if (feedbackType === 'retry' && !question.filledCells.includes(index)) {
+        return 'retry';
+    }
+
+    if (feedbackType === 'success') {
+        return 'success';
+    }
+
+    return null;
+}
+
+function getCellClass(isBlue, interactive, localFeedback) {
     const base = 'pattern-memory-cell flex items-center justify-center rounded-2xl border-4 text-center shadow-sm transition';
     const stateClass = isBlue
         ? 'pattern-memory-cell--blue border-blue-700 ring-2 ring-blue-200'
@@ -557,8 +599,13 @@ function getCellClass(isBlue, interactive) {
     const interactionClass = interactive
         ? 'focus:outline-none focus:ring-4 focus:ring-emerald-300 active:scale-[0.98]'
         : '';
+    const feedbackClass = localFeedback === 'retry'
+        ? 'pattern-memory-cell--retry'
+        : localFeedback === 'success'
+            ? 'pattern-memory-cell--success'
+            : '';
 
-    return `${base} ${stateClass} ${interactionClass}`;
+    return `${base} ${stateClass} ${interactionClass} ${feedbackClass}`.trim();
 }
 
 function getFeedbackClass(feedbackType) {

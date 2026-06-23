@@ -222,6 +222,13 @@ Status: Done
 Closure:
 Removed the redundant in-body question/level strip from Pattern Memory Copy Mode, kept the global activity header as the single source of truth for question and level state, preserved the worksheet instruction panel, centered the two-panel task area, and kept the bottom helper/feedback area visible without internal scrolling.
 
+### PM-001.1E Pattern Memory Migration to Worksheet Template V1
+
+Status: Done
+
+Closure:
+Migrated Pattern Memory Copy Mode to the Worksheet Template V1 region sequence by separating the workspace card, support panel, and feedback banner, preserving the shared header and result screen, adding local retry and success tile feedback markers, and strengthening regression coverage for worksheet layout guardrails without changing Copy Mode gameplay or analytics.
+
 ### PM-001.01 Activity Brief and Product Requirements
 
 Status: Done

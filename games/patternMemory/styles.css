@@ -3,6 +3,10 @@
     gap: 0.5rem;
 }
 
+.pattern-memory-shell .worksheet-shell__main {
+    grid-template-columns: minmax(0, 1fr);
+}
+
 .pattern-memory-cell {
     aspect-ratio: 1 / 1;
     min-height: 3.25rem;
@@ -16,4 +20,44 @@
 
 .pattern-memory-cell--blue {
     background: linear-gradient(135deg, #2563eb, #38bdf8);
+}
+
+.pattern-memory-cell--retry {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 0.25rem rgba(245, 158, 11, 0.28);
+    animation: pattern-memory-retry-pulse 600ms ease-out 1;
+}
+
+.pattern-memory-cell--success {
+    border-color: #059669;
+    box-shadow: 0 0 0 0.25rem rgba(5, 150, 105, 0.24);
+    animation: pattern-memory-success-pulse 700ms ease-out 1;
+}
+
+@keyframes pattern-memory-retry-pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    45% {
+        transform: scale(1.04);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes pattern-memory-success-pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    45% {
+        transform: scale(1.03);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
