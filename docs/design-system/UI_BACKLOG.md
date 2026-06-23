@@ -108,6 +108,65 @@ Purpose: Capture design-system and UI templating work for NeuroBridge after the 
 - Status: Done
 - Notes: Defined the approved NeuroBridge activity UI families for Quiz, Worksheet, Activity, Story, and Assessment templates. New activities must declare a UI family before implementation begins. See `docs/design-system/ACTIVITY_UI_FAMILIES.md`.
 
+## Platform UI Backlog
+
+- Story ID: NB-UI-003
+- Title: Activity Hub Tile Audit
+- Status: Backlog
+- Goal: Review all learner activity tiles against the Activity Tile Framework.
+- Scope: Activity title consistency; activity description consistency; icon usage; card sizing; card spacing; visual hierarchy; launch affordance consistency.
+- Current Activities: Number Bridges; Matching Worksheet; Attribute Matching; Attribute Explorer; Schulte Table; Pattern Memory.
+- Outcome: Unified learner activity hub experience.
+
+- Story ID: NB-UI-004
+- Title: Learner Recent Activity Experience
+- Status: Backlog
+- Goal: Refine the learner-facing recent activity area.
+- Scope: Recent activity card layout; last played activity; accuracy summary; friendly progress indicators; Continue activity action; Try Again action.
+- Rules: Learner-focused; avoid parent analytics overload; positive reinforcement.
+- Outcome: A meaningful learner home experience.
+
+- Story ID: NB-UI-005
+- Title: Parent Workspace UI Standard
+- Status: Backlog
+- Goal: Standardize parent-facing workspace screens.
+- Scope: Dashboard; Practice Lab; Administration; Activity Settings; Analytics Summary.
+- Rules: Parent workflow focused; consistent navigation; consistent card structure.
+- Outcome: Reusable parent workspace architecture.
+
+- Story ID: NB-UI-006
+- Title: Parent Controls Pattern
+- Status: Backlog
+- Goal: Define reusable parent-control patterns across activities.
+- Examples: Question Count; Difficulty; Number Range; Hint Toggle; Scaffold Toggle; Auto Progression; Practice Mode; Official Mode.
+- Rules: Consistent control placement; consistent labels; consistent save behavior.
+- Outcome: Activities reuse the same parent-control model.
+
+- Story ID: NB-UI-007
+- Title: Dashboard Metrics Card Standard
+- Status: Backlog
+- Goal: Standardize dashboard analytics cards.
+- Scope: Accuracy Card; Time Card; Hint Usage Card; Correction Card; Skill Evidence Card; Cognitive Snapshot Card.
+- Rules: Consistent sizing; consistent terminology; shared visual language.
+- Outcome: Unified dashboard analytics presentation.
+
+- Story ID: NB-UI-008
+- Title: Responsive Layout Review
+- Status: Backlog
+- Goal: Validate all activity families against desktop and tablet layouts.
+- Scope: Quiz Family; Worksheet Family; Activity Family.
+- Review: Overlap; clipping; overflow; touch targets; region hierarchy.
+- Outcome: Consistent multi-device experience.
+
+- Story ID: NB-UI-009
+- Title: Accessibility and Neurodiversity Review
+- Status: Backlog
+- Goal: Review UI patterns against NeuroBridge learner principles.
+- Scope: Visual clutter; cognitive load; feedback visibility; transition timing; touch target sizing; ASD-friendly interaction patterns.
+- Outcome: Formal NeuroBridge accessibility review.
+
+## Legacy Activity Template Backlog
+
 - Story ID:
 - Title: GRID activity template
 - Priority: High
