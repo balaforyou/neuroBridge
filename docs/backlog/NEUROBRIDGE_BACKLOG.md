@@ -28,7 +28,7 @@ Goal:
 Evolve the Parent Dashboard from a recent-session summary into a parent-decision-oriented insight dashboard.
 
 Rationale:
-Current dashboard shows sessions, accuracy, speed, peak level, best score and recent sessions. These are useful, but future dashboard refinements should better answer:
+Current dashboard is functional but not yet insight-rich. It shows sessions, accuracy, speed, peak level, best score and recent sessions. These are useful, but future dashboard refinements should better answer:
 - Is the learner improving?
 - Which activities were practiced recently?
 - Which activities are becoming easy or difficult?
