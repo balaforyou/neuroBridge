@@ -182,6 +182,16 @@ Status: Done
 Closure:
 Implemented the first playable Pattern Memory Copy Mode foundation with C1-C4, blue-only pattern generation, target-grid toggling, immediate validation, self-correction, 10-question session flow, standard result screen reuse, minimal analytics payload, launcher registration, and unit coverage.
 
+Commit:
+a3418b3 PM-001.1 Implement Pattern Memory Copy Mode foundation
+
+### PM-001.1A Activity Integration Requirements
+
+Status: Done
+
+Closure:
+Verified Pattern Memory activity registration, learner activity tile exposure, direct tile-to-Copy-Mode launch, worksheet shell compliance, feedback/result-screen persistence expectations, and existing analytics flow compatibility without expanding gameplay scope.
+
 ### PM-001.01 Activity Brief and Product Requirements
 
 Status: Done

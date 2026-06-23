@@ -103,6 +103,7 @@ function testPatternMemoryTileLaunchMarkup() {
     assert(tile.status === 'available', 'Pattern Memory tile should be available');
     assert(tile.learnerName === 'Pattern Memory', 'Pattern Memory tile should show activity name');
     assert(tile.subtitle === 'Copy Mode', 'Pattern Memory tile should show Copy Mode subtitle');
+    assert(tile.description === 'Copy and remember patterns using visual memory.', 'Pattern Memory tile should use learner-facing memory copy');
     assert(getActivityTileTestId(tile) === 'activity-tile-pattern-memory', 'Pattern Memory tile should expose stable test id');
     assert(markup.includes('class="btn-launch-game'), 'Available Pattern Memory tile should render as launch button');
     assert(markup.includes('data-game="patternMemory"'), 'Pattern Memory tile should launch pattern memory route');

@@ -38,7 +38,7 @@ export const ACTIVITY_TILE_GROUPS = [
                 learnerName: 'Pattern Memory',
                 subtitle: 'Copy Mode',
                 icon: '&#9638;',
-                description: 'Copy the blue pattern into your grid.',
+                description: 'Copy and remember patterns using visual memory.',
                 status: 'available',
                 identityClass: 'from-blue-100 via-sky-50 to-emerald-50 border-blue-300',
                 iconClass: 'from-blue-300 via-sky-200 to-emerald-200',

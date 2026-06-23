@@ -2,6 +2,7 @@ import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
 
 const ACTIVITY_URL = 'http://127.0.0.1:5501/games/patternMemory/index.html';
+const APP_URL = 'http://127.0.0.1:5501/index.html';
 
 function assert(condition, message) {
     if (!condition) {
@@ -114,6 +115,53 @@ async function testPatternMemoryCopyModeLearnerFlow() {
     console.log('Pattern Memory Copy Mode learner flow launch test passed');
 }
 
+async function testPatternMemoryActivityHubLaunchFlow() {
+    const server = await ensureStaticServer();
+    const browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({ viewport: { width: 1100, height: 820 } });
+
+    try {
+        const page = await context.newPage();
+        await page.goto(APP_URL);
+        await page.waitForSelector('#game-selection-list', { state: 'attached' });
+        await page.evaluate(async () => {
+            const app = await import('./js/app.js');
+            const tiles = await import('./js/activityTiles.js');
+            const router = await import('./js/router.js');
+            app.AppState.user = 'student';
+            app.AppState.studentName = 'Adarsh';
+            tiles.renderActivityTiles('Adarsh');
+            router.switchView('student');
+        });
+
+        const tile = page.getByTestId('activity-tile-pattern-memory');
+        await tile.waitFor();
+        assert(await tile.isVisible(), 'Pattern Memory tile should appear in learner activity hub');
+        assert((await tile.innerText()).includes('Copy and remember patterns using visual memory.'), 'Pattern Memory tile should show integration description');
+
+        await tile.click();
+        await page.waitForFunction(() => {
+            const frame = document.getElementById('game-frame');
+            return frame?.getAttribute('src') === './games/patternMemory/index.html';
+        });
+
+        const frame = page.frameLocator('#game-frame');
+        await frame.getByTestId('pattern-memory-copy-mode').waitFor();
+        assert(await page.locator('#game-nav-row').isVisible() === false, 'Pattern Memory should use shell-managed navigation');
+        assert((await frame.locator('h1').innerText()) === 'Pattern Memory', 'Launched activity should show Pattern Memory header');
+        assert(await frame.getByTestId('worksheet-shell').getAttribute('data-template-type') === 'pattern-builder', 'Pattern Memory should run inside worksheet shell');
+        assert(await frame.getByTestId('pattern-memory-reference-grid').count() === 1, 'Tile launch should open Copy Mode reference grid');
+        assert(await frame.getByTestId('pattern-memory-target-grid').count() === 1, 'Tile launch should open Copy Mode target grid');
+    } finally {
+        await browser.close();
+        if (server) {
+            server.kill();
+        }
+    }
+
+    console.log('Pattern Memory activity hub launch flow test passed');
+}
+
 async function createIntentionalCorrection(page) {
     const blueIndexes = await getReferenceBlueCellIndexes(page);
     const targetCount = await page.locator('[data-testid^="pattern-memory-target-cell-"]').count();
@@ -182,6 +230,7 @@ function assertPatternMemoryPayload(payload) {
 async function runAllTests() {
     console.log('=== Pattern Memory Launch Tests ===');
     await testPatternMemoryCopyModeLearnerFlow();
+    await testPatternMemoryActivityHubLaunchFlow();
     console.log('=== All Pattern Memory Launch Tests Passed ===');
 }
 
