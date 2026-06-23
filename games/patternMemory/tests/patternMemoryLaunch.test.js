@@ -180,6 +180,28 @@ async function testPatternMemoryActivityHubLaunchFlow() {
     console.log('Pattern Memory activity hub launch flow test passed');
 }
 
+async function testPatternMemoryCompactViewportFit() {
+    const server = await ensureStaticServer();
+    const browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({ viewport: { width: 1000, height: 650 } });
+
+    try {
+        const page = await context.newPage();
+        await page.goto(ACTIVITY_URL);
+        await page.getByTestId('pattern-memory-copy-mode').waitFor();
+        await assertCopyModeLayoutAligned(page);
+        await assertSupportPanelVisible(page);
+        await assertFeedbackVisible(page, 'Ready when you are.');
+    } finally {
+        await browser.close();
+        if (server) {
+            server.kill();
+        }
+    }
+
+    console.log('Pattern Memory compact viewport fit test passed');
+}
+
 async function createIntentionalCorrection(page) {
     const blueIndexes = await getReferenceBlueCellIndexes(page);
     const targetCount = await page.locator('[data-testid^="pattern-memory-target-cell-"]').count();
@@ -294,6 +316,7 @@ async function assertCopyModeLayoutAligned(page) {
 
         return {
             viewportHeight: window.innerHeight,
+            bodyOverflowY: document.documentElement.scrollHeight > document.documentElement.clientHeight,
             copyModeOverflowY: copyModeStyle.overflowY,
             workspaceCardOverflowY: workspaceCardStyle.overflowY,
             gridWorkspaceOverflowY: gridWorkspaceStyle.overflowY,
@@ -301,6 +324,8 @@ async function assertCopyModeLayoutAligned(page) {
             copyModeScrollHeight: copyMode.scrollHeight,
             copyModeClientHeight: copyMode.clientHeight,
             copyModeBottom: copyModeRect.bottom,
+            shellBottom: document.querySelector('[data-testid="worksheet-shell"]').getBoundingClientRect().bottom,
+            activityBottom: activityRect.bottom,
             shellHeaderBottom: shellHeaderRect.bottom,
             instructionBottom: instructionRect.bottom,
             instructionHeight: instructionRect.height,
@@ -348,9 +373,10 @@ async function assertCopyModeLayoutAligned(page) {
     assert(Math.abs(layout.referenceWidth - layout.targetWidth) < 5, 'Reference and target panels should have consistent width');
     assert(Math.abs(layout.referenceGridWidth - layout.targetGridWidth) < 5, 'Reference and target grids should have consistent width');
     assert(layout.supportDisplay !== 'none', 'Support panel should be visible');
-    assert(layout.supportTop >= layout.workspaceCardBottom + 12, 'Support panel should sit below the workspace card');
-    assert(layout.feedbackTop >= layout.supportBottom + 12, 'Feedback banner should sit below the support panel');
+    assert(layout.supportTop >= layout.workspaceCardBottom + 8, 'Support panel should sit below the workspace card');
+    assert(layout.feedbackTop >= layout.supportBottom + 8, 'Feedback banner should sit below the support panel');
     assert(layout.feedbackBottom <= layout.viewportHeight, 'Feedback banner should be visible without scrolling');
+    assert(layout.feedbackBottom <= layout.shellBottom, 'Feedback banner should remain inside the worksheet shell');
     assert(layout.workspaceCardHeight > layout.instructionHeight, 'Workspace card should be larger than the instruction region');
     assert(layout.workspaceCardHeight > layout.supportHeight, 'Workspace card should be larger than the support region');
     assert(layout.workspaceCardHeight > layout.feedbackHeight, 'Workspace card should be larger than the feedback region');
@@ -360,8 +386,11 @@ async function assertCopyModeLayoutAligned(page) {
     assert(layout.targetGridVisible, 'Your Pattern grid should be fully visible inside its panel');
     assert(layout.referenceBottom <= layout.viewportHeight, 'Reference panel should not be clipped below the viewport');
     assert(layout.targetBottom <= layout.viewportHeight, 'Target panel should not be clipped below the viewport');
+    assert(layout.referenceBottom <= layout.shellBottom, 'Reference panel should remain inside the worksheet shell');
+    assert(layout.targetBottom <= layout.shellBottom, 'Target panel should remain inside the worksheet shell');
     assert(layout.gridWorkspaceBottom <= layout.viewportHeight, 'Grid workspace should fit inside the desktop viewport');
     assert(layout.bodyOverflowX === false, 'Pattern Memory layout should avoid horizontal scrolling');
+    assert(layout.bodyOverflowY === false, 'Pattern Memory layout should fit without page-level vertical scrolling');
 }
 
 async function assertFeedbackVisible(page, expectedText) {
@@ -439,6 +468,7 @@ async function runAllTests() {
     console.log('=== Pattern Memory Launch Tests ===');
     await testPatternMemoryCopyModeLearnerFlow();
     await testPatternMemoryActivityHubLaunchFlow();
+    await testPatternMemoryCompactViewportFit();
     console.log('=== All Pattern Memory Launch Tests Passed ===');
 }
 

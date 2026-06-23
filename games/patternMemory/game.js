@@ -265,11 +265,11 @@ function mountPatternMemory() {
 
         const stage = document.createElement('div');
         stage.setAttribute('data-testid', 'pattern-memory-stage');
-        stage.className = 'mx-auto flex w-full max-w-[900px] flex-col gap-3';
+        stage.className = 'mx-auto flex w-full max-w-[900px] flex-col gap-2';
 
         const workspaceCard = document.createElement('section');
         workspaceCard.setAttribute('data-testid', 'pattern-memory-workspace-card');
-        workspaceCard.className = 'rounded-2xl border-2 border-sky-200 bg-sky-50/70 px-3 py-3 shadow-sm';
+        workspaceCard.className = 'rounded-2xl border-2 border-sky-200 bg-sky-50/70 px-3 py-2 shadow-sm';
 
         const boardLayout = document.createElement('div');
         boardLayout.className = 'grid w-full grid-cols-1 items-start justify-items-center gap-3 md:grid-cols-2';
@@ -282,7 +282,7 @@ function mountPatternMemory() {
 
         const support = document.createElement('aside');
         support.setAttribute('data-testid', 'pattern-memory-support-panel');
-        support.className = 'rounded-xl border-2 border-amber-200 bg-amber-50 px-4 py-2 text-center text-base font-black text-amber-900';
+        support.className = 'rounded-xl border-2 border-amber-200 bg-amber-50 px-4 py-1.5 text-center text-sm font-black text-amber-900 sm:text-base';
         support.textContent = 'Tap on the grid to fill or clear a cell.';
 
         const feedback = document.createElement('div');
@@ -305,15 +305,15 @@ function mountPatternMemory() {
 
     function renderBoardPanel(title, question, selectedCells, interactive, feedbackType) {
         const panel = document.createElement('section');
-        panel.className = 'flex w-full max-w-[350px] flex-col justify-start rounded-2xl border-4 border-emerald-200 bg-white p-2.5 shadow-sm';
+        panel.className = 'flex w-full max-w-[350px] flex-col justify-start rounded-2xl border-4 border-emerald-200 bg-white p-2 shadow-sm';
         panel.setAttribute('data-testid', interactive ? 'pattern-memory-target-panel' : 'pattern-memory-reference-panel');
 
         const heading = document.createElement('h3');
-        heading.className = 'mb-2 text-center text-lg font-black text-slate-950';
+        heading.className = 'mb-1.5 text-center text-base font-black text-slate-950 sm:text-lg';
         heading.textContent = title;
 
         const grid = document.createElement('div');
-        grid.className = 'pattern-memory-grid mx-auto w-full max-w-[240px]';
+        grid.className = 'pattern-memory-grid mx-auto';
         grid.style.gridTemplateColumns = `repeat(${question.gridSize}, minmax(0, 1fr))`;
         grid.setAttribute('data-testid', interactive ? 'pattern-memory-target-grid' : 'pattern-memory-reference-grid');
         grid.setAttribute('aria-label', title);
@@ -609,7 +609,7 @@ function getCellClass(isBlue, interactive, localFeedback) {
 }
 
 function getFeedbackClass(feedbackType) {
-    const base = 'flex min-h-[52px] items-center justify-center rounded-xl border-2 px-4 py-2 text-center text-lg font-black';
+    const base = 'flex min-h-[44px] items-center justify-center rounded-xl border-2 px-4 py-1.5 text-center text-base font-black sm:text-lg';
     if (feedbackType === 'success') {
         return `${base} border-emerald-300 bg-emerald-50 text-emerald-900`;
     }

@@ -229,6 +229,13 @@ Status: Done
 Closure:
 Migrated Pattern Memory Copy Mode to the Worksheet Template V1 region sequence by separating the workspace card, support panel, and feedback banner, preserving the shared header and result screen, adding local retry and success tile feedback markers, and strengthening regression coverage for worksheet layout guardrails without changing Copy Mode gameplay or analytics.
 
+### PM-001.1F Pattern Memory Viewport Fit Fix
+
+Status: Done
+
+Closure:
+Adjusted Pattern Memory Copy Mode to fit the real visible browser viewport by making the workspace grid viewport-aware, compacting the Pattern Memory worksheet instruction region, preserving support and feedback visibility without scrolling, and adding compact viewport regression coverage plus a viewport-only screenshot artifact.
+
 ### PM-001.01 Activity Brief and Product Requirements
 
 Status: Done

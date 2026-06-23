@@ -1,21 +1,30 @@
 .pattern-memory-grid {
     display: grid;
-    gap: 0.5rem;
+    width: min(100%, clamp(9rem, 22vh, 13rem));
+    gap: clamp(0.25rem, 0.8vh, 0.5rem);
 }
 
 .pattern-memory-shell .worksheet-shell__main {
     grid-template-columns: minmax(0, 1fr);
 }
 
-.pattern-memory-cell {
-    aspect-ratio: 1 / 1;
-    min-height: 3.25rem;
+.pattern-memory-shell .worksheet-shell__instruction {
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
 }
 
-@media (min-width: 640px) {
-    .pattern-memory-cell {
-        min-height: 4rem;
-    }
+.pattern-memory-shell .worksheet-shell__instruction h2 {
+    font-size: 1.125rem;
+}
+
+.pattern-memory-shell .worksheet-shell__instruction p {
+    margin-top: 0.125rem;
+    font-size: 0.9375rem;
+}
+
+.pattern-memory-cell {
+    aspect-ratio: 1 / 1;
+    min-height: clamp(2.75rem, 7vh, 4rem);
 }
 
 .pattern-memory-cell--blue {
