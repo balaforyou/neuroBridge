@@ -84,6 +84,12 @@ Purpose: Capture design-system and UI templating work for NeuroBridge after the 
 
 ## Activity Templates
 
+- Story ID: NB-FB-001
+- Title: Shared Feedback and Completion Timing Standard
+- Priority: P1
+- Status: Done
+- Notes: Defined shared NeuroBridge feedback categories, family-specific success dwell timing, question transition behavior, completion persistence, approved learner-facing language, and feedback guardrails. See `docs/design-system/FEEDBACK_AND_TIMING_STANDARD.md`.
+
 - Story ID: NB-UI-001
 - Title: Activity UI Family Classification
 - Priority: P1
