@@ -151,14 +151,14 @@ Notes:
 - Keep separate from SCH-007 analytics implementation until architecture is explicitly approved.
 - Do not implement now.
 
-### NB-ARCH-004.2 Cognitive Domain Taxonomy Freeze
+### NB-ARCH-004.3 Cognitive Domain Taxonomy Freeze
 
-Priority: Unassigned
+Priority: P1
 Status: Backlog
 Depends On:
 - `NB-ARCH-004`
 Notes:
-- Previously recorded as `NB-ARCH-004.1`, but `NB-ARCH-004.1` is now assigned to Progression Engine Generalization.
+- Previously recorded as `NB-ARCH-004.1`, then `NB-ARCH-004.2`, but those IDs are now assigned to Progression Engine Generalization and Schulte Skill Mapping V1.
 - Freeze the shared cognitive domain, skill, and sub-skill taxonomy before runtime skill evidence mapping is implemented across activities.
 - Use the activity skill mapping contract as input, but do not finalize taxonomy names during NB-ARCH-004.
 - Do not implement now.
@@ -290,6 +290,15 @@ Depends On:
 - `SCH-008.1`
 
 Closure note: Documented how the Schulte mastery/progression framework can later become a reusable NeuroBridge progression service, including common trend storage, evaluation structure, progression state, candidate consumers, and explicit exclusions for platform extraction, Schulte refactoring, dashboard UI, and automatic promotion.
+
+### NB-ARCH-004.2 Schulte Skill Mapping V1
+
+Status: Done
+Depends On:
+- `NB-ARCH-004`
+- `SCH-FREEZE-001`
+
+Closure note: Created the first concrete NeuroBridge activity skill mapping reference for Schulte Table Levels 1 and 2, documenting mode-specific domain, primary skill, sub-skill, evidence weight, cognitive load, future mapping notes, analytics implications, and out-of-scope boundaries without code, analytics, dashboard, progression, taxonomy-freeze, or parent UI changes.
 
 ### SCH-001 Core Grid Engine
 
