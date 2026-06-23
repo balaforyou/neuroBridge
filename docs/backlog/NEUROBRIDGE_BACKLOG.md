@@ -151,13 +151,14 @@ Notes:
 - Keep separate from SCH-007 analytics implementation until architecture is explicitly approved.
 - Do not implement now.
 
-### NB-ARCH-004.1 Cognitive Domain Taxonomy Freeze
+### NB-ARCH-004.2 Cognitive Domain Taxonomy Freeze
 
 Priority: Unassigned
 Status: Backlog
 Depends On:
 - `NB-ARCH-004`
 Notes:
+- Previously recorded as `NB-ARCH-004.1`, but `NB-ARCH-004.1` is now assigned to Progression Engine Generalization.
 - Freeze the shared cognitive domain, skill, and sub-skill taxonomy before runtime skill evidence mapping is implemented across activities.
 - Use the activity skill mapping contract as input, but do not finalize taxonomy names during NB-ARCH-004.
 - Do not implement now.
@@ -188,6 +189,17 @@ Reason:
 Number Bridges review showed that Codex can implement requested changes correctly while unintentionally affecting adjacent behavior. Future handovers need stronger scope guards, forbidden changes, regression matrices, and completion reports.  
 Trigger:  
 Pick up when creating the reusable AI-assisted development project template.
+
+### NB-CORE-007 Reusable Progression Engine
+
+Priority: P1
+Status: Deferred
+Depends On:
+- `NB-ARCH-004.1`
+Notes:
+- Extract the Schulte mastery/progression framework into a platform-level progression service when multiple activity families need common trend storage, evaluation structure, and progression state.
+- Activity families should keep configurable mastery rules while sharing common progression evidence and status contracts.
+- Do not implement now.
 
 ## Deferred Until Learner Ready
 
@@ -269,6 +281,15 @@ Depends On:
 - `NB-STD-003-CODEX_COMPLETION_TEMPLATE`
 
 Closure note: Created the NeuroBridge-wide activity skill mapping contract defining skill evidence by activity, mode, level, progression stage, and scaffold state without code changes, Schulte analytics retrofits, parent dashboard changes, or taxonomy finalization.
+
+### NB-ARCH-004.1 Progression Engine Generalization
+
+Status: Done
+Depends On:
+- `NB-ARCH-004`
+- `SCH-008.1`
+
+Closure note: Documented how the Schulte mastery/progression framework can later become a reusable NeuroBridge progression service, including common trend storage, evaluation structure, progression state, candidate consumers, and explicit exclusions for platform extraction, Schulte refactoring, dashboard UI, and automatic promotion.
 
 ### SCH-001 Core Grid Engine
 
