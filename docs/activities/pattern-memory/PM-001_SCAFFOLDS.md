@@ -76,11 +76,19 @@ Purpose:
 
 ### SC-ENC-002 Extended Display Time
 
-Supported display durations:
+Extended Display Time adds support above the current level duration.
 
-- 15 seconds
-- 12 seconds
-- 10 seconds
+Examples:
+
+- 10s standard duration may become 15s with Extended Display.
+- 8s standard duration may become 13s with Extended Display.
+- 6s standard duration may become 11s with Extended Display.
+
+Standard level duration remains unchanged.
+
+Do not treat 15s and 12s as standard level durations.
+
+Scaffolded display duration must be recorded as scaffold state.
 
 Purpose:
 
@@ -293,6 +301,21 @@ Suggested supports:
 
 without changing level.
 
+### Fallback Floor Rule
+
+C1 and M1 have no lower fallback level.
+
+If learner performance is below fallback threshold at C1 or M1, the system should add or maintain scaffold support instead of reducing level.
+
+Suggested supports:
+
+- Structured Patterns
+- Ready Button where applicable
+- Extended Display Time in Memory Mode
+- Parent-guided retry through Practice Lab where applicable
+
+The learner should never be forced into repeated unsupported failure at the lowest level.
+
 ### Automatic Removal
 
 Remove support when:
@@ -310,6 +333,28 @@ Peek Support
 ```
 
 without changing level.
+
+### Independent Progression Counters
+
+Level progression counters and scaffold progression counters are independent.
+
+Level promotion:
+
+- Accuracy >= 85%
+- Two consecutive sessions
+
+Scaffold removal:
+
+- Accuracy > 90%
+- Three consecutive sessions
+
+These counters should be tracked independently.
+
+A level promotion event should not automatically remove scaffolds.
+
+A scaffold removal event should not automatically promote level.
+
+Level progression and scaffold progression are independent systems.
 
 ## 10. Parent Controls
 

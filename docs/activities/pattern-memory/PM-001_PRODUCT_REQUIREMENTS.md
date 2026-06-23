@@ -100,6 +100,12 @@ Supported range:
 - 3 seconds
 - 2 seconds
 
+These are standard level durations.
+
+Extended Display Time is a scaffold and must not be treated as a standard level duration.
+
+Scaffolded display duration must be recorded as scaffold state.
+
 ## Pattern Generation
 
 Allowed:
@@ -148,6 +154,12 @@ Fallback:
 System may automatically return to a previously successful difficulty level.
 
 No manual intervention required.
+
+Level progression counters and scaffold progression counters are independent.
+
+A level promotion event should not automatically remove scaffolds.
+
+A scaffold removal event should not automatically promote level.
 
 ## Progression Tracks
 

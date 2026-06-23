@@ -80,6 +80,9 @@ Pattern Memory tests should verify:
 | PM-TC-SCF-008 | Immediate Feedback in Copy Mode | Gentle correction appears immediately |
 | PM-TC-SCF-009 | Submission Review in Memory Mode | Correct, missing, and extra cells shown after submission |
 | PM-TC-SCF-010 | Mistake Replay | Learner answer and correct answer can be compared |
+| PM-TC-SCF-011 | Ready Button in Copy Mode | Ready Button is not shown in Copy Mode |
+| PM-TC-SCF-012 | Peek Support in Copy Mode | Peek Support is not available in Copy Mode |
+| PM-TC-SCF-013 | Memory-only scaffold assigned to Copy Track | Memory-only scaffold is rejected or ignored for Copy Mode |
 
 ## 6. Adaptive Progression Test Matrix
 
@@ -93,6 +96,7 @@ Pattern Memory tests should verify:
 | PM-TC-ADP-006 | Scaffold removed | Level remains unchanged |
 | PM-TC-ADP-007 | Level promoted | Scaffold state does not automatically reset unless specified |
 | PM-TC-ADP-008 | Session in progress | Difficulty does not change mid-session |
+| PM-TC-ADP-009 | Accuracy < 60% at C1 or M1 | Scaffold support is added or maintained instead of reducing level |
 
 ## 7. Analytics Test Matrix
 

@@ -240,6 +240,26 @@ Session size:
 
 10 questions
 
+Level progression counters and scaffold progression counters are independent.
+
+Level promotion uses:
+
+- Accuracy >= 85%
+- Two consecutive sessions
+
+Scaffold removal uses:
+
+- Accuracy > 90%
+- Three consecutive sessions
+
+These counters should be tracked independently.
+
+A level promotion event should not automatically remove scaffolds.
+
+A scaffold removal event should not automatically promote level.
+
+Level progression and scaffold progression are independent systems.
+
 ## 6. Maintain Rules
 
 Maintain current level when:
@@ -259,6 +279,21 @@ The learner should never be forced to repeatedly struggle at an unsuitable diffi
 Difficulty remains stable within a session.
 
 Difficulty evaluation occurs between sessions only.
+
+### Fallback Floor Rule
+
+C1 and M1 have no lower fallback level.
+
+If learner performance is below fallback threshold at C1 or M1, the system should add or maintain scaffold support instead of reducing level.
+
+Suggested supports:
+
+- Structured Patterns
+- Ready Button where applicable
+- Extended Display Time in Memory Mode
+- Parent-guided retry through Practice Lab where applicable
+
+The learner should never be forced into repeated unsupported failure at the lowest level.
 
 ## 8. Skill Metadata Mapping
 
