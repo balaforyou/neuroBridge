@@ -267,14 +267,6 @@ function mountPatternMemory() {
         stage.setAttribute('data-testid', 'pattern-memory-stage');
         stage.className = 'mx-auto flex w-full max-w-[900px] flex-col gap-3';
 
-        const context = document.createElement('div');
-        context.className = 'flex flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-sky-200 bg-sky-50 px-4 py-2 text-sm font-black text-slate-900';
-        context.setAttribute('data-testid', 'pattern-memory-question-strip');
-        context.innerHTML = `
-            <span data-testid="pattern-memory-progress">Question ${state.currentQuestionIndex + 1} of ${state.questions.length}</span>
-            <span data-testid="pattern-memory-level">Copy Mode ${question.levelId}</span>
-        `;
-
         const boardLayout = document.createElement('div');
         boardLayout.className = 'grid w-full grid-cols-1 items-start justify-items-center gap-3 md:grid-cols-2';
         boardLayout.setAttribute('data-testid', 'pattern-memory-grid-workspace');
@@ -285,6 +277,7 @@ function mountPatternMemory() {
 
         const feedback = document.createElement('div');
         feedback.setAttribute('data-testid', 'pattern-memory-feedback');
+        feedback.setAttribute('aria-live', 'polite');
         feedback.className = getFeedbackClass(state.feedbackType);
         if (state.feedbackType === 'success') {
             const check = document.createElement('span');
@@ -293,10 +286,10 @@ function mountPatternMemory() {
             check.textContent = '\u2713';
             feedback.append(check, document.createTextNode(state.feedbackMessage));
         } else {
-            feedback.textContent = state.feedbackMessage;
+            feedback.textContent = state.feedbackMessage || 'Tap on the grid to fill or clear a cell.';
         }
 
-        stage.append(context, boardLayout, feedback);
+        stage.append(boardLayout, feedback);
         questionContent.append(stage);
     }
 

@@ -215,6 +215,13 @@ Fixed rendered Copy Mode shell overlap by separating the worksheet instruction a
 Commit:
 7144789 PM-001.1C Fix Pattern Memory copy mode shell layout overlap
 
+### PM-001.1D Remove redundant question/level strip and standardize layout
+
+Status: Done
+
+Closure:
+Removed the redundant in-body question/level strip from Pattern Memory Copy Mode, kept the global activity header as the single source of truth for question and level state, preserved the worksheet instruction panel, centered the two-panel task area, and kept the bottom helper/feedback area visible without internal scrolling.
+
 ### PM-001.01 Activity Brief and Product Requirements
 
 Status: Done

@@ -221,10 +221,15 @@ The Activity Family and Worksheet Family should remain distinct, but they can re
 
 Activities often develop attention, response control, search strategy, memory, or reasoning foundations. Worksheets often turn those foundations into scaffolded academic, language, or functional tasks.
 
-## Worksheet Activity Layout Guardrails
+## Worksheet Activity Layout Standard
 
 Worksheet-style activities that render inside the shared worksheet shell must keep the learner-facing task contained, readable, and visible within the worksheet body.
 
+- The global activity header is the single source of truth for question, level, and stars.
+- Activity bodies should not duplicate question, level, or status strips unless explicitly justified.
+- The instruction panel appears first inside the activity body.
+- The main task area appears below the instruction panel.
+- The feedback/help area appears below the main task area.
 - Activity content must fit inside the worksheet body without internal scrolling unless explicitly approved.
 - Instruction and prompt areas must not overlap task content.
 - Task panels must be fully visible at supported desktop and tablet viewports.

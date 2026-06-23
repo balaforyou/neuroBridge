@@ -72,29 +72,34 @@ async function testPatternMemoryCopyModeLearnerFlow() {
         assert(await page.title() === 'Pattern Memory', 'Page title should show Pattern Memory');
         assert((await page.locator('h1').innerText()) === 'Pattern Memory', 'Activity header should show Pattern Memory');
         assert((await page.getByText('Copy the blue pattern into your grid.').count()) >= 1, 'Activity should show one clear Copy Mode instruction');
+        assert(await page.locator('#ui-question').innerText() === '1', 'Global header should show current question');
+        assert(await page.locator('#ui-level').innerText() === 'C1', 'Global header should show current level');
         assert(await page.getByTestId('pattern-memory-reference-grid').count() === 1, 'Reference grid should be visible');
         assert(await page.getByTestId('pattern-memory-target-grid').count() === 1, 'Target grid should be visible');
+        await assertInternalQuestionStripRemoved(page);
         await assertRenderedCellsAreAccessible(page);
         await assertCopyModeLayoutAligned(page);
+        await assertFeedbackVisible(page, 'Tap on the grid to fill or clear a cell.');
 
         await createIntentionalCorrection(page);
 
         await copyCurrentReferencePattern(page);
         await page.getByTestId('pattern-memory-success-check').waitFor();
         assert((await page.getByTestId('pattern-memory-feedback').innerText()).includes('Great work!'), 'Correct completion should show success confirmation');
+        await assertFeedbackVisible(page, 'Great work!');
         await page.waitForTimeout(1000);
-        assert(await page.getByTestId('pattern-memory-progress').innerText() === 'Question 1 of 10', 'Success confirmation should dwell before advancing');
+        assert(await page.locator('#ui-question').innerText() === '1', 'Success confirmation should dwell before advancing');
         await page.waitForFunction(
-            expectedQuestion => document.querySelector('[data-testid="pattern-memory-progress"]')?.textContent === expectedQuestion,
-            'Question 2 of 10'
+            expectedQuestion => document.querySelector('#ui-question')?.textContent === expectedQuestion,
+            '2'
         );
 
         for (let questionIndex = 1; questionIndex < 10; questionIndex += 1) {
             await copyCurrentReferencePattern(page);
             if (questionIndex < 9) {
                 await page.waitForFunction(
-                    expectedQuestion => document.querySelector('[data-testid="pattern-memory-progress"]')?.textContent === expectedQuestion,
-                    `Question ${questionIndex + 2} of 10`
+                    expectedQuestion => document.querySelector('#ui-question')?.textContent === expectedQuestion,
+                    String(questionIndex + 2)
                 );
             }
         }
@@ -186,7 +191,10 @@ async function createIntentionalCorrection(page) {
     );
     await assertFeedbackVisible(page, 'Try that spot again.');
     await page.getByTestId(`pattern-memory-target-cell-${wrongIndex}`).click();
-    assert(await page.getByTestId('pattern-memory-feedback').innerText() === '', 'Removing incorrect cell should clear feedback');
+    assert(
+        (await page.getByTestId('pattern-memory-feedback').innerText()).includes('Tap on the grid to fill or clear a cell.'),
+        'Removing incorrect cell should restore helper feedback'
+    );
 }
 
 async function copyCurrentReferencePattern(page) {
@@ -224,6 +232,14 @@ async function assertRenderedCellsAreAccessible(page) {
     assert(minSize >= 44, 'Target cells should be large enough for touch');
 }
 
+async function assertInternalQuestionStripRemoved(page) {
+    assert(await page.getByTestId('pattern-memory-question-strip').count() === 0, 'Pattern Memory should not render an internal question or level strip');
+
+    const activeQuestionText = await page.getByTestId('pattern-memory-question').innerText();
+    assert(!activeQuestionText.includes('Question 1 of 10'), 'Activity body should not duplicate global question progress');
+    assert(!activeQuestionText.includes('Copy Mode C1'), 'Activity body should not duplicate global level text');
+}
+
 async function assertCopyModeLayoutAligned(page) {
     const layout = await page.evaluate(() => {
         const copyMode = document.querySelector('[data-testid="pattern-memory-copy-mode"]');
@@ -231,8 +247,8 @@ async function assertCopyModeLayoutAligned(page) {
         const instruction = document.querySelector('[data-testid="worksheet-instruction"]');
         const activity = document.querySelector('[data-testid="worksheet-activity"]');
         const stage = document.querySelector('[data-testid="pattern-memory-stage"]');
-        const questionStrip = document.querySelector('[data-testid="pattern-memory-question-strip"]');
         const gridWorkspace = document.querySelector('[data-testid="pattern-memory-grid-workspace"]');
+        const feedback = document.querySelector('[data-testid="pattern-memory-feedback"]');
         const referencePanel = document.querySelector('[data-testid="pattern-memory-reference-panel"]');
         const targetPanel = document.querySelector('[data-testid="pattern-memory-target-panel"]');
         const referenceGrid = document.querySelector('[data-testid="pattern-memory-reference-grid"]');
@@ -245,8 +261,8 @@ async function assertCopyModeLayoutAligned(page) {
         const instructionRect = instruction.getBoundingClientRect();
         const activityRect = activity.getBoundingClientRect();
         const stageRect = stage.getBoundingClientRect();
-        const questionStripRect = questionStrip.getBoundingClientRect();
         const gridWorkspaceRect = gridWorkspace.getBoundingClientRect();
+        const feedbackRect = feedback.getBoundingClientRect();
         const referenceRect = referencePanel.getBoundingClientRect();
         const targetRect = targetPanel.getBoundingClientRect();
         const referenceGridRect = referenceGrid.getBoundingClientRect();
@@ -272,9 +288,10 @@ async function assertCopyModeLayoutAligned(page) {
             copyModeBottom: copyModeRect.bottom,
             shellHeaderBottom: shellHeaderRect.bottom,
             instructionBottom: instructionRect.bottom,
-            questionStripBottom: questionStripRect.bottom,
             gridWorkspaceTop: gridWorkspaceRect.top,
             gridWorkspaceBottom: gridWorkspaceRect.bottom,
+            feedbackTop: feedbackRect.top,
+            feedbackBottom: feedbackRect.bottom,
             activityCenter: activityRect.left + (activityRect.width / 2),
             stageCenter: stageRect.left + (stageRect.width / 2),
             referenceTop: referenceRect.top,
@@ -302,11 +319,11 @@ async function assertCopyModeLayoutAligned(page) {
     assert(layout.targetTop >= layout.instructionBottom + 16, 'Target panel should not overlap worksheet instruction area');
     assert(layout.referenceTop > layout.shellHeaderBottom, 'Reference panel should not overlap activity shell header');
     assert(layout.targetTop > layout.shellHeaderBottom, 'Target panel should not overlap activity shell header');
-    assert(layout.referenceTop >= layout.questionStripBottom + 12, 'Reference panel should sit below question strip with spacing');
-    assert(layout.targetTop >= layout.questionStripBottom + 12, 'Target panel should sit below question strip with spacing');
     assert(Math.abs(layout.referenceTop - layout.targetTop) < 5, 'Reference and target panels should align vertically on desktop');
     assert(Math.abs(layout.referenceWidth - layout.targetWidth) < 5, 'Reference and target panels should have consistent width');
     assert(Math.abs(layout.referenceGridWidth - layout.targetGridWidth) < 5, 'Reference and target grids should have consistent width');
+    assert(layout.feedbackTop >= layout.gridWorkspaceBottom + 12, 'Feedback/help area should sit below the grid workspace');
+    assert(layout.feedbackBottom <= layout.viewportHeight, 'Feedback/help area should be visible without scrolling');
     assert(layout.referenceHeadingVisible, 'Reference Pattern heading should be fully visible inside its panel');
     assert(layout.targetHeadingVisible, 'Your Pattern heading should be fully visible inside its panel');
     assert(layout.referenceGridVisible, 'Reference Pattern grid should be fully visible inside its panel');
