@@ -84,6 +84,12 @@ Purpose: Capture design-system and UI templating work for NeuroBridge after the 
 
 ## Activity Templates
 
+- Story ID: NB-UI-002
+- Title: Golden Reference Screens
+- Priority: P1
+- Status: Done
+- Notes: Defined visual Golden Reference Screen expectations for Quiz, Worksheet, and Activity UI families, including region hierarchy, visual priorities, validation checklist, and usage rule. See `docs/design-system/GOLDEN_REFERENCE_SCREENS.md`.
+
 - Story ID: NB-COMP-001
 - Title: Shared Activity Components Standard
 - Priority: P1
