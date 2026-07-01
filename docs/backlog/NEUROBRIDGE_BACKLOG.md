@@ -118,6 +118,46 @@ Notes:
 - Consider shared tile component, icons, badges, progress indicators, hover/focus states, and mobile-friendly layout.
 - Do not implement now.
 
+### NB-UX-001 Learner Experience Constitution
+
+Status: Done
+Description: Created the canonical learner experience constitution for NeuroBridge learner-facing activities.
+
+### NB-UX-002 Simple Learner Activity Tiles
+
+Status: Backlog
+Description: Create simpler recognition-based learner activity tiles for the launcher.
+
+### NB-UX-003 Activity UI Family Layout API
+
+Status: Backlog
+Description: Define shared layout APIs for activity UI families so common shells and task surfaces stay consistent.
+
+### NB-UX-004 Surface Tick Feedback Component
+
+Status: Backlog
+Description: Create a reusable surface-level tick feedback component for brief learner acknowledgements.
+
+### NB-UX-005 Adaptive Transition Timing API
+
+Status: Backlog
+Description: Add a shared timing API for adaptive feedback and transition pacing across activity families.
+
+### NB-UX-006 Milestone Celebration Component
+
+Status: Backlog
+Description: Create a reusable milestone celebration component for meaningful completion moments.
+
+### NB-UX-007 Executive Control Scaffold Component
+
+Status: Backlog
+Description: Define reusable control scaffolds for learner recovery actions like Home, Play Again, and hint access.
+
+### NB-UX-008 Learner Completion Summary Simplification
+
+Status: Backlog
+Description: Simplify learner completion summaries so they stay calm, focused, and easy to scan.
+
 ### NB-UI-002 Completion Screen Persistence Audit
 
 Priority: Unassigned
