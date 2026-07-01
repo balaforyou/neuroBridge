@@ -126,6 +126,10 @@ function testResultScreenContractRendering() {
         learnerName: 'Adarsh',
         title: 'Number Bridges',
         completionMessage: 'You finished your Number Bridges.',
+        headerSummary: {
+            accuracy: '80% Accuracy',
+            score: '4 / 5 Correct'
+        },
         metrics: [
             { label: 'Questions', value: 5 },
             { label: 'Correct / Total', value: '4 / 5' },
@@ -135,7 +139,7 @@ function testResultScreenContractRendering() {
             { label: 'Hints Used', value: 1 },
             { label: 'Mistakes Corrected', value: 0 }
         ],
-        extension: { content: 'Addition L1' },
+        activitySummary: { content: 'Addition L1' },
         review: { title: 'Review', content: 'No corrections needed.' },
         actions: [
             { label: 'Try Again', testId: 'number-bridges-try-again-button' },
@@ -146,6 +150,8 @@ function testResultScreenContractRendering() {
     assert(html.includes('data-testid="number-bridges-results"'), 'Result screen should expose stable result selector');
     assert(html.includes('Great work, Adarsh!'), 'Result screen should personalize learner praise');
     assert(html.includes('You finished your Number Bridges.'), 'Result screen should include completion message');
+    assert(html.includes('80% Accuracy'), 'Result screen should support header accuracy');
+    assert(html.includes('4 / 5 Correct'), 'Result screen should support header score');
     assert(html.includes('Questions: 5'), 'Result screen should render normalized metrics');
     assert(html.includes('Correct / Total: 4 / 5'), 'Result screen should render score metric');
     assert(html.includes('data-testid="number-bridges-extension"'), 'Result screen should include extension slot');
@@ -154,6 +160,20 @@ function testResultScreenContractRendering() {
     assert(html.includes('data-testid="number-bridges-try-again-button"'), 'Result screen should include primary action');
     assert(html.includes('data-testid="number-bridges-home-button"'), 'Result screen should include Home action');
     console.log('Worksheet result screen contract rendering test passed');
+}
+
+function testResultScreenNoCorrectionsDefault() {
+    const html = renderWorksheetResultScreen({
+        learnerName: 'Adarsh',
+        testIdPrefix: 'worksheet-check',
+        completionMessage: 'Done.',
+        metrics: [{ label: 'Questions', value: 1 }]
+    });
+
+    assert(html.includes('No corrections needed.'), 'Result screen should default to no-corrections review message');
+    assert(html.includes('data-testid="worksheet-check-try-again-button"'), 'Result screen should default to Try Again action');
+    assert(html.includes('data-testid="worksheet-check-home-button"'), 'Result screen should default to Home action');
+    console.log('Worksheet result screen no-corrections default test passed');
 }
 
 function runAllTests() {
@@ -165,6 +185,7 @@ function runAllTests() {
     testCompletionRendering();
     testResultSummaryRendering();
     testResultScreenContractRendering();
+    testResultScreenNoCorrectionsDefault();
     console.log('=== All Worksheet Template Tests Passed ===');
 }
 

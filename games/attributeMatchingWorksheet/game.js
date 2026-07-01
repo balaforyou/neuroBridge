@@ -4,7 +4,8 @@ import {
 } from '../../js/worksheetShell.js';
 import {
     applyWorksheetHeaderState,
-    normalizeWorksheetLearnerName
+    normalizeWorksheetLearnerName,
+    renderWorksheetResultScreen
 } from '../../js/worksheetTemplate.js';
 import { GAME_EVENTS } from '../../js/constants.js';
 
@@ -161,6 +162,59 @@ export function createAttributeMatchingCompletionSummary(state = {}) {
         correctAnswers,
         accuracyPercent
     };
+}
+
+export function createAttributeMatchingResultSummary(state = {}, options = {}) {
+    const completion = createAttributeMatchingCompletionSummary(state);
+    const startedAtMs = normalizeTimestampMs(state.startedAtMs, Date.now());
+    const endedAtMs = normalizeTimestampMs(options.endedAtMs ?? Date.now(), startedAtMs);
+    const timeTakenSeconds = Math.max(1, Math.round((endedAtMs - startedAtMs) / 1000));
+    const averageTimeSeconds = completion.questionsAnswered
+        ? Math.round((timeTakenSeconds / completion.questionsAnswered) * 10) / 10
+        : 0;
+
+    return {
+        total: completion.questionsAnswered,
+        correct: completion.correctAnswers,
+        accuracy: completion.accuracyPercent,
+        timeTakenSeconds,
+        averageTimeSeconds,
+        hintsUsed: Number(state.incorrectAttempts || 0),
+        mistakeCount: Number(state.incorrectAttempts || 0)
+    };
+}
+
+export function renderAttributeMatchingResultMarkup(summary, learnerName = 'Learner') {
+    return renderWorksheetResultScreen({
+        learnerName,
+        testIdPrefix: 'attribute-matching',
+        completionMessage: 'You found the matching attributes.',
+        headerSummary: {
+            accuracy: `${summary.accuracy}% Accuracy`,
+            score: `${summary.correct} / ${summary.total} Correct`
+        },
+        metrics: [
+            { id: 'total', label: 'Questions', value: summary.total },
+            { id: 'correct-total', label: 'Correct / Total', value: `${summary.correct} / ${summary.total}` },
+            { id: 'accuracy', label: 'Accuracy', value: `${summary.accuracy}%` },
+            { id: 'time-taken', label: 'Time Taken', value: `${summary.timeTakenSeconds} sec` },
+            { id: 'average-time', label: 'Average Time', value: `${summary.averageTimeSeconds} sec/question` },
+            { id: 'hints-used', label: 'Hints Used', value: summary.hintsUsed },
+            { id: 'mistakes-corrected', label: 'Mistakes Corrected', value: summary.mistakeCount }
+        ],
+        activitySummary: {
+            testId: 'attribute-matching-result-level',
+            content: 'Color / Attribute Matching V1'
+        },
+        review: {
+            title: 'Review',
+            content: '<p data-testid="attribute-matching-all-correct" class="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-base font-black text-emerald-800">No corrections needed.</p>'
+        },
+        actions: [
+            { label: 'Try Again', testId: 'attribute-matching-next-round-button' },
+            { label: 'Home', testId: 'attribute-matching-home-button' }
+        ]
+    });
 }
 
 export function createAttributeMatchingSessionSummary(state = {}, options = {}) {
@@ -331,14 +385,27 @@ function mountAttributeMatchingWorksheet() {
             return;
         }
 
-        const summary = game.getCompletionSummary();
-        completionPanel.className = 'flex min-h-0 flex-1 flex-col items-center justify-center gap-4 rounded-2xl border-4 border-emerald-300 bg-emerald-50 px-4 py-5 text-center text-slate-950';
-        completionPanel.innerHTML = `
-            <p class="text-3xl font-black text-emerald-900 sm:text-4xl">Great work, ${pageState.learnerName}!</p>
-            <p data-testid="attribute-matching-completion-accuracy" class="text-4xl font-black text-emerald-950 sm:text-5xl">${summary.accuracyPercent}% Accuracy</p>
-            <p data-testid="attribute-matching-completion-answered" class="text-2xl font-black text-slate-900">${summary.questionsAnswered} Questions Answered</p>
-            <p data-testid="attribute-matching-completion-correct" class="text-2xl font-black text-emerald-900">${summary.correctAnswers} Correct Answers</p>
-        `;
+        completionPanel.className = 'flex h-full min-h-0 flex-col text-center text-slate-950';
+        completionPanel.innerHTML = renderAttributeMatchingResultMarkup(
+            createAttributeMatchingResultSummary(state),
+            pageState.learnerName
+        );
+
+        completionPanel.querySelector('[data-testid="attribute-matching-next-round-button"]')?.addEventListener('click', restartSession);
+        completionPanel.querySelector('[data-testid="attribute-matching-home-button"]')?.addEventListener('click', () => {
+            window.parent?.postMessage({ type: ACTIVITY_HOME_EVENT }, '*');
+        });
+    }
+
+    function restartSession() {
+        clearPendingAdvanceTimer();
+        pageState.completionSubmitted = false;
+        game = createAttributeMatchingWorksheetGame({
+            learnerName: pageState.learnerName
+        });
+        updateHeader();
+        renderQuestion();
+        renderCompletion();
     }
 
     function handleAnswer(answer) {

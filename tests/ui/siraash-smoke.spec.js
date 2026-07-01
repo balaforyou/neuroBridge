@@ -278,9 +278,13 @@ test.describe('Matching Worksheet viewport smoke', () => {
         await page.getByTestId('matching-card-cat-b').click();
         await expect(page.getByTestId('matching-completion')).toBeVisible();
         await expect(page.getByTestId('matching-card-grid')).toBeHidden();
+        await expect(page.getByTestId('matching-results')).toBeVisible();
+        await expect(page.getByTestId('matching-results')).toHaveCount(1);
         await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
         await expect(page.getByTestId('siraash-completion-message')).toHaveText('You matched all the pictures.');
+        await expect(page.getByTestId('matching-review')).toContainText('No corrections needed.');
         await expect(page.getByTestId('matching-next-round-button')).toBeVisible();
+        await expect(page.getByTestId('matching-home-button')).toBeVisible();
         await expect(page.getByTestId('worksheet-feedback')).toBeEmpty();
         await expect(page.getByText('You found the answer.')).toBeHidden();
 
@@ -372,10 +376,15 @@ test.describe('Attribute Matching Worksheet viewport smoke', () => {
 
         await expect(page.getByTestId('attribute-matching-question')).toBeHidden();
         await expect(page.getByTestId('attribute-matching-completion')).toBeVisible();
+        await expect(page.getByTestId('attribute-matching-results')).toBeVisible();
+        await expect(page.getByTestId('attribute-matching-results')).toHaveCount(1);
         await expect(page.getByTestId('attribute-matching-completion')).toContainText(`Great work, ${LEARNER_NAME}!`);
-        await expect(page.getByTestId('attribute-matching-completion-accuracy')).toHaveText('100% Accuracy');
-        await expect(page.getByTestId('attribute-matching-completion-answered')).toHaveText('10 Questions Answered');
-        await expect(page.getByTestId('attribute-matching-completion-correct')).toHaveText('10 Correct Answers');
+        await expect(page.getByTestId('attribute-matching-result-header-accuracy')).toHaveText('100% Accuracy');
+        await expect(page.getByTestId('attribute-matching-total')).toHaveText('Questions: 10');
+        await expect(page.getByTestId('attribute-matching-correct-total')).toHaveText('Correct / Total: 10 / 10');
+        await expect(page.getByTestId('attribute-matching-review')).toContainText('No corrections needed.');
+        await expect(page.getByTestId('attribute-matching-next-round-button')).toBeVisible();
+        await expect(page.getByTestId('attribute-matching-home-button')).toBeVisible();
         await expect(page.getByTestId('worksheet-feedback')).toBeEmpty();
         await expect(page.getByText('You found the answer.')).toBeHidden();
         await expectNoPageScrollbar(page);

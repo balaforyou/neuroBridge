@@ -5,7 +5,7 @@ import {
 import {
     applyWorksheetHeaderState,
     normalizeWorksheetLearnerName,
-    renderWorksheetCompletion
+    renderWorksheetResultScreen
 } from '../../js/worksheetTemplate.js';
 
 export const MATCHING_WORKSHEET_ACTIVITY_ID = 'matching-worksheet-v1';
@@ -226,13 +226,45 @@ function mountMatchingWorksheet() {
             return;
         }
 
-        completionPanel.className = 'rounded-2xl text-center text-slate-950';
-        completionPanel.innerHTML = renderWorksheetCompletion({
+        const matchedPairs = state.cards.filter(card => card.matched).length / 2;
+        const totalPairs = state.cards.length / 2;
+        const mistakesCorrected = Math.max(0, state.attempts - matchedPairs);
+
+        completionPanel.className = 'flex h-full min-h-0 flex-col text-center text-slate-950';
+        completionPanel.innerHTML = renderWorksheetResultScreen({
             learnerName: pageState.learnerName,
-            message: 'You matched all the pictures.',
-            actionTestId: 'matching-next-round-button'
+            testIdPrefix: 'matching',
+            completionMessage: 'You matched all the pictures.',
+            headerSummary: {
+                accuracy: '100% Accuracy',
+                score: `${matchedPairs} / ${totalPairs} Pairs`
+            },
+            metrics: [
+                { id: 'total', label: 'Questions', value: totalPairs },
+                { id: 'correct-total', label: 'Correct / Total', value: `${matchedPairs} / ${totalPairs}` },
+                { id: 'accuracy', label: 'Accuracy', value: '100%' },
+                { id: 'time-taken', label: 'Time Taken', value: 'Round complete' },
+                { id: 'average-time', label: 'Average Time', value: 'Not tracked' },
+                { id: 'hints-used', label: 'Hints Used', value: 0 },
+                { id: 'mistakes-corrected', label: 'Mistakes Corrected', value: mistakesCorrected }
+            ],
+            activitySummary: {
+                testId: 'matching-result-level',
+                content: `Round ${state.roundNumber}`
+            },
+            review: {
+                title: 'Review',
+                content: '<p data-testid="matching-all-correct" class="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-base font-black text-emerald-800">No corrections needed.</p>'
+            },
+            actions: [
+                { label: 'Next Round', testId: 'matching-next-round-button' },
+                { label: 'Home', testId: 'matching-home-button' }
+            ]
         });
         completionPanel.querySelector('[data-testid="matching-next-round-button"]').addEventListener('click', handleNextRound);
+        completionPanel.querySelector('[data-testid="matching-home-button"]')?.addEventListener('click', () => {
+            window.parent?.postMessage({ type: ACTIVITY_HOME_EVENT }, '*');
+        });
     }
 
     function handleCardSelection(cardId) {

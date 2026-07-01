@@ -90,8 +90,10 @@ async function testAttributeMatchingLearnerFlow() {
         const completionText = await page.getByTestId('attribute-matching-completion').innerText();
         assert(completionText.includes('Great work, Adarsh!'), 'Completion should show learner success message');
         assert(completionText.includes('100% Accuracy'), 'Completion should show accuracy percentage');
-        assert(completionText.includes('10 Questions Answered'), 'Completion should show questions answered');
-        assert(completionText.includes('10 Correct Answers'), 'Completion should show correct answers');
+        assert(completionText.includes('Questions: 10'), 'Completion should show shared question metric');
+        assert(completionText.includes('Correct / Total: 10 / 10'), 'Completion should show shared correct total metric');
+        assert(completionText.includes('Color / Attribute Matching V1'), 'Completion should show activity summary');
+        assert(completionText.includes('No corrections needed.'), 'Completion should show shared review message');
         assert(await page.getByTestId('attribute-matching-question').isVisible() === false, 'Completion should hide active question screen');
 
         const completionPayloads = await page.evaluate(() => window.__attributeMatchingCompletionPayloads);
