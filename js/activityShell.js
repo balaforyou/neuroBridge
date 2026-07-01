@@ -1,4 +1,5 @@
 import { createActivityFeedback } from './activityFeedback.js';
+import { createActivityCompletionSurface } from './activityCompletionSurface.js';
 
 /**
  * Creates a standard SIRAASH Activity Shell.
@@ -144,6 +145,13 @@ export function createActivityShell(config = {}) {
     feedbackZone.className = 'worksheet-shell__feedback min-h-[4rem] shrink-0';
     feedbackZone.setAttribute('data-testid', 'worksheet-feedback');
     const feedback = createActivityFeedback({ container: feedbackZone, document: ownerDocument });
+    const completionZone = ownerDocument.createElement('section');
+    completionZone.className = 'worksheet-shell__completion min-h-0 shrink-0';
+    completionZone.setAttribute('data-testid', 'worksheet-completion');
+    const completion = createActivityCompletionSurface({
+        container: completionZone,
+        document: ownerDocument
+    });
 
     // E. Grid Layout Controller
     const mainGrid = ownerDocument.createElement('main');
@@ -155,7 +163,7 @@ export function createActivityShell(config = {}) {
         mainGrid.append(activityZone);
     }
 
-    mainBox.append(promptZone, mainGrid, feedbackZone);
+    mainBox.append(promptZone, mainGrid, feedbackZone, completionZone);
     shell.append(header, mainBox);
 
     // API Bindings
@@ -176,5 +184,43 @@ export function createActivityShell(config = {}) {
         feedback.clear();
     };
 
+    shell.showCompletion = (summary, actions) => {
+        setHidden(promptZone, true);
+        setHidden(mainGrid, true);
+        setHidden(feedbackZone, true);
+        setHidden(completionZone, false);
+        completion.updateActions(actions);
+        completion.showSummary(summary);
+    };
+
+    shell.hideCompletion = () => {
+        completion.hide();
+        setHidden(promptZone, false);
+        setHidden(mainGrid, false);
+        setHidden(feedbackZone, false);
+        setHidden(completionZone, true);
+    };
+
+    shell.completionSurface = completion;
+    shell.setCompletionMode = (isComplete) => {
+        if (isComplete) {
+            shell.showCompletion({}, []);
+            return;
+        }
+
+        shell.hideCompletion();
+    };
+
+    shell.setCompletionMode(false);
+
     return shell;
+}
+
+function setHidden(element, isHidden) {
+    if (isHidden) {
+        element.setAttribute('hidden', '');
+        return;
+    }
+
+    element.removeAttribute?.('hidden');
 }

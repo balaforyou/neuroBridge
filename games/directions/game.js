@@ -1,7 +1,5 @@
 import { createActivityShell } from '../../js/activityShell.js';
-import {
-    normalizeWorksheetLearnerName
-} from '../../js/worksheetTemplate.js';
+import { normalizeWorksheetLearnerName } from '../../js/worksheetTemplate.js';
 import { GAME_EVENTS } from '../../js/constants.js';
 
 export const DIRECTIONS = {
@@ -58,8 +56,8 @@ export function createDirectionsGame(config = {}) {
 
     const state = {
         currentDirection: initialDirection,
-        lastResult: null,   // null | { selected, correct }
-        feedbackState: null, // null | 'success' | 'mistake'
+        lastResult: null,
+        feedbackState: null,
         completed: false,
         learnerName: normalizeWorksheetLearnerName(config.learnerName || 'Adarsh')
     };
@@ -90,17 +88,46 @@ function mountDirections() {
     const root = document.getElementById('directions-root');
     if (!root) return;
 
-    const game = createDirectionsGame();
-    const state = game.getState();
-
     let shell = null;
     let activityGrid = null;
+    let game = null;
+    let state = null;
+    let sessionStartedAt = 0;
 
     window.addEventListener('message', (event) => {
-        if (event.data?.type === GAME_EVENTS.INIT) {
+        if (event.data?.type === GAME_EVENTS.INIT && state) {
             state.learnerName = normalizeWorksheetLearnerName(event.data.payload?.learnerName || 'Adarsh');
         }
     });
+
+    function restartSession() {
+        buildShell();
+    }
+
+    function finishSession() {
+        const durationSeconds = Math.max(1, Math.round((Date.now() - sessionStartedAt) / 1000));
+        shell.showCompletion({
+            message: 'Great work!',
+            accuracyPercent: 100,
+            correct: 1,
+            incorrect: 0,
+            durationSeconds,
+            completedItemsLabel: '1 direction'
+        }, [
+            {
+                label: 'Play Again',
+                testId: 'siraash-completion-play-again-button',
+                onClick: restartSession
+            },
+            {
+                label: 'Home',
+                testId: 'siraash-completion-home-button',
+                onClick: () => {
+                    window.parent?.postMessage({ type: ACTIVITY_HOME_EVENT }, '*');
+                }
+            }
+        ]);
+    }
 
     function renderActivity() {
         const container = document.createElement('div');
@@ -121,15 +148,12 @@ function mountDirections() {
 
             button.addEventListener('click', () => {
                 const correct = game.selectDirection(dir);
-
-                // Stamp result attributes for test observability
                 activityGrid.setAttribute('data-result', correct ? 'correct' : 'incorrect');
                 activityGrid.setAttribute('data-selected', dir);
 
                 if (correct) {
                     shell.showFeedback(DIRECTIONS_FEEDBACK.SUCCESS);
                 } else {
-                    // Gentle orange pulse on the tapped card — no harsh red or ✗
                     button.className = CARD_PULSE_CLASS;
                     shell.showFeedback(DIRECTIONS_FEEDBACK.MISTAKE);
                     setTimeout(() => {
@@ -154,21 +178,30 @@ function mountDirections() {
         return container;
     }
 
-    const currentDirectionLabel = DIRECTION_LABELS[state.currentDirection];
+    function buildShell() {
+        game = createDirectionsGame();
+        state = game.getState();
+        sessionStartedAt = Date.now();
 
-    shell = createActivityShell({
-        activityId: 'directions',
-        activityTitle: 'Directions',
-        prompt: `Tap ${currentDirectionLabel.toUpperCase()}`,
-        instruction: 'Find the arrow pointing in this direction.',
-        taskRenderer: renderActivity,
-        help: {
-            enabled: false
-        },
-        document
-    });
+        const currentDirectionLabel = DIRECTION_LABELS[state.currentDirection];
 
-    root.append(shell);
+        shell = createActivityShell({
+            activityId: 'directions',
+            activityTitle: 'Directions',
+            prompt: `Tap ${currentDirectionLabel.toUpperCase()}`,
+            instruction: 'Find the arrow pointing in this direction.',
+            taskRenderer: renderActivity,
+            help: {
+                enabled: false
+            },
+            document
+        });
+
+        root.innerHTML = '';
+        root.append(shell);
+    }
+
+    buildShell();
 }
 
 if (typeof document !== 'undefined') {

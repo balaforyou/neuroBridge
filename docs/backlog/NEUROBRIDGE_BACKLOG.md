@@ -34,8 +34,13 @@ Description: Created a reusable shared completion surface for learner activities
 
 ### NB-UI-007.1 Migrate Directions to Shared Completion Surface
 
+Status: Done
+Description: Moved Directions to the shared completion surface through the shared activity shell.
+
+### DIR-004 Session Flow
+
 Status: Ready
-Description: Move Directions to the shared completion surface when the activity is ready to adopt platform-owned completion layout.
+Description: Add the learner session flow that drives Directions completion with platform-owned completion UI.
 
 ### NB-UI-007.2 Migrate Schulte to Shared Completion Surface
 
