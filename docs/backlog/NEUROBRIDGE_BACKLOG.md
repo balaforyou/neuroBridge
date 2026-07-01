@@ -12,7 +12,12 @@ Items frozen enough for Codex handover.
 
 
 
-### NB-UI-005 Shared Feedback Component
+### NB-UI-005 NeuroBridge Activity Surface Contract
+
+Status: Done
+Description: Created the canonical NeuroBridge Activity Surface Contract for learner-facing activity screens.
+
+### NB-UI-006 Shared Activity Feedback Component
 
 Status: Ready
 Description: Create a unified SIRAASH shared feedback component for correct and mistake selections.

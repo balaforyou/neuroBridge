@@ -127,20 +127,20 @@ Purpose: Capture design-system and UI templating work for NeuroBridge after the 
 - Outcome: A meaningful learner home experience.
 
 - Story ID: NB-UI-005
-- Title: Parent Workspace UI Standard
-- Status: Backlog
-- Goal: Standardize parent-facing workspace screens.
-- Scope: Dashboard; Practice Lab; Administration; Activity Settings; Analytics Summary.
-- Rules: Parent workflow focused; consistent navigation; consistent card structure.
-- Outcome: Reusable parent workspace architecture.
+- Title: NeuroBridge Activity Surface Contract
+- Status: Done
+- Goal: Define the canonical layout contract for all learner-facing activity screens.
+- Scope: Header; prompt frame; activity surface; feedback frame; completion surface; ownership matrix; review checklist.
+- Rules: Platform owns layout; activities own learning content.
+- Outcome: Stable activity screens across NeuroBridge.
 
 - Story ID: NB-UI-006
-- Title: Parent Controls Pattern
-- Status: Backlog
-- Goal: Define reusable parent-control patterns across activities.
-- Examples: Question Count; Difficulty; Number Range; Hint Toggle; Scaffold Toggle; Auto Progression; Practice Mode; Official Mode.
-- Rules: Consistent control placement; consistent labels; consistent save behavior.
-- Outcome: Activities reuse the same parent-control model.
+- Title: Shared Activity Feedback Component
+- Status: Ready
+- Goal: Define a reusable platform feedback component for correct and mistake selections.
+- Scope: Correct feedback; mistake feedback; feedback placement; message visibility; learner-state behavior.
+- Rules: Feedback must remain in a reserved frame and not overlap task content.
+- Outcome: Reusable shared feedback behavior across activities.
 
 - Story ID: NB-UI-007
 - Title: Dashboard Metrics Card Standard
