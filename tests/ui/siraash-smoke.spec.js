@@ -956,6 +956,16 @@ test.describe('Directions viewport smoke', () => {
             await expect(page.locator('header h1')).toHaveText('Directions');
             await expect(page.getByTestId('directions-card-grid')).toBeVisible();
             await expect(page.locator('[data-choice]')).toHaveCount(4);
+
+            // Verify no duplicate "Directions" activity title in the activity body
+            const instructionHeader = page.locator('[data-testid="worksheet-instruction"] h2');
+            await expect(instructionHeader).not.toHaveText('Directions');
+            const instructionHeaderText = await instructionHeader.textContent();
+            expect(instructionHeaderText).toMatch(/^Tap (UP|DOWN|LEFT|RIGHT)$/i);
+
+            // Verify no empty hint/clue panel appears
+            await expect(page.getByTestId('worksheet-help')).toBeHidden();
+
             await expectNoPageScrollbar(page);
         });
     }
@@ -969,7 +979,7 @@ test.describe('Directions viewport smoke', () => {
         // Read which direction the game is asking for from the instruction text
         const instructionText = await page.locator('[data-testid="worksheet-instruction"]').textContent();
         const directionMap = { Up: 'up', Down: 'down', Left: 'left', Right: 'right' };
-        const match = Object.keys(directionMap).find(label => instructionText.includes(label));
+        const match = Object.keys(directionMap).find(label => instructionText.toLowerCase().includes(label.toLowerCase()));
         const targetDir = directionMap[match] || 'up';
 
         // Click the correct choice button
@@ -990,7 +1000,7 @@ test.describe('Directions viewport smoke', () => {
 
         const instructionText = await page.locator('[data-testid="worksheet-instruction"]').textContent();
         const directionMap = { Up: 'up', Down: 'down', Left: 'left', Right: 'right' };
-        const match = Object.keys(directionMap).find(label => instructionText.includes(label));
+        const match = Object.keys(directionMap).find(label => instructionText.toLowerCase().includes(label.toLowerCase()));
         const targetDir = directionMap[match] || 'up';
 
         await page.locator(`[data-choice="${targetDir}"]`).click();
@@ -1005,20 +1015,24 @@ test.describe('Directions viewport smoke', () => {
         await expectNoPageScrollbar(page);
     });
 
-    test('wrong selection shows gentle mistake feedback without red or harsh error', async ({ page }) => {
+    test('wrong selection shows gentle mistake feedback and orange pulse without red or harsh error', async ({ page }) => {
         await page.goto('/games/directions/');
         await initializeActivity(page);
 
         const instructionText = await page.locator('[data-testid="worksheet-instruction"]').textContent();
         const directionMap = { Up: 'up', Down: 'down', Left: 'left', Right: 'right' };
-        const match = Object.keys(directionMap).find(label => instructionText.includes(label));
+        const match = Object.keys(directionMap).find(label => instructionText.toLowerCase().includes(label.toLowerCase()));
         const targetDir = directionMap[match] || 'up';
 
         // Pick a wrong direction (different from target)
         const allDirs = ['up', 'down', 'left', 'right'];
         const wrongDir = allDirs.find(d => d !== targetDir);
 
-        await page.locator(`[data-choice="${wrongDir}"]`).click();
+        const wrongButton = page.locator(`[data-choice="${wrongDir}"]`);
+        await wrongButton.click();
+
+        // Wrong button gets orange-pulse class styling (gentle orange pulse)
+        await expect(wrongButton).toHaveClass(/border-orange-400 bg-orange-50 text-orange-950/);
 
         // Grid carries data-result=incorrect
         await expect(page.getByTestId('directions-card-grid')).toHaveAttribute('data-result', 'incorrect');

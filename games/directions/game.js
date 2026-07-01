@@ -35,8 +35,8 @@ export const DIRECTIONS_FEEDBACK = {
     MISTAKE: 'mistake'
 };
 
-const CARD_BASE_CLASS = 'flex flex-col items-center justify-center min-h-[4.5rem] p-3 rounded-2xl border-2 border-sky-200 bg-white hover:bg-sky-50 active:scale-[0.98] transition shadow-sm focus:outline-none focus:ring-4 focus:ring-sky-200';
-const CARD_PULSE_CLASS = 'flex flex-col items-center justify-center min-h-[4.5rem] p-3 rounded-2xl border-2 border-orange-400 bg-orange-50 text-orange-950 ring-4 ring-orange-200 transition shadow-sm focus:outline-none';
+const CARD_BASE_CLASS = 'flex flex-col items-center justify-center min-h-[8rem] p-5 rounded-2xl border-2 border-sky-200 bg-white hover:bg-sky-50 active:scale-[0.98] transition shadow-sm focus:outline-none focus:ring-4 focus:ring-sky-200';
+const CARD_PULSE_CLASS = 'flex flex-col items-center justify-center min-h-[8rem] p-5 rounded-2xl border-2 border-orange-400 bg-orange-50 text-orange-950 ring-4 ring-orange-200 transition shadow-sm focus:outline-none';
 const ORANGE_PULSE_DURATION_MS = 900;
 
 export function generateRandomDirection(random = Math.random) {
@@ -118,7 +118,7 @@ function mountDirections() {
 
         activityGrid = document.createElement('div');
         activityGrid.setAttribute('data-testid', 'directions-card-grid');
-        activityGrid.className = 'grid grid-cols-2 gap-4 max-w-sm w-full content-center';
+        activityGrid.className = 'grid grid-cols-2 gap-6 max-w-md w-full content-center';
 
         const directionsList = [DIRECTIONS.UP, DIRECTIONS.DOWN, DIRECTIONS.LEFT, DIRECTIONS.RIGHT];
         directionsList.forEach(dir => {
@@ -149,11 +149,11 @@ function mountDirections() {
             });
 
             const icon = document.createElement('span');
-            icon.className = 'text-3xl font-bold text-slate-800';
+            icon.className = 'text-5xl font-black text-slate-800';
             icon.textContent = DIRECTION_ARROWS[dir];
 
             const label = document.createElement('span');
-            label.className = 'text-xs font-bold uppercase tracking-wider text-slate-500 mt-1';
+            label.className = 'text-sm font-black uppercase tracking-wider text-slate-600 mt-2';
             label.textContent = DIRECTION_LABELS[dir];
 
             button.append(icon, label);
@@ -168,19 +168,23 @@ function mountDirections() {
 
     shell = createWorksheetShell({
         templateType: WORKSHEET_TEMPLATE_TYPES.GUIDED_DISCOVERY,
-        title: 'Directions',
-        instruction: `Tap ${currentDirectionLabel}`,
+        title: `Tap ${currentDirectionLabel.toUpperCase()}`,
+        instruction: 'Find the arrow pointing in this direction.',
         activity: {
             render: renderActivity
         },
         help: {
-            hints: [
-                'Look at the direction of the prompt.',
-                'Find the arrow matching the prompt.'
-            ]
+            enabled: false
         },
         document
     });
+
+    shell.classList.add('h-full');
+
+    const mainZone = shell.querySelector('.worksheet-shell__main');
+    if (mainZone) {
+        mainZone.className = 'worksheet-shell__main grid min-h-0 flex-1 grid-cols-1 gap-3';
+    }
 
     root.append(shell);
 }
