@@ -10,6 +10,16 @@ This file is the lightweight source of truth for deferred NeuroBridge work.
 
 Items frozen enough for Codex handover.
 
+### NB-UI-004.1 Migrate Directions to Shared Activity Shell
+
+Status: Ready
+Description: Migrate the Directions activity to use the standard SIRAASH Shared Activity Shell.
+
+### NB-UI-005 Shared Feedback Component
+
+Status: Ready
+Description: Create a unified SIRAASH shared feedback component for correct and mistake selections.
+
 ### DIR-003.2 Directions Shell Compliance Fix
 
 Status: Ready
@@ -275,6 +285,12 @@ Status: Deferred
 ## Done
 
 Completed feature IDs and closure notes.
+
+### NB-UI-004 Shared Activity Shell Foundation
+
+Status: Done
+
+Closure note: Created `js/activityShell.js` exposing `createActivityShell(config)` to programmatically assemble the visual shell structure. The shell foundation owns header rendering, standard Home button navigation, visually dominant and updatable instruction prompt headers, and reserved feedback zones. Added a comprehensive test suite in `js/tests/activityShell.test.js` validating structural zones, single title display, exclusion of dashboard links, prompt updating, and optional help zone pruning.
 
 ### NB-UI-003 Activity Shell Visual Compliance Standard
 
