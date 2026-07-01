@@ -41,8 +41,17 @@ export function createChoiceActivityFamily(config = {}) {
         }
     };
 
+    const baseHandleSuccess = family.handleSuccess;
+    const baseHandleMistake = family.handleMistake;
+
     return {
         ...family,
-        familyType: 'choice'
+        familyType: 'choice',
+        handleSuccess(options = {}) {
+            return baseHandleSuccess({ mode: 'surface', ...options });
+        },
+        handleMistake(options = {}) {
+            return baseHandleMistake({ mode: 'immediate', ...options });
+        }
     };
 }

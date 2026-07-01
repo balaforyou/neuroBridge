@@ -1,4 +1,6 @@
 import { createActivityShell } from '../activityShell.js';
+import { createActivitySuccessIndicator } from '../activitySuccessIndicator.js';
+import { createActivityOutcomePipeline } from '../activityOutcomePipeline.js';
 
 /**
  * Factory function creating a Base Activity Family controller.
@@ -27,6 +29,26 @@ export function createBaseActivityFamily(config = {}) {
         document: ownerDocument
     });
 
+    // Locate the workspace container for mounting the success indicator
+    const activityZone = shell.querySelector('.worksheet-shell__activity') || shell;
+    const successIndicator = createActivitySuccessIndicator({
+        container: activityZone,
+        document: ownerDocument
+    });
+
+    // Map shell feedback API to the standard feedback contract format
+    const feedbackWrapper = {
+        showSuccess: (message) => shell.showFeedback('success', message),
+        showMistake: (message) => shell.showFeedback('mistake', message),
+        clear: () => shell.clearFeedback()
+    };
+
+    // Instantiate standard platform outcome pipeline
+    const pipeline = createActivityOutcomePipeline({
+        feedback: feedbackWrapper,
+        successIndicator
+    });
+
     function mount() {
         const targetContainer = config.container;
         if (targetContainer && !isMounted) {
@@ -50,14 +72,12 @@ export function createBaseActivityFamily(config = {}) {
 
     function showSuccess(message) {
         if (shell && typeof shell.showFeedback === 'function') {
-            // Forward message if the shell's feedback API supports it
             shell.showFeedback('success', message);
         }
     }
 
     function showMistake(message) {
         if (shell && typeof shell.showFeedback === 'function') {
-            // Forward message if the shell's feedback API supports it
             shell.showFeedback('mistake', message);
         }
     }
@@ -76,6 +96,7 @@ export function createBaseActivityFamily(config = {}) {
 
     function reset() {
         clearFeedback();
+        pipeline.clear();
         if (shell && typeof shell.hideCompletion === 'function') {
             shell.hideCompletion();
         }
@@ -99,6 +120,10 @@ export function createBaseActivityFamily(config = {}) {
         clearFeedback,
         showCompletion,
         reset,
-        destroy
+        destroy,
+        handleSuccess: (options) => pipeline.handleSuccess(options),
+        handleMistake: (options) => pipeline.handleMistake(options),
+        clearOutcome: () => pipeline.clear(),
+        isOutcomeBusy: () => pipeline.isBusy()
     };
 }

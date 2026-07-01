@@ -285,6 +285,78 @@ function testResetAndDestroyLifecycle() {
     console.log('Reset and destroy lifecycle test passed');
 }
 
+function testOutcomePipelineIntegration() {
+    const doc = createFakeDocument();
+    const config = createValidConfig(doc);
+    const family = createBaseActivityFamily(config);
+
+    assert(typeof family.handleSuccess === 'function', 'Base family must expose handleSuccess');
+    assert(typeof family.handleMistake === 'function', 'Base family must expose handleMistake');
+    assert(typeof family.clearOutcome === 'function', 'Base family must expose clearOutcome');
+    assert(typeof family.isOutcomeBusy === 'function', 'Base family must expose isOutcomeBusy');
+
+    let completed = false;
+    family.handleSuccess({
+        message: 'Success Message',
+        mode: 'immediate',
+        durationMs: 5,
+        onComplete: () => {
+            completed = true;
+        }
+    });
+
+    assert(family.isOutcomeBusy() === true, 'isOutcomeBusy should be true during active flow');
+
+    setTimeout(() => {
+        assert(completed === true, 'onComplete callback must be triggered after duration');
+        assert(family.isOutcomeBusy() === false, 'isOutcomeBusy should reset after completion');
+        console.log('Outcome pipeline integration test passed');
+    }, 20);
+}
+
+function testFamilyDefaultModes() {
+    const doc = createFakeDocument();
+
+    // Choice family success default: surface
+    const choice = createChoiceActivityFamily(createValidConfig(doc));
+    let choiceCompleted = false;
+    choice.handleSuccess({
+        message: 'choice success',
+        durationMs: 5,
+        onComplete: () => { choiceCompleted = true; }
+    });
+    // Check that success indicator is shown (denoting surface mode)
+    const choiceIndicator = findByTestId(choice.shell, 'activity-success-indicator');
+    assert(choiceIndicator !== null, 'Choice family success default should trigger indicator overlay');
+
+    // Grid family success default: surface
+    const grid = createGridActivityFamily(createValidConfig(doc));
+    let gridCompleted = false;
+    grid.handleSuccess({
+        message: 'grid success',
+        durationMs: 5,
+        onComplete: () => { gridCompleted = true; }
+    });
+    const gridIndicator = findByTestId(grid.shell, 'activity-success-indicator');
+    assert(gridIndicator !== null, 'Grid family success default should trigger indicator overlay');
+
+    // QA family success default: immediate
+    const qa = createQuestionAnswerActivityFamily(createValidConfig(doc));
+    let qaCompleted = false;
+    qa.handleSuccess({
+        message: 'qa success',
+        durationMs: 5,
+        onComplete: () => { qaCompleted = true; }
+    });
+    const qaIndicator = findByTestId(qa.shell, 'activity-success-indicator');
+    assert(qaIndicator === null, 'QA family success default should not trigger success indicator (immediate mode)');
+
+    setTimeout(() => {
+        assert(choiceCompleted && gridCompleted && qaCompleted, 'All family outcomes must complete successfully');
+        console.log('Family default modes test passed');
+    }, 20);
+}
+
 export function runAllTests() {
     console.log('=== Activity Families Unit Tests ===');
     testBaseFamilyMountAndTaskRender();
@@ -295,5 +367,7 @@ export function runAllTests() {
     testGridFamilySpecialization();
     testQuestionAnswerFamilySpecialization();
     testResetAndDestroyLifecycle();
+    testOutcomePipelineIntegration();
+    testFamilyDefaultModes();
     console.log('=== All Activity Families Unit Tests Passed ===');
 }

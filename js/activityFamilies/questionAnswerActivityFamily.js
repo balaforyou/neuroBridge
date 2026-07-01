@@ -35,8 +35,17 @@ export function createQuestionAnswerActivityFamily(config = {}) {
         }
     };
 
+    const baseHandleSuccess = family.handleSuccess;
+    const baseHandleMistake = family.handleMistake;
+
     return {
         ...family,
-        familyType: 'question-answer'
+        familyType: 'question-answer',
+        handleSuccess(options = {}) {
+            return baseHandleSuccess({ mode: 'immediate', ...options });
+        },
+        handleMistake(options = {}) {
+            return baseHandleMistake({ mode: 'immediate', ...options });
+        }
     };
 }

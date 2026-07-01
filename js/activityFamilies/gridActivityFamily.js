@@ -41,8 +41,17 @@ export function createGridActivityFamily(config = {}) {
         }
     };
 
+    const baseHandleSuccess = family.handleSuccess;
+    const baseHandleMistake = family.handleMistake;
+
     return {
         ...family,
-        familyType: 'grid'
+        familyType: 'grid',
+        handleSuccess(options = {}) {
+            return baseHandleSuccess({ mode: 'surface', ...options });
+        },
+        handleMistake(options = {}) {
+            return baseHandleMistake({ mode: 'immediate', ...options });
+        }
     };
 }
