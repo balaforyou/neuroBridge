@@ -1,7 +1,4 @@
-import {
-    createWorksheetShell,
-    WORKSHEET_TEMPLATE_TYPES
-} from '../../js/worksheetShell.js';
+import { createActivityShell } from '../../js/activityShell.js';
 import {
     normalizeWorksheetLearnerName
 } from '../../js/worksheetTemplate.js';
@@ -99,13 +96,6 @@ function mountDirections() {
     let shell = null;
     let activityGrid = null;
 
-    const homeButton = document.getElementById('home-button');
-    if (homeButton) {
-        homeButton.addEventListener('click', () => {
-            window.parent?.postMessage({ type: ACTIVITY_HOME_EVENT }, '*');
-        });
-    }
-
     window.addEventListener('message', (event) => {
         if (event.data?.type === GAME_EVENTS.INIT) {
             state.learnerName = normalizeWorksheetLearnerName(event.data.payload?.learnerName || 'Adarsh');
@@ -166,25 +156,17 @@ function mountDirections() {
 
     const currentDirectionLabel = DIRECTION_LABELS[state.currentDirection];
 
-    shell = createWorksheetShell({
-        templateType: WORKSHEET_TEMPLATE_TYPES.GUIDED_DISCOVERY,
-        title: `Tap ${currentDirectionLabel.toUpperCase()}`,
+    shell = createActivityShell({
+        activityId: 'directions',
+        activityTitle: 'Directions',
+        prompt: `Tap ${currentDirectionLabel.toUpperCase()}`,
         instruction: 'Find the arrow pointing in this direction.',
-        activity: {
-            render: renderActivity
-        },
+        taskRenderer: renderActivity,
         help: {
             enabled: false
         },
         document
     });
-
-    shell.classList.add('h-full');
-
-    const mainZone = shell.querySelector('.worksheet-shell__main');
-    if (mainZone) {
-        mainZone.className = 'worksheet-shell__main grid min-h-0 flex-1 grid-cols-1 gap-3';
-    }
 
     root.append(shell);
 }
