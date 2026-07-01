@@ -62,6 +62,11 @@ Description: Fix Directions layout drift and ensure visual alignment with the vi
 Status: Ready
 Description: Migrate the Directions activity to use the standard SIRAASH Choice Activity Family.
 
+### NB-UX-004.2 Add Outcome Pipeline to Runtime Activity Families
+
+Status: Ready
+Description: Integrate the Activity Outcome Pipeline into the runtime Activity Family controller factories.
+
 ### NB-WS-001.2 Attribute Matching Worksheet V1
 
 Status: Ready
@@ -140,10 +145,7 @@ Description: Froze the canonical Activity UI Family Framework for learner-facing
 Status: Done
 Description: Created a reusable surface-scoped success indicator for learner-facing activities.
 
-### NB-UX-004.1 Add Success Indicator to Runtime Activity Families
 
-Status: Ready
-Description: Integrate the shared success indicator into the runtime activity family APIs.
 
 ### NB-UX-005 Adaptive Timing Engine
 
@@ -376,6 +378,12 @@ Status: Deferred
 ## Done
 
 Completed feature IDs and closure notes.
+
+### NB-UX-004.1 Activity Outcome Pipeline
+
+Status: Done
+
+Closure note: Implemented the reusable `activityOutcomePipeline.js` orchestrating feedback presentation, success tick indicators (via the activity success indicator), delays, busy state protections, and next-step execution callbacks. It supports immediate, surface, and manual execution modes, and throws explicit errors for invalid modes. Added unit tests in `js/tests/activityOutcomePipeline.test.js` validating the mode behaviors, and a runner command to integrate into the Node test suite.
 
 ### NB-UX-003 Runtime Activity Family APIs
 
