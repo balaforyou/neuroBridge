@@ -27,6 +27,21 @@ Description: Created a unified shared feedback component for correct and mistake
 Status: Done
 Description: Moved Directions to the shared activity feedback component through the shared activity shell.
 
+### NB-UI-007 Shared Completion Surface
+
+Status: Done
+Description: Created a reusable shared completion surface for learner activities.
+
+### NB-UI-007.1 Migrate Directions to Shared Completion Surface
+
+Status: Ready
+Description: Move Directions to the shared completion surface when the activity is ready to adopt platform-owned completion layout.
+
+### NB-UI-007.2 Migrate Schulte to Shared Completion Surface
+
+Status: Backlog
+Description: Move Schulte to the shared completion surface after Directions validates the platform pattern.
+
 ### ENGINEERING-MANIFEST-002 Platform First Principle Update
 
 Status: Done
