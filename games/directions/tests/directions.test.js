@@ -2,7 +2,8 @@ import {
     DIRECTIONS,
     generateRandomDirection,
     validateDirection,
-    createDirectionsGame
+    createDirectionsGame,
+    DIRECTIONS_FEEDBACK
 } from '../game.js';
 
 function assert(condition, message) {
@@ -53,6 +54,8 @@ export function runAllTests() {
     testValidateDirectionIncorrect();
     testValidateAllFourDirections();
     testSelectDirectionRecordsState();
+    testFeedbackStateCorrect();
+    testFeedbackStateWrong();
     console.log('=== All Directions V1 Unit Tests Passed ===');
 }
 
@@ -107,4 +110,31 @@ function testSelectDirectionRecordsState() {
     // currentDirection must remain unchanged — wrong answer must never advance the target
     assert(stateAfterWrong.currentDirection === DIRECTIONS.LEFT, 'Wrong selection must not change currentDirection');
     console.log('selectDirection records state correctly test passed');
+}
+
+function testFeedbackStateCorrect() {
+    const game = createDirectionsGame({ direction: DIRECTIONS.UP });
+
+    // Before any selection, feedbackState should be null
+    assert(game.getFeedbackState() === null, 'feedbackState should be null before any selection');
+
+    // After a correct selection, feedbackState should be success
+    game.selectDirection(DIRECTIONS.UP);
+    assert(game.getFeedbackState() === DIRECTIONS_FEEDBACK.SUCCESS, 'Correct selection should produce success feedback state');
+    assert(game.getFeedbackState() === 'success', 'feedbackState value should be the string "success"');
+    console.log('Feedback state correct test passed');
+}
+
+function testFeedbackStateWrong() {
+    const game = createDirectionsGame({ direction: DIRECTIONS.DOWN });
+
+    // After a wrong selection, feedbackState should be mistake (not error/red/fail)
+    game.selectDirection(DIRECTIONS.UP);
+    assert(game.getFeedbackState() === DIRECTIONS_FEEDBACK.MISTAKE, 'Wrong selection should produce mistake feedback state');
+    assert(game.getFeedbackState() === 'mistake', 'feedbackState value should be the string "mistake"');
+
+    // A subsequent correct selection replaces feedback state
+    game.selectDirection(DIRECTIONS.DOWN);
+    assert(game.getFeedbackState() === DIRECTIONS_FEEDBACK.SUCCESS, 'Correct selection after wrong should replace feedback state with success');
+    console.log('Feedback state wrong test passed');
 }

@@ -30,6 +30,15 @@ const DIRECTION_LABELS = {
 
 const ACTIVITY_HOME_EVENT = 'SIRAASH_ACTIVITY_HOME';
 
+export const DIRECTIONS_FEEDBACK = {
+    SUCCESS: 'success',
+    MISTAKE: 'mistake'
+};
+
+const CARD_BASE_CLASS = 'flex flex-col items-center justify-center min-h-[4.5rem] p-3 rounded-2xl border-2 border-sky-200 bg-white hover:bg-sky-50 active:scale-[0.98] transition shadow-sm focus:outline-none focus:ring-4 focus:ring-sky-200';
+const CARD_PULSE_CLASS = 'flex flex-col items-center justify-center min-h-[4.5rem] p-3 rounded-2xl border-2 border-orange-400 bg-orange-50 text-orange-950 ring-4 ring-orange-200 transition shadow-sm focus:outline-none';
+const ORANGE_PULSE_DURATION_MS = 900;
+
 export function generateRandomDirection(random = Math.random) {
     const keys = Object.values(DIRECTIONS);
     const index = Math.floor(random() * keys.length);
@@ -53,6 +62,7 @@ export function createDirectionsGame(config = {}) {
     const state = {
         currentDirection: initialDirection,
         lastResult: null,   // null | { selected, correct }
+        feedbackState: null, // null | 'success' | 'mistake'
         completed: false,
         learnerName: normalizeWorksheetLearnerName(config.learnerName || 'Adarsh')
     };
@@ -64,12 +74,18 @@ export function createDirectionsGame(config = {}) {
     function selectDirection(selectedDirection) {
         const correct = validateDirection(state.currentDirection, selectedDirection);
         state.lastResult = { selected: selectedDirection, correct };
+        state.feedbackState = correct ? DIRECTIONS_FEEDBACK.SUCCESS : DIRECTIONS_FEEDBACK.MISTAKE;
         return correct;
+    }
+
+    function getFeedbackState() {
+        return state.feedbackState;
     }
 
     return {
         getState,
-        selectDirection
+        selectDirection,
+        getFeedbackState
     };
 }
 
@@ -108,16 +124,28 @@ function mountDirections() {
         directionsList.forEach(dir => {
             const button = document.createElement('button');
             button.type = 'button';
-            button.className = 'flex flex-col items-center justify-center min-h-[4.5rem] p-3 rounded-2xl border-2 border-sky-200 bg-white hover:bg-sky-50 active:scale-[0.98] transition shadow-sm focus:outline-none focus:ring-4 focus:ring-sky-200';
+            button.className = CARD_BASE_CLASS;
             button.setAttribute('data-choice', dir);
             button.setAttribute('data-testid', `directions-choice-${dir}`);
             button.setAttribute('aria-label', `Select ${DIRECTION_LABELS[dir]}`);
 
             button.addEventListener('click', () => {
                 const correct = game.selectDirection(dir);
-                // Stamp result on the grid for test observability (no feedback UI yet)
+
+                // Stamp result attributes for test observability
                 activityGrid.setAttribute('data-result', correct ? 'correct' : 'incorrect');
                 activityGrid.setAttribute('data-selected', dir);
+
+                if (correct) {
+                    shell.showFeedback(DIRECTIONS_FEEDBACK.SUCCESS);
+                } else {
+                    // Gentle orange pulse on the tapped card — no harsh red or ✗
+                    button.className = CARD_PULSE_CLASS;
+                    shell.showFeedback(DIRECTIONS_FEEDBACK.MISTAKE);
+                    setTimeout(() => {
+                        button.className = CARD_BASE_CLASS;
+                    }, ORANGE_PULSE_DURATION_MS);
+                }
             });
 
             const icon = document.createElement('span');

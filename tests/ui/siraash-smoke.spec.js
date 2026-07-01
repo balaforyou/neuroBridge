@@ -983,4 +983,52 @@ test.describe('Directions viewport smoke', () => {
         await expect(page.locator('[data-choice]')).toHaveCount(4);
         await expectNoPageScrollbar(page);
     });
+
+    test('correct selection shows success feedback banner', async ({ page }) => {
+        await page.goto('/games/directions/');
+        await initializeActivity(page);
+
+        const instructionText = await page.locator('[data-testid="worksheet-instruction"]').textContent();
+        const directionMap = { Up: 'up', Down: 'down', Left: 'left', Right: 'right' };
+        const match = Object.keys(directionMap).find(label => instructionText.includes(label));
+        const targetDir = directionMap[match] || 'up';
+
+        await page.locator(`[data-choice="${targetDir}"]`).click();
+
+        // SIRAASH success feedback banner should appear
+        await expect(page.getByTestId('siraash-feedback')).toBeVisible();
+        await expect(page.getByTestId('siraash-feedback')).toHaveClass(/siraash-feedback--success/);
+        await expect(page.getByTestId('siraash-feedback')).toContainText('Great work!');
+
+        // No duplicate feedback elements
+        await expect(page.getByTestId('siraash-feedback')).toHaveCount(1);
+        await expectNoPageScrollbar(page);
+    });
+
+    test('wrong selection shows gentle mistake feedback without red or harsh error', async ({ page }) => {
+        await page.goto('/games/directions/');
+        await initializeActivity(page);
+
+        const instructionText = await page.locator('[data-testid="worksheet-instruction"]').textContent();
+        const directionMap = { Up: 'up', Down: 'down', Left: 'left', Right: 'right' };
+        const match = Object.keys(directionMap).find(label => instructionText.includes(label));
+        const targetDir = directionMap[match] || 'up';
+
+        // Pick a wrong direction (different from target)
+        const allDirs = ['up', 'down', 'left', 'right'];
+        const wrongDir = allDirs.find(d => d !== targetDir);
+
+        await page.locator(`[data-choice="${wrongDir}"]`).click();
+
+        // Grid carries data-result=incorrect
+        await expect(page.getByTestId('directions-card-grid')).toHaveAttribute('data-result', 'incorrect');
+
+        // SIRAASH mistake feedback banner should appear (amber/gentle — not red)
+        await expect(page.getByTestId('siraash-feedback')).toBeVisible();
+        await expect(page.getByTestId('siraash-feedback')).toHaveClass(/siraash-feedback--mistake/);
+
+        // No duplicate feedback elements
+        await expect(page.getByTestId('siraash-feedback')).toHaveCount(1);
+        await expectNoPageScrollbar(page);
+    });
 });
