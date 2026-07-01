@@ -22,6 +22,11 @@ Description: Created the canonical NeuroBridge Activity Surface Contract for lea
 Status: Ready
 Description: Create a unified SIRAASH shared feedback component for correct and mistake selections.
 
+### ENGINEERING-MANIFEST-002 Platform First Principle Update
+
+Status: Done
+Description: Added the Platform First Principle to `docs/ENGINEERING_MANIFEST.md` to guide platform-vs-activity implementation decisions.
+
 ### DIR-003.2 Directions Shell Compliance Fix
 
 Status: Ready

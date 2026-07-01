@@ -114,6 +114,28 @@ Future improvements should refine existing standards rather than creating new go
 
 ---
 
+## Platform First Principle
+
+When a problem affects multiple activities, solve it once in the platform.
+
+When a problem is unique to one learning activity, solve it within that activity.
+
+Platform abstractions should be extracted from observed implementation patterns, not speculative future requirements.
+
+Decision rule:
+
+For every new issue, ask first: "Is this a platform concern or an activity concern?"
+
+If platform:
+
+- Update or extend the shared platform, component, or standard.
+
+If activity-specific:
+
+- Keep the change inside the activity scope.
+
+---
+
 ## Future Evolution
 
 New documentation should only be introduced when a genuinely new architectural concern emerges. 
