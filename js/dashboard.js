@@ -292,6 +292,18 @@ function createNumberBridgeControlCard(game, config) {
                 ]
             })}
             ${renderSelectSetting({
+                label: 'Read question aloud',
+                gameId: game.id,
+                setting: 'audioMode',
+                type: 'boolean',
+                testId: 'number-bridges-config-audio-mode',
+                value: config.audioMode === true,
+                options: [
+                    { value: true, label: 'ON' },
+                    { value: false, label: 'OFF' }
+                ]
+            })}
+            ${renderSelectSetting({
                 label: 'Auto Progression',
                 gameId: game.id,
                 setting: 'autoProgression',

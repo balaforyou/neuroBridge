@@ -265,6 +265,12 @@ Status: Deferred
 
 Completed feature IDs and closure notes.
 
+### GAME-CATALOG-001 Schulte Table Catalog Entry
+
+Status: Done
+
+Closure note: Updated GAME_CATALOG.md with the Schulte Table entry mapping its game ID, family, primary domain, skills, cognitive targets, current levels, current modes, architecture references, and status.
+
 ### NB-AE-002 Attribute Explorer Result Flow and Feedback Refinement
 
 Status: Done
@@ -532,3 +538,8 @@ Closure note: Implemented in the Number Bridges L1-L9 progression work included 
 
 Status: Done  
 Closure note: Implemented in commit `f0fba70`.
+
+### NB-KQ-AUD-001 Guided Math Reading Mode
+
+Status: Done  
+Closure note: Added optional Number Bridges read-aloud support with `audioMode`, parent-facing Read question aloud ON/OFF control, guarded browser speech synthesis, question speech de-duplication, and correct-answer fact speech across bridge/master modes and supported operations. Added focused Node coverage plus Number Bridges Playwright smoke validation.

@@ -3,6 +3,8 @@ import {
     createKumonQuizGame,
     createKumonSessionSummary,
     DEFAULT_KUMON_CONFIG,
+    formatAnswerSpeech,
+    formatQuestionSpeech,
     generateKumonQuestions,
     getNumberBridgeTransitionDurationMs,
     getNextNumberBridgeLevel,
@@ -37,12 +39,43 @@ function testConfigDefaults() {
     assert(config.levelLabel === 'Addition L1', 'Level label should default to Addition L1');
     assert(config.skillLabel === '+1 Bridges', 'Skill label should default to +1 Bridges');
     assert(config.autoProgression === false, 'Auto progression should default disabled');
+    assert(config.audioMode === false, 'Audio mode should default disabled');
     assert(config.questionCount === 10, 'Question count should default to 10');
     assert(config.questionsPerScreen === 5, 'Questions per screen should default to 5');
     assert(config.hintsEnabled === true, 'Hints should default enabled');
     assert(config.questionOrder === 'sequential', 'Question order should default to sequential');
     assert(config.mode === 'practice', 'Mode should default to practice');
     console.log('Kumon config defaults test passed');
+}
+
+function testAudioModeConfig() {
+    const enabled = normalizeKumonConfig({ audioMode: true, operation: '+', level: 9 });
+    const disabled = normalizeKumonConfig({ audioMode: 'true', operation: '\u00d7', level: 9 });
+    const master = normalizeKumonConfig({ audioMode: true, operation: '-', arithmeticMode: 'master', aMin: 3, aMax: 4, bMin: 1, bMax: 2 });
+
+    assert(enabled.audioMode === true, 'Audio mode should enable only with boolean true');
+    assert(enabled.level === 9, 'Audio mode should not restrict bridge levels');
+    assert(disabled.audioMode === false, 'Audio mode should reject non-boolean true values');
+    assert(disabled.operation === '\u00d7', 'Audio mode should not change multiplication operation');
+    assert(master.audioMode === true && master.arithmeticMode === 'master', 'Audio mode should stay available in Master mode');
+    console.log('Audio mode config test passed');
+}
+
+function testQuestionSpeechFormatting() {
+    assert(formatQuestionSpeech({ operandA: 1, operation: '+', operandB: 1 }) === 'One plus one?', 'Addition question speech should use plus language');
+    assert(formatQuestionSpeech({ operandA: 9, operation: '+', operandB: 8 }) === 'Nine plus eight?', 'Addition question speech should support larger operands');
+    assert(formatQuestionSpeech({ operandA: 3, operation: '-', operandB: 1 }) === 'Three minus one?', 'Subtraction question speech should use minus language');
+    assert(formatQuestionSpeech({ operandA: 5, operation: '\u00d7', operandB: 2 }) === 'Five times two?', 'Multiplication question speech should use times language');
+    assert(formatQuestionSpeech({ operandA: 10, operation: '\u00f7', operandB: 2 }) === 'Ten divided by two?', 'Division question speech should use divided-by language');
+    console.log('Question speech formatting test passed');
+}
+
+function testAnswerSpeechFormatting() {
+    assert(formatAnswerSpeech({ operandA: 1, operation: '+', operandB: 1, expectedAnswer: 2 }) === 'One plus one is two.', 'Addition answer speech should include answer fact');
+    assert(formatAnswerSpeech({ operandA: 9, operation: '+', operandB: 8, expectedAnswer: 17 }) === 'Nine plus eight is seventeen.', 'Answer speech should support 0-100 number words');
+    assert(formatAnswerSpeech({ operandA: 3, operation: '-', operandB: 1, expectedAnswer: 2 }) === 'Three minus one is two.', 'Subtraction answer speech should include answer fact');
+    assert(formatAnswerSpeech({ operandA: 50, operation: '+', operandB: 50, expectedAnswer: 100 }) === 'Fifty plus fifty is one hundred.', 'Answer speech should support one hundred');
+    console.log('Answer speech formatting test passed');
 }
 
 function testNumberBridgeLevelModelDefaults() {
@@ -1132,6 +1165,9 @@ function testWrongAnswerHintContractForRangeBridges() {
 function runAllTests() {
     console.log('=== Kumon Quiz Unit Tests ===');
     testConfigDefaults();
+    testAudioModeConfig();
+    testQuestionSpeechFormatting();
+    testAnswerSpeechFormatting();
     testNumberBridgeLevelModelDefaults();
     testLevelLabelGeneration();
     testOperationPackLabels();

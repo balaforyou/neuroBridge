@@ -67,7 +67,8 @@ export const DEFAULT_KUMON_CONFIG = {
     hintsEnabled: true,
     mode: 'practice',
     autoProgression: false,
-    questionOrder: 'sequential'
+    questionOrder: 'sequential',
+    audioMode: false
 };
 
 export function getNumberBridgeLevelModel(level = DEFAULT_KUMON_CONFIG.level, operation = DEFAULT_KUMON_CONFIG.operation) {
@@ -136,7 +137,8 @@ export function normalizeKumonConfig(config = {}) {
         hintsEnabled: merged.hintsEnabled !== false,
         mode: merged.mode === 'assessment' ? 'assessment' : 'practice',
         autoProgression: merged.autoProgression === true,
-        questionOrder: merged.questionOrder === 'random' ? 'random' : 'sequential'
+        questionOrder: merged.questionOrder === 'random' ? 'random' : 'sequential',
+        audioMode: merged.audioMode === true
     };
 }
 
@@ -741,6 +743,90 @@ export function formatQuestion(question) {
     return `${question.operandA} ${question.operation} ${question.operandB}`;
 }
 
+export function formatQuestionSpeech(question) {
+    if (!question) return '';
+    return capitalizeSentence(`${formatNumberWord(question.operandA)} ${getOperationSpeechWord(question.operation)} ${formatNumberWord(question.operandB)}?`);
+}
+
+export function formatAnswerSpeech(question) {
+    if (!question) return '';
+    const answer = Object.prototype.hasOwnProperty.call(question, 'expectedAnswer')
+        ? question.expectedAnswer
+        : question.correctAnswer;
+    return capitalizeSentence(`${formatNumberWord(question.operandA)} ${getOperationSpeechWord(question.operation)} ${formatNumberWord(question.operandB)} is ${formatNumberWord(answer)}.`);
+}
+
+function formatNumberWord(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number) || !Number.isInteger(number) || number < 0 || number > 100) {
+        return String(value);
+    }
+
+    const wordsUnderTwenty = [
+        'zero',
+        'one',
+        'two',
+        'three',
+        'four',
+        'five',
+        'six',
+        'seven',
+        'eight',
+        'nine',
+        'ten',
+        'eleven',
+        'twelve',
+        'thirteen',
+        'fourteen',
+        'fifteen',
+        'sixteen',
+        'seventeen',
+        'eighteen',
+        'nineteen'
+    ];
+    const tensWords = {
+        20: 'twenty',
+        30: 'thirty',
+        40: 'forty',
+        50: 'fifty',
+        60: 'sixty',
+        70: 'seventy',
+        80: 'eighty',
+        90: 'ninety',
+        100: 'one hundred'
+    };
+
+    if (number < 20) return wordsUnderTwenty[number];
+    if (tensWords[number]) return tensWords[number];
+
+    const tens = Math.floor(number / 10) * 10;
+    return `${tensWords[tens]} ${wordsUnderTwenty[number - tens]}`;
+}
+
+function getOperationSpeechWord(operation) {
+    if (operation === '-') return 'minus';
+    if (operation === '×') return 'times';
+    if (operation === '÷') return 'divided by';
+    return 'plus';
+}
+
+function capitalizeSentence(text) {
+    return text ? `${text.charAt(0).toUpperCase()}${text.slice(1)}` : '';
+}
+
+function speakText(text) {
+    try {
+        if (!text || typeof window === 'undefined' || !window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') {
+            return false;
+        }
+
+        window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(text));
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
 export function renderNumberBridgeSupportText(state, learnerName = 'Learner') {
     if (state.lastResult === 'mistake' && state.supportState?.text) {
         return `<p>&#127793; You got close, ${normalizeWorksheetLearnerName(learnerName)}.</p><p class="mt-3">${state.supportState.text}</p>`;
@@ -1032,6 +1118,7 @@ function mountKumonQuiz() {
     let advanceTimer = null;
     let selectedQuestionId = null;
     let completionCelebrationPlayed = false;
+    let spokenQuestionIds = new Set();
 
     window.addEventListener('message', (event) => {
         if (event.data?.type !== GAME_EVENTS.INIT) return;
@@ -1039,6 +1126,7 @@ function mountKumonQuiz() {
         learnerName = normalizeWorksheetLearnerName(event.data.learnerName);
         game = createKumonQuizGame({ ...event.data.payload, learnerName });
         completionCelebrationPlayed = false;
+        spokenQuestionIds = new Set();
         render();
     });
 
@@ -1088,6 +1176,7 @@ function mountKumonQuiz() {
             const questionId = input.getAttribute('data-question-id');
             input.addEventListener('focus', () => {
                 selectedQuestionId = questionId;
+                speakQuestionOnce(questionId);
             });
             input.addEventListener('keydown', (event) => {
                 if (event.key !== 'Enter') return;
@@ -1140,6 +1229,19 @@ function mountKumonQuiz() {
         return renderNumberBridgeSupportText(state, learnerName);
     }
 
+    function speakQuestionOnce(questionId) {
+        const state = game.getState();
+        if (!state.config.audioMode || !questionId || spokenQuestionIds.has(questionId) || state.correctQuestionIds[questionId]) {
+            return;
+        }
+
+        const question = getVisibleQuestionsFromState(state).find(candidate => candidate.questionId === questionId);
+        if (!question) return;
+
+        spokenQuestionIds.add(questionId);
+        speakText(formatQuestionSpeech(question));
+    }
+
     function submitCurrentAnswer(questionId, answer, source = 'auto') {
         if (String(answer ?? '').trim() === '') {
             return;
@@ -1155,6 +1257,10 @@ function mountKumonQuiz() {
 
         if (outcome.result === 'duplicate' || outcome.result === 'ignored') {
             return;
+        }
+
+        if (outcome.result === 'success' && game.getState().config.audioMode) {
+            speakText(formatAnswerSpeech(outcome.trial));
         }
 
         render();
@@ -1203,6 +1309,7 @@ function mountKumonQuiz() {
         root.querySelector('[data-testid="number-bridges-next-round-button"]').addEventListener('click', () => {
             game.resetRound();
             completionCelebrationPlayed = false;
+            spokenQuestionIds = new Set();
             render();
         });
         root.querySelector('[data-testid="number-bridges-home-button"]').addEventListener('click', () => {
