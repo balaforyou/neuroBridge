@@ -254,6 +254,32 @@ Activities own only:
 
 The shared result screen appears only on round or activity completion. Routine correct answers use local feedback and must not render the full result component.
 
+### Result Lifecycle
+
+Worksheet activities have two visual states.
+
+Learning State:
+
+- Activity Shell visible.
+- Instruction panel visible.
+- Workspace visible.
+- Support/help visible when configured.
+- Feedback visible as needed.
+
+Completion State:
+
+- Activity Shell remains visible.
+- Shared Worksheet Result Component is visible.
+- Learning-state instruction panel is hidden.
+- Workspace is hidden.
+- Support/help panel is hidden unless explicitly part of the result review.
+- No prompt text such as `Look at the picture...` remains visible.
+- Result remains visible until learner action.
+
+Guardrail:
+
+- A worksheet activity must not render learning-state content and completion-state result content at the same time.
+
 ### Result Regions
 
 Required structure:

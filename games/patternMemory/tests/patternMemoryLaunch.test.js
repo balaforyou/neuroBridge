@@ -119,6 +119,9 @@ async function testPatternMemoryCopyModeLearnerFlow() {
         assert(await page.getByTestId('pattern-memory-next-round-button').innerText() === 'Try Again', 'Try Again should be visible');
         assert(await page.getByTestId('pattern-memory-home-button').innerText() === 'Home', 'Home should be visible');
         assert(await page.getByTestId('pattern-memory-question').isVisible() === false, 'Completion should hide active question');
+        assert(await page.getByTestId('worksheet-instruction').isVisible() === false, 'Completion should hide worksheet instruction banner');
+        assert(await page.getByTestId('worksheet-help').isVisible() === false, 'Completion should hide worksheet help panel');
+        assert(await page.getByTestId('worksheet-feedback').isVisible() === false, 'Completion should hide worksheet feedback panel');
 
         const payloads = await page.evaluate(() => window.__patternMemoryCompletionPayloads);
         assert(payloads.length === 1, 'Pattern Memory should submit one completion payload');

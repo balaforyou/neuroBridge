@@ -380,11 +380,13 @@ function mountAttributeMatchingWorksheet() {
 
         const state = game.getState();
         if (!state.completed) {
+            shell?.setCompletionMode?.(false);
             completionPanel.className = 'hidden text-center text-slate-950';
             completionPanel.innerHTML = '';
             return;
         }
 
+        shell?.setCompletionMode?.(true);
         completionPanel.className = 'flex h-full min-h-0 flex-col text-center text-slate-950';
         completionPanel.innerHTML = renderAttributeMatchingResultMarkup(
             createAttributeMatchingResultSummary(state),

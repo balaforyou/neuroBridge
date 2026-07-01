@@ -78,8 +78,31 @@ export function createWorksheetShell(config = {}) {
     shell.clearFeedback = () => {
         feedbackZone.innerHTML = '';
     };
+    shell.setCompletionMode = (isComplete) => {
+        const complete = Boolean(isComplete);
+        shell.setAttribute('data-visual-state', complete ? 'completion' : 'learning');
+        setHidden(instructionZone, complete);
+        setHidden(feedbackZone, complete);
+        setHidden(celebrationZone, complete || celebrationZone.getAttribute('data-enabled') !== 'true');
+
+        const helpHasContent = helpZone.getAttribute('aria-disabled') !== 'true';
+        setHidden(helpZone, complete || !helpHasContent);
+        mainZone.className = complete
+            ? 'worksheet-shell__main grid min-h-0 flex-1 grid-cols-1 gap-3'
+            : 'worksheet-shell__main grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_18rem]';
+    };
+    shell.setCompletionMode(false);
 
     return shell;
+}
+
+function setHidden(element, isHidden) {
+    if (isHidden) {
+        element.setAttribute('hidden', '');
+        return;
+    }
+
+    element.removeAttribute?.('hidden');
 }
 
 function createInstructionZone(config, ownerDocument) {

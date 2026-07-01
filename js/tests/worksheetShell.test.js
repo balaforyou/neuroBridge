@@ -38,6 +38,10 @@ class FakeElement {
         return this.attributes[name] ?? null;
     }
 
+    removeAttribute(name) {
+        delete this.attributes[name];
+    }
+
     append(...children) {
         children.flat().forEach(child => {
             if (child) {
@@ -202,6 +206,28 @@ function testCelebrationInactiveByDefault() {
     console.log('Worksheet celebration placeholder test passed');
 }
 
+function testCompletionModeHidesLearningRegions() {
+    const shell = createWorksheetShell(createValidConfig());
+    const instructionZone = findByTestId(shell, 'worksheet-instruction');
+    const helpZone = findByTestId(shell, 'worksheet-help');
+    const feedbackZone = findByTestId(shell, 'worksheet-feedback');
+    const activityZone = findByTestId(shell, 'worksheet-activity');
+
+    shell.setCompletionMode(true);
+    assert(shell.getAttribute('data-visual-state') === 'completion', 'Shell should expose completion visual state');
+    assert(instructionZone.getAttribute('hidden') === '', 'Completion mode should hide instruction zone');
+    assert(helpZone.getAttribute('hidden') === '', 'Completion mode should hide help zone');
+    assert(feedbackZone.getAttribute('hidden') === '', 'Completion mode should hide feedback zone');
+    assert(activityZone.getAttribute('hidden') === null, 'Completion mode should keep activity zone visible for result component');
+
+    shell.setCompletionMode(false);
+    assert(shell.getAttribute('data-visual-state') === 'learning', 'Shell should return to learning visual state');
+    assert(instructionZone.getAttribute('hidden') === null, 'Learning mode should restore instruction zone');
+    assert(helpZone.getAttribute('hidden') === null, 'Learning mode should restore configured help zone');
+    assert(feedbackZone.getAttribute('hidden') === null, 'Learning mode should restore feedback zone');
+    console.log('Worksheet completion mode lifecycle test passed');
+}
+
 function runAllTests() {
     console.log('=== Worksheet Shell Contract Tests ===');
     testTemplateTypesExist();
@@ -211,6 +237,7 @@ function runAllTests() {
     testHelpRevealsHintsProgressively();
     testFeedbackMountUsesSiraashContract();
     testCelebrationInactiveByDefault();
+    testCompletionModeHidesLearningRegions();
     console.log('=== All Worksheet Shell Contract Tests Passed ===');
 }
 

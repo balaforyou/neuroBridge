@@ -221,11 +221,13 @@ function mountMatchingWorksheet() {
 
         const state = game.getState();
         if (!state.completed) {
+            shell?.setCompletionMode?.(false);
             completionPanel.className = 'hidden rounded-2xl border-4 border-emerald-300 bg-emerald-50 px-4 py-3 text-center text-slate-950';
             completionPanel.innerHTML = '';
             return;
         }
 
+        shell?.setCompletionMode?.(true);
         const matchedPairs = state.cards.filter(card => card.matched).length / 2;
         const totalPairs = state.cards.length / 2;
         const mistakesCorrected = Math.max(0, state.attempts - matchedPairs);

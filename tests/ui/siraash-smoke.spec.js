@@ -278,6 +278,9 @@ test.describe('Matching Worksheet viewport smoke', () => {
         await page.getByTestId('matching-card-cat-b').click();
         await expect(page.getByTestId('matching-completion')).toBeVisible();
         await expect(page.getByTestId('matching-card-grid')).toBeHidden();
+        await expect(page.getByTestId('worksheet-instruction')).toBeHidden();
+        await expect(page.getByTestId('worksheet-help')).toBeHidden();
+        await expect(page.getByTestId('worksheet-feedback')).toBeHidden();
         await expect(page.getByTestId('matching-results')).toBeVisible();
         await expect(page.getByTestId('matching-results')).toHaveCount(1);
         await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
@@ -376,6 +379,10 @@ test.describe('Attribute Matching Worksheet viewport smoke', () => {
 
         await expect(page.getByTestId('attribute-matching-question')).toBeHidden();
         await expect(page.getByTestId('attribute-matching-completion')).toBeVisible();
+        await expect(page.getByTestId('worksheet-instruction')).toBeHidden();
+        await expect(page.getByTestId('worksheet-help')).toBeHidden();
+        await expect(page.getByTestId('worksheet-feedback')).toBeHidden();
+        await expect(page.getByText('Look at the picture. Choose its color.')).toBeHidden();
         await expect(page.getByTestId('attribute-matching-results')).toBeVisible();
         await expect(page.getByTestId('attribute-matching-results')).toHaveCount(1);
         await expect(page.getByTestId('attribute-matching-completion')).toContainText(`Great work, ${LEARNER_NAME}!`);
@@ -886,6 +893,10 @@ test.describe('Attribute Explorer viewport smoke', () => {
 
         await expect(page.getByTestId('attribute-explorer-results')).toBeVisible();
         await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
+        await expect(page.locator('#attribute-prompt')).toHaveCount(0);
+        await expect(page.getByText('LOOK AT COLOR')).toHaveCount(0);
+        await expect(page.locator('#item-stage')).toHaveCount(0);
+        await expect(page.locator('#clue-control')).toHaveCount(0);
         await expect(page.getByTestId('attribute-explorer-total')).toHaveText('Questions: 5');
         await expect(page.getByTestId('attribute-explorer-correct-total')).toHaveText('Correct / Total: 5 / 5');
         await expect(page.getByTestId('attribute-explorer-accuracy')).toHaveText('Accuracy: 100%');
