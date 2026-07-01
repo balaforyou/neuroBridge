@@ -959,4 +959,28 @@ test.describe('Directions viewport smoke', () => {
             await expectNoPageScrollbar(page);
         });
     }
+
+    test.use({ viewport: DESKTOP });
+
+    test('clicking a direction choice records a validation result without breaking layout', async ({ page }) => {
+        await page.goto('/games/directions/');
+        await initializeActivity(page);
+
+        // Read which direction the game is asking for from the instruction text
+        const instructionText = await page.locator('[data-testid="worksheet-instruction"]').textContent();
+        const directionMap = { Up: 'up', Down: 'down', Left: 'left', Right: 'right' };
+        const match = Object.keys(directionMap).find(label => instructionText.includes(label));
+        const targetDir = directionMap[match] || 'up';
+
+        // Click the correct choice button
+        await page.locator(`[data-choice="${targetDir}"]`).click();
+
+        // Grid should now carry data-result=correct
+        await expect(page.getByTestId('directions-card-grid')).toHaveAttribute('data-result', 'correct');
+        await expect(page.getByTestId('directions-card-grid')).toHaveAttribute('data-selected', targetDir);
+
+        // Layout must remain intact after click
+        await expect(page.locator('[data-choice]')).toHaveCount(4);
+        await expectNoPageScrollbar(page);
+    });
 });

@@ -36,22 +36,40 @@ export function generateRandomDirection(random = Math.random) {
     return keys[index];
 }
 
+export function validateDirection(targetDirection, selectedDirection) {
+    if (!Object.values(DIRECTIONS).includes(targetDirection)) {
+        throw new Error(`Invalid target direction: ${targetDirection}`);
+    }
+    if (!Object.values(DIRECTIONS).includes(selectedDirection)) {
+        throw new Error(`Invalid selected direction: ${selectedDirection}`);
+    }
+    return selectedDirection === targetDirection;
+}
+
 export function createDirectionsGame(config = {}) {
     const random = typeof config.random === 'function' ? config.random : Math.random;
     const initialDirection = config.direction || generateRandomDirection(random);
 
     const state = {
         currentDirection: initialDirection,
+        lastResult: null,   // null | { selected, correct }
         completed: false,
         learnerName: normalizeWorksheetLearnerName(config.learnerName || 'Adarsh')
     };
 
     function getState() {
-        return { ...state };
+        return { ...state, lastResult: state.lastResult ? { ...state.lastResult } : null };
+    }
+
+    function selectDirection(selectedDirection) {
+        const correct = validateDirection(state.currentDirection, selectedDirection);
+        state.lastResult = { selected: selectedDirection, correct };
+        return correct;
     }
 
     return {
-        getState
+        getState,
+        selectDirection
     };
 }
 
@@ -94,6 +112,13 @@ function mountDirections() {
             button.setAttribute('data-choice', dir);
             button.setAttribute('data-testid', `directions-choice-${dir}`);
             button.setAttribute('aria-label', `Select ${DIRECTION_LABELS[dir]}`);
+
+            button.addEventListener('click', () => {
+                const correct = game.selectDirection(dir);
+                // Stamp result on the grid for test observability (no feedback UI yet)
+                activityGrid.setAttribute('data-result', correct ? 'correct' : 'incorrect');
+                activityGrid.setAttribute('data-selected', dir);
+            });
 
             const icon = document.createElement('span');
             icon.className = 'text-3xl font-bold text-slate-800';

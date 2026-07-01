@@ -1,6 +1,7 @@
 import {
     DIRECTIONS,
     generateRandomDirection,
+    validateDirection,
     createDirectionsGame
 } from '../game.js';
 
@@ -48,5 +49,62 @@ export function runAllTests() {
     testDirectionsEnum();
     testRandomDirectionGeneration();
     testSessionInitialization();
+    testValidateDirectionCorrect();
+    testValidateDirectionIncorrect();
+    testValidateAllFourDirections();
+    testSelectDirectionRecordsState();
     console.log('=== All Directions V1 Unit Tests Passed ===');
+}
+
+function testValidateDirectionCorrect() {
+    assert(validateDirection(DIRECTIONS.UP, DIRECTIONS.UP) === true, 'UP vs UP should be correct');
+    assert(validateDirection(DIRECTIONS.DOWN, DIRECTIONS.DOWN) === true, 'DOWN vs DOWN should be correct');
+    assert(validateDirection(DIRECTIONS.LEFT, DIRECTIONS.LEFT) === true, 'LEFT vs LEFT should be correct');
+    assert(validateDirection(DIRECTIONS.RIGHT, DIRECTIONS.RIGHT) === true, 'RIGHT vs RIGHT should be correct');
+    console.log('Validate direction correct test passed');
+}
+
+function testValidateDirectionIncorrect() {
+    assert(validateDirection(DIRECTIONS.UP, DIRECTIONS.DOWN) === false, 'UP vs DOWN should be incorrect');
+    assert(validateDirection(DIRECTIONS.UP, DIRECTIONS.LEFT) === false, 'UP vs LEFT should be incorrect');
+    assert(validateDirection(DIRECTIONS.UP, DIRECTIONS.RIGHT) === false, 'UP vs RIGHT should be incorrect');
+    assert(validateDirection(DIRECTIONS.DOWN, DIRECTIONS.UP) === false, 'DOWN vs UP should be incorrect');
+    assert(validateDirection(DIRECTIONS.LEFT, DIRECTIONS.RIGHT) === false, 'LEFT vs RIGHT should be incorrect');
+    assert(validateDirection(DIRECTIONS.RIGHT, DIRECTIONS.LEFT) === false, 'RIGHT vs LEFT should be incorrect');
+    console.log('Validate direction incorrect test passed');
+}
+
+function testValidateAllFourDirections() {
+    const allDirections = Object.values(DIRECTIONS);
+    allDirections.forEach(target => {
+        allDirections.forEach(selected => {
+            const expected = target === selected;
+            const actual = validateDirection(target, selected);
+            assert(actual === expected, `validateDirection(${target}, ${selected}) should be ${expected}`);
+        });
+    });
+    console.log('Validate all four directions matrix test passed');
+}
+
+function testSelectDirectionRecordsState() {
+    const game = createDirectionsGame({ direction: DIRECTIONS.LEFT });
+
+    // Correct selection
+    const correctResult = game.selectDirection(DIRECTIONS.LEFT);
+    assert(correctResult === true, 'selectDirection correct should return true');
+    const stateAfterCorrect = game.getState();
+    assert(stateAfterCorrect.lastResult !== null, 'lastResult should be set after selection');
+    assert(stateAfterCorrect.lastResult.correct === true, 'lastResult.correct should be true');
+    assert(stateAfterCorrect.lastResult.selected === DIRECTIONS.LEFT, 'lastResult.selected should match selection');
+
+    // Incorrect selection on same game instance
+    const wrongResult = game.selectDirection(DIRECTIONS.RIGHT);
+    assert(wrongResult === false, 'selectDirection incorrect should return false');
+    const stateAfterWrong = game.getState();
+    assert(stateAfterWrong.lastResult.correct === false, 'lastResult.correct should be false for wrong selection');
+    assert(stateAfterWrong.lastResult.selected === DIRECTIONS.RIGHT, 'lastResult.selected should reflect latest wrong selection');
+
+    // currentDirection must remain unchanged — wrong answer must never advance the target
+    assert(stateAfterWrong.currentDirection === DIRECTIONS.LEFT, 'Wrong selection must not change currentDirection');
+    console.log('selectDirection records state correctly test passed');
 }
