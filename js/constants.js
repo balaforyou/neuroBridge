@@ -14,9 +14,12 @@ export const USER_ROLES = {
 export const GAME_IDS = {
     MATRIX_REASONING: 'matrixReasoning',
     ATTRIBUTE_EXPLORER: 'attributeExplorer',
+    MATCHING_WORKSHEET: 'matchingWorksheet',
     ATTRIBUTE_MATCHING_WORKSHEET: 'attributeMatchingWorksheet',
     PATTERN_MEMORY: 'patternMemory',
-    KUMON_QUIZ: 'kumonQuiz'
+    KUMON_QUIZ: 'kumonQuiz',
+    SCHULTE: 'schulte',
+    SOCIAL_DETECTIVE: 'socialDetective'
 };
 
 export const DEFAULT_GAME_CONFIG = {

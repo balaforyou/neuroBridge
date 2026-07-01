@@ -1,9 +1,11 @@
 import {
     ACTIVITY_TILE_GROUPS,
+    buildActivityTileGroups,
     getActivityTileTestId,
     renderActivityTiles,
     renderActivityTile
 } from '../activityTiles.js';
+import { getAllGames, getGameById } from '../gameRegistry.js';
 
 function assert(condition, message) {
     if (!condition) {
@@ -29,6 +31,39 @@ function testSchulteTileIsAvailableInAttentionGroup() {
     assert(tile.subtitle === 'Schulte Table', 'Schulte tile should show Schulte Table subtitle');
     assert(tile.domain === 'visual-search', 'Schulte tile should preserve visual-search domain');
     console.log('Schulte tile availability test passed');
+}
+
+function testEveryActivityTileComesFromGameRegistry() {
+    const registryIds = new Set(getAllGames().map(game => game.gameId));
+    const tileIds = ACTIVITY_TILE_GROUPS.flatMap(group => group.tiles.map(tile => tile.activityId));
+
+    for (const tileId of tileIds) {
+        assert(registryIds.has(tileId), `Tile ${tileId} should come from Game Registry`);
+    }
+
+    for (const game of getAllGames()) {
+        assert(tileIds.includes(game.gameId), `Registered game ${game.gameId} should appear in activity tile groups`);
+    }
+
+    console.log('Every activity tile comes from Game Registry test passed');
+}
+
+function testBuildActivityTileGroupsUsesRegistryMetadata() {
+    const groups = buildActivityTileGroups([
+        {
+            ...getGameById('patternMemory'),
+            category: 'Thinking',
+            learnerName: 'Registry Pattern',
+            description: 'Registry description'
+        }
+    ]);
+    const thinkingGroup = groups.find(group => group.category === 'Thinking');
+    const tile = thinkingGroup.tiles.find(item => item.activityId === 'patternMemory');
+
+    assert(tile, 'Registry-provided game should be grouped by registry category');
+    assert(tile.learnerName === 'Registry Pattern', 'Tile learner name should come from registry metadata');
+    assert(tile.description === 'Registry description', 'Tile description should come from registry metadata');
+    console.log('Build activity tile groups registry metadata test passed');
 }
 
 function testSchulteTileLaunchMarkup() {
@@ -111,6 +146,21 @@ function testPatternMemoryTileLaunchMarkup() {
     console.log('Pattern Memory tile launch markup test passed');
 }
 
+function testSocialDetectiveComingSoonDoesNotLaunch() {
+    const lifeSkillsGroup = ACTIVITY_TILE_GROUPS.find(group => group.category === 'Life Skills');
+    const tile = getTile('socialDetective');
+    const markup = renderActivityTile(tile);
+
+    assert(lifeSkillsGroup, 'Life Skills activity group should exist');
+    assert(tile, 'Social Detective tile should exist');
+    assert(lifeSkillsGroup.tiles.includes(tile), 'Social Detective tile should appear in Life Skills group');
+    assert(tile.status === 'coming-soon', 'Social Detective tile should be coming soon');
+    assert(!markup.includes('class="btn-launch-game'), 'Coming soon tile should not render launch button class');
+    assert(!markup.includes('data-game="socialDetective"'), 'Coming soon tile should not expose launch data-game');
+    assert(markup.includes('Coming Soon'), 'Coming soon tile should show Coming Soon');
+    console.log('Social Detective coming soon non-launch test passed');
+}
+
 function createFakeElement() {
     return {
         innerHTML: '',
@@ -120,11 +170,14 @@ function createFakeElement() {
 
 function runAllTests() {
     console.log('=== Activity Tile Unit Tests ===');
+    testEveryActivityTileComesFromGameRegistry();
+    testBuildActivityTileGroupsUsesRegistryMetadata();
     testSchulteTileIsAvailableInAttentionGroup();
     testSchulteTileLaunchMarkup();
     testSchulteLandingPageTileTerminology();
     testMatchingWorksheetsTileLaunchMarkup();
     testPatternMemoryTileLaunchMarkup();
+    testSocialDetectiveComingSoonDoesNotLaunch();
     console.log('=== All Activity Tile Tests Passed ===');
 }
 

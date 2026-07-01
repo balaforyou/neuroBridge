@@ -1,158 +1,54 @@
-export const ACTIVITY_TILE_GROUPS = [
+import { getAllGames } from './gameRegistry.js';
+
+export const ACTIVITY_TILE_CATEGORY_DEFINITIONS = [
     {
         category: 'Recommended',
         title: 'Start here',
         description: 'Choose an activity to explore today.',
-        labelClass: 'text-emerald-300',
-        tiles: [
-            {
-                activityId: 'matchingWorksheet',
-                parentName: 'Matching Worksheet',
-                learnerName: 'Matching Worksheet',
-                icon: '&#129513;',
-                description: 'Match the same pictures.',
-                status: 'available',
-                identityClass: 'from-emerald-100 via-lime-50 to-sky-50 border-emerald-300',
-                iconClass: 'from-emerald-300 via-lime-200 to-sky-200',
-                actionClass: 'bg-emerald-600 group-hover:bg-emerald-500',
-                domain: 'executive-function',
-                skills: ['visual-discrimination', 'matching', 'categorization']
-            },
-            {
-                activityId: 'attributeMatchingWorksheet',
-                parentName: 'Matching Worksheets',
-                learnerName: 'Matching Worksheets',
-                subtitle: 'Attribute Matching V1',
-                icon: '&#127912;',
-                description: 'Choose the color that matches the picture.',
-                status: 'available',
-                identityClass: 'from-rose-100 via-amber-50 to-emerald-50 border-rose-300',
-                iconClass: 'from-rose-300 via-amber-200 to-emerald-200',
-                actionClass: 'bg-rose-600 group-hover:bg-rose-500',
-                domain: 'executive-function',
-                skills: ['attribute-matching', 'visual-discrimination', 'early-abstraction']
-            },
-            {
-                activityId: 'patternMemory',
-                parentName: 'Pattern Memory',
-                learnerName: 'Pattern Memory',
-                subtitle: 'Copy Mode',
-                icon: '&#9638;',
-                description: 'Copy and remember patterns using visual memory.',
-                status: 'available',
-                identityClass: 'from-blue-100 via-sky-50 to-emerald-50 border-blue-300',
-                iconClass: 'from-blue-300 via-sky-200 to-emerald-200',
-                actionClass: 'bg-blue-600 group-hover:bg-blue-500',
-                domain: 'memory',
-                skills: ['visual-encoding', 'spatial-memory', 'pattern-reproduction']
-            }
-        ]
+        labelClass: 'text-emerald-300'
     },
     {
         category: 'Thinking',
         title: 'Reasoning',
         description: 'Patterns and clues.',
-        labelClass: 'text-indigo-300',
-        tiles: [
-            {
-                activityId: 'matrixReasoning',
-                parentName: 'Matrix Reasoning',
-                learnerName: 'Pattern Detective',
-                icon: '🧩',
-                description: 'Find patterns and solve visual puzzles.',
-                status: 'available',
-                identityClass: 'from-indigo-100 via-sky-50 to-emerald-50 border-indigo-300',
-                iconClass: 'from-indigo-300 via-sky-200 to-emerald-200',
-                actionClass: 'bg-indigo-600 group-hover:bg-indigo-500',
-                domain: 'reasoning',
-                skills: ['pattern-recognition', 'rule-discovery', 'visual-reasoning']
-            }
-        ]
+        labelClass: 'text-indigo-300'
     },
     {
         category: 'Attention',
         title: 'Look and notice',
         description: 'Compare and search.',
-        labelClass: 'text-cyan-300',
-        tiles: [
-            {
-                activityId: 'attributeExplorer',
-                parentName: 'Attribute Explorer',
-                learnerName: 'Look Closely',
-                icon: '👀',
-                description: 'Compare colors, shapes and sizes.',
-                status: 'available',
-                identityClass: 'from-cyan-100 via-emerald-50 to-lime-50 border-cyan-300',
-                iconClass: 'from-cyan-300 via-emerald-200 to-lime-200',
-                actionClass: 'bg-cyan-600 group-hover:bg-cyan-500',
-                domain: 'concept-formation',
-                skills: ['same-different', 'attribute-comparison', 'visual-attention']
-            },
-            {
-                activityId: 'schulte',
-                parentName: 'Schulte Table',
-                learnerName: 'Grid Vision',
-                subtitle: 'Schulte Table',
-                icon: '🎯',
-                description: 'Train your eyes to find things faster.',
-                status: 'available',
-                identityClass: 'from-sky-100 via-cyan-50 to-emerald-50 border-cyan-300',
-                iconClass: 'from-sky-300 via-cyan-200 to-emerald-200',
-                actionClass: 'bg-cyan-600 group-hover:bg-cyan-500',
-                domain: 'visual-search',
-                skills: ['visual-search', 'visual-attention']
-            }
-        ]
+        labelClass: 'text-cyan-300'
     },
     {
         category: 'Numbers',
         title: 'Number confidence',
         description: 'Numbers and steps.',
-        labelClass: 'text-amber-300',
-        tiles: [
-            {
-                activityId: 'kumonQuiz',
-                parentName: 'Kumon Quiz',
-                learnerName: 'Number Bridges',
-                icon: '🔢',
-                description: 'Build number confidence one step at a time.',
-                status: 'available',
-                identityClass: 'from-amber-100 via-yellow-50 to-emerald-50 border-amber-300',
-                iconClass: 'from-amber-300 via-yellow-200 to-emerald-200',
-                actionClass: 'bg-amber-600 group-hover:bg-amber-500',
-                domain: 'numeracy',
-                skills: ['number-bonds', 'arithmetic-fluency']
-            }
-        ]
+        labelClass: 'text-amber-300'
     },
     {
         category: 'Language',
         title: 'Words and stories',
         description: 'Language activities will grow here.',
-        labelClass: 'text-pink-300',
-        tiles: []
+        labelClass: 'text-pink-300'
     },
     {
         category: 'Life Skills',
         title: 'People and situations',
         description: 'Practice everyday understanding.',
-        labelClass: 'text-emerald-300',
-        tiles: [
-            {
-                activityId: 'socialDetective',
-                parentName: 'Social Stories',
-                learnerName: 'Social Detective',
-                icon: '🤝',
-                description: 'Practice understanding people and situations.',
-                status: 'coming-soon',
-                identityClass: 'from-emerald-50 via-teal-50 to-cyan-50 border-emerald-200',
-                iconClass: 'from-emerald-200 via-teal-100 to-cyan-100',
-                domain: 'daily-living',
-                skills: ['direction-following']
-            }
-        ]
+        labelClass: 'text-emerald-300'
     }
 ];
+
+export function buildActivityTileGroups(games = getAllGames()) {
+    return ACTIVITY_TILE_CATEGORY_DEFINITIONS.map(categoryDefinition => ({
+        ...categoryDefinition,
+        tiles: games
+            .filter(game => game.category === categoryDefinition.category)
+            .map(gameToActivityTile)
+    }));
+}
+
+export const ACTIVITY_TILE_GROUPS = buildActivityTileGroups();
 
 export function initActivityTiles() {
     renderActivityTiles();
@@ -163,14 +59,31 @@ export function renderActivityTiles(learnerName = 'Learner') {
     const messageEl = document.getElementById('activity-hub-message');
 
     if (messageEl) {
-        messageEl.innerText = `${learnerName || 'Learner'}, let's learn together 🌱`;
+        messageEl.innerText = `${learnerName || 'Learner'}, let's learn together ðŸŒ±`;
     }
 
     if (!container) return;
 
-    container.innerHTML = ACTIVITY_TILE_GROUPS
+    container.innerHTML = buildActivityTileGroups()
         .map(renderTileGroup)
         .join('');
+}
+
+function gameToActivityTile(game) {
+    return {
+        activityId: game.gameId,
+        parentName: game.name,
+        learnerName: game.learnerName,
+        subtitle: game.subtitle,
+        icon: game.icon,
+        description: game.description,
+        status: game.status,
+        identityClass: game.identityClass,
+        iconClass: game.iconClass,
+        actionClass: game.actionClass,
+        domain: game.domain,
+        skills: Array.isArray(game.skills) ? game.skills.slice() : []
+    };
 }
 
 function renderTileGroup(group, index) {
@@ -277,7 +190,8 @@ export function getActivityTileTestId(tile) {
         attributeMatchingWorksheet: 'activity-tile-attribute-matching',
         patternMemory: 'activity-tile-pattern-memory',
         kumonQuiz: 'activity-tile-number-bridges',
-        schulte: 'activity-tile-grid-vision'
+        schulte: 'activity-tile-grid-vision',
+        socialDetective: 'activity-tile-social-detective'
     };
 
     return explicitIds[tile.activityId] || `activity-tile-${tile.activityId}`;

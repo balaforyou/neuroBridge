@@ -21,14 +21,14 @@ export function aggregateAnalytics(sessionResults = []) {
             continue;
         }
 
-        const sessionStats = getSessionStats(sessionResult);
-        addToBucket(gameBuckets, sessionResult.gameId, sessionStats);
-
         const game = getGameById(sessionResult.gameId);
         if (!game) {
+            console.warn('[NeuroBridge Analytics] Unknown gameId skipped:', sessionResult.gameId);
             continue;
         }
 
+        const sessionStats = getSessionStats(sessionResult);
+        addToBucket(gameBuckets, sessionResult.gameId, sessionStats);
         addToBucket(domainBuckets, game.domain, sessionStats);
 
         for (const skillId of game.skills || []) {

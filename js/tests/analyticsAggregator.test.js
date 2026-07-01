@@ -247,6 +247,32 @@ function testReactionTimeCalculation() {
     console.log('Reaction time calculation test passed');
 }
 
+function testUnknownGameWarningAndSkip() {
+    const originalWarn = console.warn;
+    const warnings = [];
+    console.warn = (...args) => {
+        warnings.push(args);
+    };
+
+    try {
+        const analytics = aggregateAnalytics([
+            createSession({ gameId: 'missingGame' }),
+            createSession({ gameId: 'schulte' })
+        ]);
+
+        assert(warnings.length === 1, 'Unknown game should produce one warning');
+        assert(warnings[0][0] === '[NeuroBridge Analytics] Unknown gameId skipped:', 'Warning should use stable prefix');
+        assert(warnings[0][1] === 'missingGame', 'Warning should include unknown game id');
+        assert(!analytics.gameMetrics.some(metric => metric.id === 'missingGame'), 'Unknown game should be skipped from game metrics');
+        assert(analytics.gameMetrics.some(metric => metric.id === 'schulte'), 'Registered Schulte activity should not be skipped');
+        assert(getDomainMetrics('visual-search').sessions === 1, 'Registered Schulte activity should aggregate by domain');
+    } finally {
+        console.warn = originalWarn;
+    }
+
+    console.log('Unknown game warning and registered skip guard test passed');
+}
+
 function runAllTests() {
     console.log('=== Analytics Aggregator Unit Tests ===');
     testEmptyInputHandling();
@@ -257,6 +283,7 @@ function runAllTests() {
     testCognitiveTargetsDerivedThroughOntology();
     testAccuracyCalculation();
     testReactionTimeCalculation();
+    testUnknownGameWarningAndSkip();
     console.log('=== All Analytics Aggregator Tests Passed ===');
 }
 

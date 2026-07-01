@@ -138,6 +138,12 @@ An Activity Tile communicates:
 - Why should I do it?
 - Can I start?
 
+Metadata source:
+
+- Activity tile membership and per-activity display metadata come from `js/gameRegistry.js`.
+- `js/activityTiles.js` owns rendering and category presentation only.
+- Coming-soon registry entries render disabled and must not expose a launch action.
+
 ### Activity Tile Contract
 
 Required fields:

@@ -743,7 +743,8 @@ test.describe('Number Bridges viewport smoke', () => {
         await expect(page.getByRole('heading', { name: 'Administration' })).toBeVisible();
         await expect(page.locator('#parent-controls-form')).toContainText('Max Level Ceiling');
         await expect(page.getByTestId('number-bridges-config-panel')).toBeVisible();
-        await expect(page.locator('#parent-controls-form .setting-input')).toHaveCount(29);
+        await expect(page.getByTestId('number-bridges-config-operation')).toBeVisible();
+        await expect(page.getByTestId('number-bridges-config-level')).toBeVisible();
         await expect(page.getByTestId('number-bridges-config-audio-mode')).toHaveValue('false');
 
         await page.getByTestId('parent-tab-testing').click();

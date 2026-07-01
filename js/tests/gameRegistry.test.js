@@ -3,6 +3,7 @@
  */
 
 import {
+    ACTIVITY_STATUS,
     DASHBOARD_VIEW_TYPES,
     GAME_REGISTRY,
     getAllGames,
@@ -25,19 +26,28 @@ function testGamesExist() {
     const matrix = getGameById('matrixReasoning');
     const attribute = getGameById('attributeExplorer');
     const matchingWorksheets = getGameById('attributeMatchingWorksheet');
+    const matchingWorksheet = getGameById('matchingWorksheet');
     const patternMemory = getGameById('patternMemory');
     const kumon = getGameById('kumonQuiz');
+    const schulte = getGameById('schulte');
+    const socialDetective = getGameById('socialDetective');
 
     assert(matrix, 'Matrix Reasoning metadata should exist');
     assert(attribute, 'Attribute Explorer metadata should exist');
+    assert(matchingWorksheet, 'Matching Worksheet metadata should exist');
     assert(matchingWorksheets, 'Matching Worksheets metadata should exist');
     assert(patternMemory, 'Pattern Memory metadata should exist');
     assert(kumon, 'Kumon Quiz metadata should exist');
+    assert(schulte, 'Schulte metadata should exist');
+    assert(socialDetective, 'Social Detective metadata should exist');
     assert(matrix.name === 'Matrix Reasoning', 'Matrix should have a name');
     assert(attribute.name === 'Attribute Explorer', 'Attribute Explorer should have a name');
     assert(matchingWorksheets.name === 'Matching Worksheets', 'Matching Worksheets should have a family name');
     assert(patternMemory.title === 'Pattern Memory', 'Pattern Memory should have a learner-facing title');
     assert(kumon.title === 'Number Bridges', 'Kumon Quiz should use learner-facing Number Bridges title');
+    assert(schulte.learnerName === 'Grid Vision', 'Schulte should preserve tile learner name');
+    assert(socialDetective.enabled === false, 'Social Detective should be disabled until ready');
+    assert(socialDetective.status === ACTIVITY_STATUS.COMING_SOON, 'Social Detective should be coming soon');
 
     console.log('Games exist test passed');
 }
@@ -50,6 +60,7 @@ function testValidDomainMapping() {
 
     assert(getGameById('matrixReasoning').domain === 'reasoning', 'Matrix Reasoning should map to reasoning');
     assert(getGameById('attributeExplorer').domain === 'concept-formation', 'Attribute Explorer should map to concept-formation');
+    assert(getGameById('matchingWorksheet').domain === 'concept-formation', 'Matching Worksheet should map to concept-formation');
     assert(getGameById('attributeMatchingWorksheet').domain === 'concept-formation', 'Matching Worksheets should map to concept-formation');
     assert(getGameById('patternMemory').domain === 'memory', 'Pattern Memory should map to memory');
     assert(getGameById('kumonQuiz').domain === 'numeracy', 'Kumon Quiz should map to numeracy');
@@ -84,8 +95,16 @@ function testDashboardViewTypeContract() {
         'Matching Worksheets should use trialBreakdown for recent activity details'
     );
     assert(
+        getGameById('matchingWorksheet').dashboardViewType === DASHBOARD_VIEW_TYPES.SUMMARY_WITH_CORRECTIONS,
+        'Matching Worksheet should use summaryWithCorrections'
+    );
+    assert(
         getGameById('patternMemory').dashboardViewType === DASHBOARD_VIEW_TYPES.TRIAL_BREAKDOWN,
         'Pattern Memory should use trialBreakdown for recent activity details'
+    );
+    assert(
+        getGameById('schulte').dashboardViewType === DASHBOARD_VIEW_TYPES.TRIAL_BREAKDOWN,
+        'Schulte should use trialBreakdown'
     );
 
     console.log('Dashboard view type contract test passed');
@@ -99,6 +118,22 @@ function testAllGameSkillsExistInSkillRegistry() {
     }
 
     console.log('All game skills exist in Skill Registry test passed');
+}
+
+function testLauncherMetadataContract() {
+    for (const game of GAME_REGISTRY) {
+        assert(game.category, `Game ${game.gameId} should declare category`);
+        assert(game.learnerName, `Game ${game.gameId} should declare learnerName`);
+        assert(game.icon, `Game ${game.gameId} should declare icon`);
+        assert(Object.values(ACTIVITY_STATUS).includes(game.status), `Game ${game.gameId} should declare valid status`);
+        if (game.enabled) {
+            assert(game.status === ACTIVITY_STATUS.AVAILABLE, `Enabled game ${game.gameId} should be available`);
+            assert(game.actionClass, `Available game ${game.gameId} should declare actionClass`);
+            assert(game.folder, `Available game ${game.gameId} should declare launch folder`);
+        }
+    }
+
+    console.log('Launcher metadata contract test passed');
 }
 
 function testEveryGameSkillHasOntologyMapping() {
@@ -130,6 +165,7 @@ function testGetGamesByDomain() {
 
     assert(reasoningGames.some(game => game.gameId === 'matrixReasoning'), 'Reasoning domain should include Matrix Reasoning');
     assert(conceptGames.some(game => game.gameId === 'attributeExplorer'), 'Concept Formation domain should include Attribute Explorer');
+    assert(conceptGames.some(game => game.gameId === 'matchingWorksheet'), 'Concept Formation domain should include Matching Worksheet');
     assert(conceptGames.some(game => game.gameId === 'attributeMatchingWorksheet'), 'Concept Formation domain should include Matching Worksheets');
     assert(getGamesByDomain('memory').some(game => game.gameId === 'patternMemory'), 'Memory domain should include Pattern Memory');
     assert(numeracyGames.some(game => game.gameId === 'kumonQuiz'), 'Numeracy domain should include Kumon Quiz');
@@ -214,6 +250,7 @@ function runAllTests() {
     testValidDomainMapping();
     testDashboardViewTypeContract();
     testAllGameSkillsExistInSkillRegistry();
+    testLauncherMetadataContract();
     testEveryGameSkillHasOntologyMapping();
     testGetGameById();
     testGetGamesByDomain();

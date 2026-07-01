@@ -71,6 +71,8 @@ Expected passing suites:
 
 These verify valid ids, mapping integrity, uniqueness, lookup behavior, and the `dashboardViewType` interpretation contract for registered activities.
 
+Registry coverage also verifies launcher metadata, valid enabled/coming-soon status, registry-driven Activity Hub tile membership, and coming-soon tiles that render without launch hooks.
+
 ## Analytics Test Suites
 
 Expected passing suites:
@@ -80,6 +82,8 @@ Expected passing suites:
 - Dashboard Rendering
 
 These verify aggregation of independent, scaffolded, and failed trials, accuracy, reaction time, hint counts, domain metrics, skill metrics, ontology-derived cognitive target metrics, and parent dashboard rendering contracts. Dashboard rendering coverage protects metadata-driven dashboard view selection, Number Bridges summary-only parent display, correction review behavior, average-time display, and continued trial-table behavior for non-worksheet activities.
+
+Analytics aggregation also warns when an unknown `gameId` is skipped, while registered activities continue to aggregate through the Game Registry.
 
 ## Shared UI Contract Test Suites
 

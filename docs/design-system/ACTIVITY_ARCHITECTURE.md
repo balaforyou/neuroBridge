@@ -41,6 +41,32 @@ Every activity should eventually support:
 
 ## Activity Families
 
+## Activity Registry Source Of Truth
+
+`js/gameRegistry.js` is the single source of truth for runtime activity metadata.
+
+Every launchable or visible activity must have a Game Registry entry before it appears in the SIRAASH Activity Hub. The registry owns:
+
+- Activity identity and route id.
+- Launch folder.
+- Activity Hub tile metadata.
+- Domain and skill mapping.
+- Dashboard interpretation through `dashboardViewType`.
+- Enabled or coming-soon status.
+
+`js/activityTiles.js` may define category order, category titles, category descriptions, and category styling. It must not maintain independent per-activity metadata or hardcoded activity membership lists.
+
+New activity Definition of Done:
+
+- Registry entry exists.
+- `gameId` is listed in `GAME_IDS`.
+- Domain is valid in `domainRegistry.js`.
+- Skills are valid in `skillRegistry.js`.
+- `dashboardViewType` is present.
+- Activity tile renders from registry metadata.
+- Enabled activities have a launch test.
+- Coming-soon activities render disabled and do not launch.
+
 ### Executive Function & Cognitive Control
 
 Activities:
