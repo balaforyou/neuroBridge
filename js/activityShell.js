@@ -171,13 +171,13 @@ export function createActivityShell(config = {}) {
         promptH2.textContent = newPromptText;
     };
 
-    shell.showFeedback = (type) => {
+    shell.showFeedback = (type, message) => {
         if (type === 'success') {
-            feedback.showSuccess();
+            feedback.showSuccess(message);
             return;
         }
 
-        feedback.showMistake();
+        feedback.showMistake(message);
     };
 
     shell.clearFeedback = () => {

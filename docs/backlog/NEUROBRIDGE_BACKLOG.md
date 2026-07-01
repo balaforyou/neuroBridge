@@ -57,6 +57,11 @@ Description: Added the Platform First Principle to `docs/ENGINEERING_MANIFEST.md
 Status: Ready
 Description: Fix Directions layout drift and ensure visual alignment with the visual compliance standard.
 
+### NB-UX-003.1 Migrate Directions to Choice Activity Family
+
+Status: Ready
+Description: Migrate the Directions activity to use the standard SIRAASH Choice Activity Family.
+
 ### NB-WS-001.2 Attribute Matching Worksheet V1
 
 Status: Ready
@@ -128,10 +133,7 @@ Description: Created the canonical learner experience constitution for NeuroBrid
 Status: Done
 Description: Froze the canonical Activity UI Family Framework for learner-facing activities.
 
-### NB-UX-003 Runtime Activity Family APIs
 
-Status: Ready
-Description: Implement runtime APIs for the shared Activity UI Families.
 
 ### NB-UX-004 Surface Tick Component
 
@@ -369,6 +371,12 @@ Status: Deferred
 ## Done
 
 Completed feature IDs and closure notes.
+
+### NB-UX-003 Runtime Activity Family APIs
+
+Status: Done
+
+Closure note: Implemented standard reusable runtime Activity Family controllers (`baseActivityFamily`, `choiceActivityFamily`, `gridActivityFamily`, and `questionAnswerActivityFamily`). These factories establish platform-owned visual stability, centered and scaling layouts, and delegate feedback and completion flows directly through existing shell and feedback/completion APIs to avoid duplicate instances. Added a comprehensive test suite in `js/tests/activityFamilies.test.js` verifying lifecycle, rendering, feedback, and specialization constraints.
 
 ### NB-UI-004.1 Migrate Directions to Shared Activity Shell
 
