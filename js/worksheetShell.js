@@ -1,7 +1,7 @@
 import {
     getSiraashCelebration,
-    renderSiraashFeedback
 } from './siraashFeedback.js';
+import { createActivityFeedback } from './activityFeedback.js';
 
 export const WORKSHEET_TEMPLATE_TYPES = {
     MATCHING: 'matching',
@@ -65,6 +65,10 @@ export function createWorksheetShell(config = {}) {
     const helpZone = createHelpZone(config, ownerDocument);
     const feedbackZone = createFeedbackZone(ownerDocument);
     const celebrationZone = createCelebrationZone(config, ownerDocument);
+    const feedback = createActivityFeedback({
+        container: feedbackZone,
+        document: ownerDocument
+    });
 
     const mainZone = ownerDocument.createElement('main');
     mainZone.className = 'worksheet-shell__main grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_18rem]';
@@ -72,11 +76,16 @@ export function createWorksheetShell(config = {}) {
 
     shell.append(instructionZone, mainZone, feedbackZone, celebrationZone);
 
-    shell.showFeedback = (type) => {
-        feedbackZone.innerHTML = renderSiraashFeedback(type);
+    shell.showFeedback = (type, message) => {
+        if (type === 'success') {
+            feedback.showSuccess(message);
+            return;
+        }
+
+        feedback.showMistake(message);
     };
     shell.clearFeedback = () => {
-        feedbackZone.innerHTML = '';
+        feedback.clear();
     };
     shell.setCompletionMode = (isComplete) => {
         const complete = Boolean(isComplete);

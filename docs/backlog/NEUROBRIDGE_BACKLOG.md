@@ -19,8 +19,13 @@ Description: Created the canonical NeuroBridge Activity Surface Contract for lea
 
 ### NB-UI-006 Shared Activity Feedback Component
 
+Status: Done
+Description: Created a unified shared feedback component for correct and mistake selections.
+
+### NB-UI-006.1 Migrate Directions to Shared Feedback Component
+
 Status: Ready
-Description: Create a unified SIRAASH shared feedback component for correct and mistake selections.
+Description: Move Directions to the shared activity feedback component once the shell composition path is validated.
 
 ### ENGINEERING-MANIFEST-002 Platform First Principle Update
 
