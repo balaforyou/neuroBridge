@@ -123,45 +123,40 @@ Notes:
 Status: Done
 Description: Created the canonical learner experience constitution for NeuroBridge learner-facing activities.
 
-### NB-UX-002 Activity Family APIs
+### NB-UX-002 Activity UI Family Framework
 
-Status: Backlog
-Description: Define shared APIs for learner activity families.
+Status: Done
+Description: Froze the canonical Activity UI Family Framework for learner-facing activities.
 
-### NB-UX-003 Surface Tick Component
+### NB-UX-003 Runtime Activity Family APIs
 
-Status: Backlog
+Status: Ready
+Description: Implement runtime APIs for the shared Activity UI Families.
+
+### NB-UX-004 Surface Tick Component
+
+Status: Ready
 Description: Create a reusable surface tick feedback component.
 
-### NB-UX-004 Adaptive Timing Engine
+### NB-UX-005 Adaptive Timing Engine
 
-Status: Backlog
+Status: Ready
 Description: Add a shared adaptive timing engine for learner-facing transitions and feedback.
 
-### NB-UX-005 Celebration Engine
+### NB-UX-006 Celebration Engine
 
-Status: Backlog
+Status: Ready
 Description: Create a reusable celebration engine for milestone moments.
 
-### NB-UX-006 Executive Scaffold Engine
+### NB-UX-007 Executive Scaffold Engine
 
-Status: Backlog
+Status: Ready
 Description: Define reusable executive control scaffolds for learner recovery actions.
 
-### NB-UX-007 Learner Launcher
+### NB-UX-008 Learning Support Panel
 
-Status: Backlog
-Description: Create a recognition-based learner launcher surface.
-
-### NB-UX-008 Activity Family Documentation
-
-Status: Backlog
-Description: Document learner interface families and shared layout expectations.
-
-### NB-UX-009 UX Compliance Checklist
-
-Status: Backlog
-Description: Create a reusable learner UI compliance checklist for future packets.
+Status: Ready
+Description: Create a reusable shared Learning Support Panel for Question & Answer activities.
 
 ### NB-DOC-002 Design System README
 

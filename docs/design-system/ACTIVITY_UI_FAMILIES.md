@@ -1,251 +1,303 @@
-# NeuroBridge Activity UI Families
+# NeuroBridge Activity UI Family Framework
 
-Status: Design
+## Purpose
 
-Feature: NB-UI-001
+NeuroBridge does not use a single learner layout.
 
-Purpose: Define the approved NeuroBridge activity UI families so new activities select a layout, feedback, spacing, and interaction structure before implementation begins.
+Instead, activities belong to UI families that share:
 
-This document is architecture-only. It does not change learner-facing functionality, gameplay, analytics, or existing activity layouts.
+- Workspace
+- Interaction model
+- Scaffolding philosophy
+- Feedback behavior
+- Completion behavior
 
-## Problem Statement
+This minimizes UI variation while allowing different cognitive activities to remain natural.
 
-Current NeuroBridge activities evolved independently. This created multiple layout patterns, different feedback placement, different instruction placement, repeated UI refinement work, and activity-specific layout fixes.
+The Activity UI Family Framework bridges the gap between:
 
-Examples:
+Learner Experience Constitution
 
-- Number Bridges uses a fluency-focused layout.
-- Matching Worksheet uses a worksheet layout.
-- Attribute Explorer uses a focused activity layout.
-- Pattern Memory exposed worksheet layout inconsistencies.
+↓
 
-Before introducing more activities, NeuroBridge needs a stable UI family architecture.
+Shared Runtime Components
 
-## Activity Selection Rule
+↓
 
-Every new activity must declare its UI family before implementation begins.
+Individual Activities
 
-Examples:
+Future activities should first select an Activity Family before implementation begins.
 
-- Pattern Memory: Worksheet
-- Directions: Activity
-- Multiplication Fluency: Quiz
+## Relationship to Constitution
 
-The selected UI family should appear in activity requirements, implementation packets, and handover notes. Activities should not create custom layouts unless explicitly approved.
+Every family inherits:
 
-## Architectural Guardrail
+- `NB-UX-001 Learner Experience Constitution`
+- `Activity Surface Contract`
+- `Activity Shell`
+- Shared Components
 
-Activities should provide:
+Families specialize these principles rather than replacing them.
 
-- Content
-- Activity logic
-- Activity metadata
+## Family Template
 
-Templates should provide:
+Every Activity Family contains the following sections:
 
-- Layout
-- Instruction placement
-- Feedback placement
-- Help placement
-- Result layout
-- Responsive behavior
+- Family Purpose
+- Typical Cognitive Skills
+- Learner Flow
+- Workspace Layout
+- Scaffold Philosophy
+- Feedback Model
+- Completion Behaviour
+- Progression Behaviour
+- Typical Activities
+- Shared Components
 
-This separation keeps learner experience consistent and prevents every activity from solving shell, spacing, feedback, and viewport behavior independently.
+## Family 1: Choice Activities
 
-## Family 1: Quiz Template
+### Family Purpose
 
-### Purpose
+Choice Activities support learner tasks where the primary action is selecting among visible options.
 
-Rapid fluency practice.
+### Typical Cognitive Skills
 
-### Interaction Pattern
+- Recognition
+- Attention
+- Visual discrimination
+- Comparison
+- Executive Control
+
+### Learner Flow
+
+```text
+Prompt
+↓
+Activity Surface
+↓
+Feedback
+↓
+Next Round
+↓
+Completion
+```
+
+### Workspace Layout
+
+The learner workspace should be centered, constrained to a comfortable maximum width, and built around a dominant learning object. Choice surfaces should use clear whitespace and may include optional support regions only when needed by the activity.
+
+### Scaffold Philosophy
+
+Scaffolds live inside the activity itself through the choices, embedded cues, or local support behavior. Generic platform hints should not be used.
+
+### Feedback Model
+
+Choice Activities normally use:
+
+- Immediate
+- Surface Tick
+- Adaptive
+
+### Completion Behaviour
+
+Completion is typically short, clear, and learner-controlled. Celebration should remain restrained unless a larger milestone is reached. Adaptive progression may occur after completion where appropriate.
+
+### Progression Behaviour
+
+Progression usually evolves by increasing discrimination difficulty, reducing support, increasing distractor similarity, or tightening timing expectations.
+
+### Typical Activities
+
+- Directions
+- Matching
+- Attribute Explorer
+- Same / Different
+
+### Shared Components
+
+- ActivityShell
+- ActivityFeedback
+- CompletionSurface
+- AdaptiveTiming
+- SurfaceTick
+
+## Family 2: Grid Activities
+
+### Family Purpose
+
+Grid Activities support learner tasks where the primary action is searching, scanning, remembering, or operating inside a visual field.
+
+### Typical Cognitive Skills
+
+- Visual Search
+- Attention
+- Working Memory
+- Scanning
+- Executive Control
+- Reasoning
+
+### Learner Flow
+
+```text
+Prompt
+↓
+Grid Surface
+↓
+Feedback
+↓
+Next Round
+↓
+Completion
+```
+
+### Workspace Layout
+
+The learner workspace should center the grid, preserve intrinsic sizing, maintain a stable maximum width, and protect whitespace around the grid so scanning remains calm. Optional regions should stay secondary to the grid.
+
+### Scaffold Philosophy
+
+Scaffolds usually live inside the grid through highlights, progressive reveal, embedded cues, or executive overlays. Generic platform hints should not be used.
+
+### Feedback Model
+
+Grid Activities normally use:
+
+- Surface Tick
+- Adaptive
+
+### Completion Behaviour
+
+Completion should preserve the stable frame, support milestone-based celebration, and allow adaptive progression based on grid performance patterns.
+
+### Progression Behaviour
+
+Progression usually evolves through grid size, search complexity, memory demand, stimulus density, rule complexity, or fading overlays.
+
+### Typical Activities
+
+- Schulte
+- Pattern Memory
+- Grid Vision
+- Matrix Reasoning
+
+### Shared Components
+
+- ActivityShell
+- ActivityFeedback
+- SurfaceTick
+- ExecutiveOverlay
+- CompletionSurface
+- AdaptiveTiming
+
+## Family 3: Question & Answer Activities
+
+### Family Purpose
+
+Question & Answer Activities support learner tasks where the primary action is reasoning from a prompt and producing an answer.
+
+### Typical Cognitive Skills
+
+- Reasoning
+- Numeracy
+- Language
+- Recall
+- Sequencing
+
+### Learner Flow
 
 ```text
 Question
--> Answer
--> Feedback
--> Next Question
+↓
+Answer
+↓
+Learning Support Panel
+↓
+Feedback
+↓
+Completion
 ```
 
-### Characteristics
+### Workspace Layout
 
-- High repetition
-- Low visual complexity
-- Fast transitions
-- Minimal instructions
-- Automaticity focused
+The learner workspace should keep the question visually clear, keep the answer region dominant, and place the Learning Support Panel in a stable secondary position. Maximum width and whitespace should preserve readability and focus.
 
-### Typical Layout
+### Scaffold Philosophy
 
-```text
-Header
--> Question Area
--> Answer Area
--> Optional Help
-```
+Scaffolds usually live in the Learning Support Panel and through embedded support such as audio, number line, worked examples, ten frame, or vocabulary aids. Generic platform hints should not be used.
 
-### Current Activities
+### Feedback Model
 
-Reference implementation:
+Question & Answer Activities normally use:
 
-- Number Bridges / Kumon Quiz
+- Immediate
+- Adaptive
 
-### Future Activities
+### Completion Behaviour
 
-- Addition Fluency
-- Subtraction Fluency
-- Multiplication Fluency
-- Division Fluency
-- Fact Recall
+Completion usually ends in a summary screen with calm metrics, optional celebration, and adaptive progression behavior.
 
-## Family 2: Worksheet Template
+### Progression Behaviour
 
-### Purpose
+Progression usually evolves through question complexity, abstraction level, scaffold fading, multi-step reasoning, and fluency expectations.
 
-Guided cognitive learning activities.
+### Typical Activities
 
-### Interaction Pattern
+- Number Bridges
+- Kumon Quiz
+- Future Reading Comprehension
 
-```text
-Instruction
--> Activity Workspace
--> Help / Scaffold
--> Feedback
-```
+### Shared Components
 
-### Characteristics
+- ActivityShell
+- ActivityFeedback
+- LearningSupportPanel
+- CompletionSurface
+- AdaptiveTiming
 
-- Structured workspace
-- Visible instructions
-- Scaffold region
-- Larger activity surface
-- Moderate pacing
+## Future Families
 
-### Typical Layout
+### Story Activities
 
-```text
-Header
--> Instruction Zone
--> Activity Zone
--> Support Zone
--> Feedback Zone
--> Shared Result Screen
-```
+Status: Future
 
-### Current Activities
+### Sequencing Activities
 
-Reference worksheet template:
+Status: Future
 
-- Matching Worksheet
+### Construction Activities
 
-Worksheet variants:
+Status: Future
 
-- Attribute Matching Worksheet
-- Pattern Memory, as a future migration target
-- Attribute Explorer, if still not aligned with the shared result screen
+### Social Interaction Activities
 
-### Future Activities
+Status: Future
 
-- Pattern Builder
-- Pattern Completion
-- Narration Worksheet
-- Audio Chain Worksheet
-- Functional Life Worksheet
+### Planning Activities
 
-## Family 3: Activity Template
+Status: Future
 
-### Purpose
+## Family Selection Guide
 
-Focused cognitive exercises.
+| If the learner primarily... | Use this family |
+| --- | --- |
+| selects among visible options | Choice Family |
+| searches a visual space | Grid Family |
+| answers a question through reasoning | Question & Answer Family |
 
-### Interaction Pattern
+## Platform APIs by Family
 
-```text
-Task
--> Response
--> Feedback
--> Next Trial
-```
+| Family | Shared platform APIs |
+| --- | --- |
+| Choice | `ActivityShell`, `ActivityFeedback`, `CompletionSurface`, `AdaptiveTiming`, `SurfaceTick` |
+| Grid | `ActivityShell`, `ActivityFeedback`, `SurfaceTick`, `ExecutiveOverlay`, `CompletionSurface`, `AdaptiveTiming` |
+| Question & Answer | `ActivityShell`, `ActivityFeedback`, `LearningSupportPanel`, `CompletionSurface`, `AdaptiveTiming` |
 
-### Characteristics
+## Future Runtime Framework
 
-- Single focal task
-- Minimal framing
-- Large interaction targets
-- Low clutter
+Future runtime implementation will introduce:
 
-### Typical Layout
+- `js/activityFamilies/ChoiceActivityFamily.js`
+- `js/activityFamilies/GridActivityFamily.js`
+- `js/activityFamilies/QuestionAnswerActivityFamily.js`
 
-```text
-Header
--> Task Area
--> Response Area
--> Help Area
--> Feedback
-```
-
-### Current Activities
-
-Reference activity template:
-
-- Attribute Explorer
-
-Activity variants:
-
-- Schulte Table
-
-### Future Activities
-
-- Directions
-- Stroop
-- Grid Vision
-- Visual Search
-- Same / Different
-- Cognitive Switching
-
-## Family 4: Story Template
-
-### Purpose
-
-Narrative and social understanding.
-
-### Examples
-
-- Social Stories
-- Conversation Practice
-- Functional Scripts
-
-### Status
-
-Future. No implementation work is required for NB-UI-001.
-
-## Family 5: Assessment Template
-
-### Purpose
-
-Baseline and structured assessment activities.
-
-### Characteristics
-
-- Minimal scaffolding
-- Controlled prompts
-- Consistent scoring
-- Repeatable measurement
-
-### Status
-
-Future. No implementation work is required for NB-UI-001.
-
-## Implementation Guidance
-
-New activities should start from an approved family and then provide only the activity-specific content, logic, and metadata required by that family. If a proposed activity does not fit an existing family, the implementation packet should document why and request an architecture decision before building a new layout.
-
-## Out of Scope
-
-- Refactoring existing activities
-- Changing layouts
-- Changing gameplay
-- Changing analytics
-- Creating worksheet templates
-- Creating activity templates
-- Creating quiz templates
+These components will orchestrate layout and behavior while activities remain focused on cognitive learning logic.
