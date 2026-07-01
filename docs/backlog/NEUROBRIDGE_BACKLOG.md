@@ -10,10 +10,7 @@ This file is the lightweight source of truth for deferred NeuroBridge work.
 
 Items frozen enough for Codex handover.
 
-### NB-UI-004.1 Migrate Directions to Shared Activity Shell
 
-Status: Ready
-Description: Migrate the Directions activity to use the standard SIRAASH Shared Activity Shell.
 
 ### NB-UI-005 Shared Feedback Component
 
@@ -285,6 +282,12 @@ Status: Deferred
 ## Done
 
 Completed feature IDs and closure notes.
+
+### NB-UI-004.1 Migrate Directions to Shared Activity Shell
+
+Status: Done
+
+Closure note: Migrated the Directions activity to use the standard SIRAASH `createActivityShell` platform component. Refactored `index.html` to eliminate all hardcoded duplicate header/navigation HTML blocks, leaving only a clean `#directions-root` container. Refactored `game.js` to instantiate the activity shell, removing custom navigation listeners, margins, and manual layout overrides. All 5 Playwright UI viewport and feedback smoke tests pass successfully.
 
 ### NB-UI-004 Shared Activity Shell Foundation
 
