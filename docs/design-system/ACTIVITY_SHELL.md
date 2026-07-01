@@ -69,8 +69,11 @@ Rules:
 - Home should return to the Activity Hub.
 - Avoid separate navigation rows when Home can live inside the shell header.
 - Keep progress compact and readable.
+- **Activity Name Rule**: The learner-facing activity name appears exactly once in the activity shell/header. The activity body must not repeat the activity title unless there is a specific instructional reason.
+  * Correct: Header: Directions \| Prompt: Tap LEFT
+  * Incorrect: Header: Directions \| Body title: Directions \| Prompt: Tap LEFT
 
-### B. Activity Content Area
+### B. Activity Content / Task Area
 
 Purpose: Hold the main learner task.
 
@@ -87,7 +90,7 @@ Examples:
 Rules:
 
 - This region should receive the maximum available space.
-- The main task should be visually dominant.
+- **Task Area Rule**: The active task should be visually dominant. For small-choice activities, choices should be large, centered, and close to the prompt. Avoid large unused canvases or empty panels.
 - Navigation, labels, counters, and duplicate headers should not crowd this area.
 - Avoid fixed-size content that breaks on phones.
 
@@ -104,7 +107,7 @@ Rules:
 - Avoid overlap between answers and content cards.
 - No essential action may depend on hover.
 
-### D. Need Help Area
+### D. Need Help / Optional Region Area
 
 Purpose: Provide scaffold access and scaffold display.
 
@@ -114,6 +117,7 @@ Rules:
 - The action may trigger an activity-specific scaffold.
 - Help should be easy to find without sitting in the primary answer path.
 - Scaffold text should be short, calm, and activity-specific.
+- **Optional Region Rule**: Optional regions such as hints, clue panels, sidebars, or helper panels must not render empty. If a feature is not implemented, its region must be completely hidden or collapsed to prevent layout dilution and empty spaces.
 
 Approved examples:
 
@@ -126,6 +130,7 @@ Purpose: Give immediate learner feedback after a response.
 
 Rules:
 
+- **Feedback Placement Rule**: Feedback must not cover or obscure active task content. Feedback should appear in a reserved feedback area below or near the task area. Only one feedback indication should appear per learner action.
 - Reserve space to avoid layout jumping.
 - Use encouraging, non-judgmental language.
 - Keep text brief.
@@ -158,6 +163,21 @@ Rules:
 Example tone:
 
 - `Great work today 🌱`
+
+## Learner Visual Hierarchy
+
+Every learner activity screen must be structured to guide the learner's attention naturally. The layout must follow this top-to-bottom sequence:
+
+Prompt
+↓
+Activity Task Area
+↓
+Feedback Area
+↓
+Completion Summary
+
+The learner's eye must be drawn directly to the current task prompt and active workspace, rather than metadata, navigation, or empty frames.
+
 
 ## Activity Shell Contract
 
@@ -217,6 +237,7 @@ Deprecated learner wording:
 
 Rules:
 
+- **Navigation Rule**: Learner activity screens use the standard Home control inside the SIRAASH shell. External or duplicate navigation such as "Back to Dashboard" must not appear inside the learner activity experience unless explicitly approved for an admin/debug route.
 - Home should return to the Activity Hub.
 - Home should be placed inside the activity shell header when possible.
 - Avoid extra navigation rows that consume learning space.

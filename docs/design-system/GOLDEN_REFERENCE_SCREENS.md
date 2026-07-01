@@ -128,7 +128,7 @@ Priority 4: Feedback
 
 ### Reference Activity
 
-Attribute Explorer
+Attribute Explorer / Directions
 
 ### Purpose
 
@@ -144,13 +144,25 @@ Header
 -> Feedback
 ```
 
+### Simple Choice Layout variant
+
+For simple choice activities (e.g. Directions), the layout sequence is simplified to prevent visual clutter:
+
+```text
+Header
+Prompt
+2x2 or compact choice grid
+Reserved feedback area
+Completion summary
+```
+
 ### Visual Priorities
 
-Priority 1: Task
+Priority 1: Task / Prompt
 
-Priority 2: Response
+Priority 2: Response / Choices
 
-Priority 3: Support
+Priority 3: Support (hidden if unused)
 
 Priority 4: Feedback
 
@@ -161,6 +173,7 @@ Priority 4: Feedback
 - Large touch targets.
 - Low clutter.
 - Fast comprehension.
+- **Visual Dominance**: The active task area and options must dominate the screen. If optional regions (like help or hints) are not implemented, they must be hidden/collapsed rather than rendered empty.
 
 ## Golden Region Hierarchy
 

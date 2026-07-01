@@ -141,6 +141,11 @@ Activities should use the shared Feedback Zone.
 
 Purpose: Display success messages, correction messages, and help messages in a predictable location.
 
+Rules:
+
+- **Feedback Placement Rule**: Feedback must not cover or obscure active task content. Feedback should appear in a reserved feedback area below or near the task area. Only one feedback indication should appear per learner action.
+- Reserve space to avoid layout jumping.
+
 ### Local Feedback
 
 Activities may also provide local feedback.

@@ -10,6 +10,11 @@ This file is the lightweight source of truth for deferred NeuroBridge work.
 
 Items frozen enough for Codex handover.
 
+### DIR-003.2 Directions Shell Compliance Fix
+
+Status: Ready
+Description: Fix Directions layout drift and ensure visual alignment with the visual compliance standard.
+
 ### NB-WS-001.2 Attribute Matching Worksheet V1
 
 Status: Ready
@@ -18,6 +23,12 @@ Activity docs: `docs/activities/matching-worksheets/`
 ## Backlog
 
 Valid ideas that are not ready for implementation yet.
+
+### NB-UI-003.1 Activity Shell Compliance Audit
+
+Priority: P3
+Status: Backlog
+Goal: Run a visual compliance check across all implemented games to ensure they follow the newly defined hierarchy and naming guidelines.
 
 ### NB-PARENT-002 Parent Insight Dashboard
 
@@ -264,6 +275,78 @@ Status: Deferred
 ## Done
 
 Completed feature IDs and closure notes.
+
+### NB-UI-003 Activity Shell Visual Compliance Standard
+
+Status: Done
+
+Closure note: Defined and documented the SIRAASH learner visual hierarchy, activity name single-display rule, Home navigation standard, feedback non-obscuring area standard, collapse of empty optional help regions, and visual task area dominance rules across all NeuroBridge UI families.
+
+### DIR-001 Core Direction Engine
+
+Status: Done
+
+Closure note: Implemented the reusable Directions game framework, mounted inside SIRAASH worksheet shell with four choice buttons showing arrow icons and text labels, registered Directions in gameRegistry.js/constants.js, and verified with unit and UI Playwright tests.
+
+### DIR-002 Direction Validation
+
+Status: Done
+
+Closure note: Added `validateDirection` pure function, `selectDirection` method on the game instance, and `lastResult` state field. Click handlers wired to each choice button stamp `data-result`/`data-selected` on the grid for test observability. Unit tests cover correct, incorrect, all-four-directions matrix, and state recording. Playwright click smoke test confirms validation result without layout regression.
+
+### DIR-003 Feedback Engine Integration
+
+Status: Done
+
+Closure note: Added `DIRECTIONS_FEEDBACK` constants, `feedbackState` field to game engine, and `getFeedbackState()` method. Click handlers now call `shell.showFeedback('success')` for correct and `shell.showFeedback('mistake')` plus a 900ms orange-pulse class swap on the tapped card for wrong selections. No harsh red or error markers used. Unit tests verify correct/wrong feedback state, null before selection, and state replacement. Playwright tests verify success banner, mistake banner class, and absence of duplicate feedback elements.
+
+### DIR-003.1 Directions Layout and Feedback Standard Compliance
+
+Status: Done
+
+Closure note: Brought Directions UI and feedback into compliance with NeuroBridge activity layout and feedback standards. Removed repeated title "Directions" in the body. Set the worksheet instruction title to the active direction prompt ("Tap UP/DOWN/LEFT/RIGHT") and instructions to "Find the arrow pointing in this direction". Enabled full-width single-column grid-cols-1 main layout and disabled/hid empty hints panel to center active task area and avoid empty spaces. Increased card height to `min-h-[8rem]`, gap to `gap-6` and maximum width to `max-w-md` for larger, high-contrast, ASD-friendly touch/click targets. Verified layout, visibility, and feedback banners through updated Playwright smoke tests.
+
+### ENGINEERING-MANIFEST-001 Engineering Manifest
+
+Status: Done
+
+Closure note: Created docs/ENGINEERING_MANIFEST.md to serve as the single entry-point navigation guide for all NeuroBridge engineering work, mapping philosophies, sequence orders, architectures, and repository zones.
+
+### NB-STD-006 Codex Context Inheritance Standard
+
+Status: Done
+
+Closure note: Created docs/CODEX_CONTEXT_PREFIX.md to serve as the compact inherited context prefix referenced by future packets to reduce manual document inclusion overhead.
+
+### NB-STD-005 NeuroBridge Activity Bootstrap Standard
+
+Status: Done
+
+Closure note: Created docs/NB-STD-005_ACTIVITY_BOOTSTRAP_STANDARD.md to define the standardized checklists, maturity levels, lifecycle gates, and planning runway standards for every new NeuroBridge activity.
+
+### NB-STD-004 NeuroBridge Implementation Standard Stack
+
+Status: Done
+
+Closure note: Created docs/NB-STD-004_IMPLEMENTATION_STANDARD_STACK.md to serve as the unified, authoritative stack of mandatory platform, process, worksheet, and architectural standards for NeuroBridge packets.
+
+### DIR-IMPLEMENTATION-PLAN-001 Directions V1 Implementation Plan
+
+Status: Done
+
+Closure note: Created docs/DIR-IMPLEMENTATION-PLAN-001.md defining the V1 packet roadmap, dependency matrix, deferred features list, and transition lessons adopted from Schulte Table.
+
+### DIR-TEST-001 Directions V1 Test Plan
+
+Status: Done
+
+Closure note: Created docs/DIR-TEST-001.md defining the unit, UI, scaffold, analytics, accessibility, and manual observation checklists for Directions V1 verification.
+
+### DIR-FREEZE-001 Directions Activity Freeze
+
+Status: Done
+
+Closure note: Created docs/DIR-FREEZE-001.md specifying the Directions activity family's spatial-direction learning model, levels, scaffolds, feedback triggers, and clinical metrics.
 
 ### GAME-CATALOG-001 Schulte Table Catalog Entry
 
