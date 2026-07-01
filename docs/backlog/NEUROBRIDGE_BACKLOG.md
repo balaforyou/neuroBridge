@@ -135,10 +135,15 @@ Description: Froze the canonical Activity UI Family Framework for learner-facing
 
 
 
-### NB-UX-004 Surface Tick Component
+### NB-UX-004 Activity Success Indicator
+
+Status: Done
+Description: Created a reusable surface-scoped success indicator for learner-facing activities.
+
+### NB-UX-004.1 Add Success Indicator to Runtime Activity Families
 
 Status: Ready
-Description: Create a reusable surface tick feedback component.
+Description: Integrate the shared success indicator into the runtime activity family APIs.
 
 ### NB-UX-005 Adaptive Timing Engine
 
