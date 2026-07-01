@@ -309,3 +309,5 @@ Future work may add:
 - Completion templates.
 
 Worksheet-specific shell rules are defined in `docs/design-system/WORKSHEET_TEMPLATE.md`.
+
+Worksheet result screens use Shared Worksheet Result Component v1.0 from `docs/design-system/WORKSHEET_TEMPLATE.md`. The Activity Shell remains the source of the activity title, so worksheet result bodies should not repeat the title unless it is activity-specific summary content.

@@ -189,15 +189,15 @@ test.describe('SIRAASH Activity Hub', () => {
         await expect(page.getByText('SIRAASH Activity Hub')).toBeVisible();
         await expect(page.getByText(`${LEARNER_NAME}, let's learn together`)).toBeVisible();
         await expect(page.getByTestId('activity-tile-matching-worksheet')).toBeVisible();
-        await expect(page.getByText('Matching Worksheet')).toBeVisible();
+        await expect(page.getByTestId('activity-tile-matching-worksheet')).toContainText('Matching Worksheet');
         await expect(page.getByTestId('activity-tile-attribute-matching')).toBeVisible();
-        await expect(page.getByText('Attribute Matching')).toBeVisible();
+        await expect(page.getByTestId('activity-tile-attribute-matching')).toContainText('Attribute Matching V1');
         await expect(page.getByTestId('activity-tile-pattern-detective')).toBeVisible();
         await expect(page.getByTestId('activity-tile-look-closely')).toBeVisible();
         await expect(page.getByTestId('activity-tile-number-bridges')).toBeVisible();
         await expect(page.getByTestId('activity-tile-number-bridges')).toContainText('Number Bridges');
         await expect(page.getByText('Coming Soon').first()).toBeVisible();
-        await expect(page.getByText('Coming Soon')).toHaveCount(2);
+        await expect(page.getByText('Coming Soon')).toHaveCount(1);
         await expectNoPageScrollbar(page, { vertical: true });
     });
 });
@@ -302,16 +302,16 @@ test.describe('Attribute Matching Worksheet viewport smoke', () => {
             await expect(page.getByRole('button', { name: /Home/ })).toBeVisible();
             await expect(page.getByLabel('SIRAASH')).toBeVisible();
             await expect(page.getByText('Activity')).toBeVisible();
-            await expect(page.getByRole('heading', { name: 'Attribute Matching Worksheet' })).toBeVisible();
+            await expect(page.getByRole('heading', { name: 'Matching Worksheets' })).toBeVisible();
             await expect(page.getByTestId('attribute-matching-worksheet')).toBeVisible();
             await expect(page.getByTestId('worksheet-instruction')).toBeVisible();
             await expect(page.getByTestId('worksheet-activity')).toBeVisible();
-            await expect(page.getByTestId('worksheet-help')).toBeVisible();
-            await expect(page.getByTestId('attribute-prompt')).toHaveText('Find another red item.');
-            await expect(page.getByTestId('attribute-choice-strawberry')).toBeVisible();
-            await expect(page.getByTestId('attribute-choice-ball')).toBeVisible();
-            await expect(page.getByTestId('attribute-choice-sun')).toBeVisible();
-            await expect(page.getByTestId('worksheet-hint-button')).toBeVisible();
+            await expect(page.getByTestId('worksheet-help')).toBeHidden();
+            await expect(page.getByRole('heading', { name: 'Attribute Matching V1' })).toBeVisible();
+            await expect(page.getByTestId('attribute-matching-prompt-label')).toHaveText('Red Apple');
+            await expect(page.getByTestId('attribute-choice-red')).toBeVisible();
+            await expect(page.getByTestId('attribute-choice-blue')).toBeVisible();
+            await expect(page.getByTestId('attribute-choice-green')).toBeVisible();
             await expect(page.getByTestId('worksheet-celebration')).toHaveAttribute('data-enabled', 'false');
             await expect(page.getByText('Back to Dashboard')).toBeHidden();
             await expect(page.getByText('Activity: Attribute Matching Worksheet')).toBeHidden();
@@ -342,28 +342,42 @@ test.describe('Attribute Matching Worksheet viewport smoke', () => {
         const frame = page.frameLocator('#game-frame');
         await expect(frame.getByRole('button', { name: /Home/ })).toBeVisible();
         await expect(frame.getByLabel('SIRAASH')).toBeVisible();
-        await expect(frame.getByRole('heading', { name: 'Attribute Matching Worksheet' })).toBeVisible();
+        await expect(frame.getByRole('heading', { name: 'Matching Worksheets' })).toBeVisible();
     });
 
-    test('uses shared completion feedback and a next round flow', async ({ page }) => {
+    test('shows completion summary after finishing the color set', async ({ page }) => {
         await page.goto('/games/attributeMatchingWorksheet/');
         await initializeActivity(page);
 
-        await page.getByTestId('attribute-choice-strawberry').click();
+        const colorQuestions = [
+            ['red', 'Red Apple'],
+            ['blue', 'Blue Ball'],
+            ['green', 'Green Leaf'],
+            ['yellow', 'Yellow Banana'],
+            ['orange', 'Orange Carrot'],
+            ['purple', 'Purple Grapes'],
+            ['brown', 'Brown Coconut'],
+            ['black', 'Black Circle'],
+            ['white', 'White Circle'],
+            ['pink', 'Pink Flower']
+        ];
+
+        for (let index = 0; index < colorQuestions.length; index += 1) {
+            const [answer] = colorQuestions[index];
+            await page.getByTestId(`attribute-choice-${answer}`).click();
+            if (index < colorQuestions.length - 1) {
+                await expect(page.getByTestId('attribute-matching-prompt-label')).toHaveText(colorQuestions[index + 1][1]);
+            }
+        }
+
         await expect(page.getByTestId('attribute-matching-question')).toBeHidden();
         await expect(page.getByTestId('attribute-matching-completion')).toBeVisible();
-        await expect(page.getByTestId('siraash-completion-feedback')).toBeVisible();
-        await expect(page.getByTestId('siraash-completion-title')).toContainText(`Great work, ${LEARNER_NAME}!`);
-        await expect(page.getByTestId('siraash-completion-message')).toHaveText('You found the matching attribute.');
-        await expect(page.getByTestId('attribute-matching-next-round-button')).toBeVisible();
+        await expect(page.getByTestId('attribute-matching-completion')).toContainText(`Great work, ${LEARNER_NAME}!`);
+        await expect(page.getByTestId('attribute-matching-completion-accuracy')).toHaveText('100% Accuracy');
+        await expect(page.getByTestId('attribute-matching-completion-answered')).toHaveText('10 Questions Answered');
+        await expect(page.getByTestId('attribute-matching-completion-correct')).toHaveText('10 Correct Answers');
         await expect(page.getByTestId('worksheet-feedback')).toBeEmpty();
         await expect(page.getByText('You found the answer.')).toBeHidden();
-
-        await page.getByTestId('attribute-matching-next-round-button').click();
-        await expect(page.getByTestId('attribute-matching-completion')).toBeHidden();
-        await expect(page.getByTestId('attribute-matching-question')).toBeVisible();
-        await expect(page.getByTestId('attribute-prompt')).toHaveText('Find another round item.');
-        await expect(page.getByTestId('worksheet-feedback')).toBeEmpty();
         await expectNoPageScrollbar(page);
     });
 });
@@ -713,7 +727,8 @@ test.describe('Number Bridges viewport smoke', () => {
         await expect(page.getByRole('heading', { name: 'Administration' })).toBeVisible();
         await expect(page.locator('#parent-controls-form')).toContainText('Max Level Ceiling');
         await expect(page.getByTestId('number-bridges-config-panel')).toBeVisible();
-        await expect(page.locator('#parent-controls-form .setting-input')).toHaveCount(15);
+        await expect(page.locator('#parent-controls-form .setting-input')).toHaveCount(29);
+        await expect(page.getByTestId('number-bridges-config-audio-mode')).toHaveValue('false');
 
         await page.getByTestId('parent-tab-testing').click();
         await expect(page.getByTestId('parent-tab-testing')).toHaveAttribute('aria-selected', 'true');
@@ -760,6 +775,7 @@ test.describe('Number Bridges viewport smoke', () => {
         await page.getByTestId('number-bridges-config-question-count').selectOption('20');
         await page.getByTestId('number-bridges-config-questions-per-screen').selectOption('1');
         await page.getByTestId('number-bridges-config-hints').selectOption('false');
+        await page.getByTestId('number-bridges-config-audio-mode').selectOption('true');
         await page.getByTestId('number-bridges-config-auto-progression').selectOption('true');
         await page.getByTestId('number-bridges-config-question-order').selectOption('random');
 
@@ -786,6 +802,7 @@ test.describe('Number Bridges viewport smoke', () => {
         await expect(page.getByTestId('number-bridges-config-question-count')).toHaveValue('20');
         await expect(page.getByTestId('number-bridges-config-questions-per-screen')).toHaveValue('1');
         await expect(page.getByTestId('number-bridges-config-hints')).toHaveValue('false');
+        await expect(page.getByTestId('number-bridges-config-audio-mode')).toHaveValue('true');
         await expect(page.getByTestId('number-bridges-config-auto-progression')).toHaveValue('true');
         await expect(page.getByTestId('number-bridges-config-question-order')).toHaveValue('random');
 

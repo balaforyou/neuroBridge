@@ -138,9 +138,29 @@ Purpose: Result screen transition.
 
 Rules:
 
-- Uses the shared NeuroBridge result screen.
+- Uses Shared Worksheet Result Component v1.0 from `docs/design-system/WORKSHEET_TEMPLATE.md`.
 - Does not use activity-specific result pages.
 - Result screen remains visible until learner action.
+- Activities provide result data; the worksheet template provides result layout, metrics placement, review placement, actions, spacing, and responsive behavior.
+- Do not show duplicate completion cards, a generic success card plus a result page, or an auto-dismissed result page.
+
+Required result regions:
+
+- Completion card.
+- Metrics summary.
+- Optional activity extension slot.
+- Optional review slot.
+- Actions.
+
+Current reference:
+
+- Number Bridges.
+
+Migration targets:
+
+- Pattern Memory.
+- Attribute Matching.
+- Attribute Explorer, if still not aligned.
 
 ## Layout Guardrails
 
@@ -206,6 +226,9 @@ Do not migrate activities as part of NB-WS-003.
 Future packets:
 
 - PM-001.1E Pattern Memory Worksheet Migration
+- NB-PM-RESULT-001 Migrate Pattern Memory to shared worksheet result component
+- NB-AM-RESULT-001 Migrate Attribute Matching to shared worksheet result component
+- NB-AE-RESULT-001 Migrate Attribute Explorer to shared worksheet result component if still not aligned
 
 Future worksheet activities should implement Worksheet Activity Template V1 from the beginning.
 

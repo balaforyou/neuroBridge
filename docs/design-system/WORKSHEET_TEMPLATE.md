@@ -240,6 +240,110 @@ Worksheet examples that should default to `summaryWithCorrections`:
 
 Dashboard rendering must use `dashboardViewType`, not the shape of stored trial analytics. Worksheet activities may keep detailed trial records internally without exposing a full trial table to parents by default.
 
+## Shared Worksheet Result Component v1.0
+
+Worksheet activities must not own result page layout. The worksheet template owns the shared result screen, spacing, responsive behavior, completion hierarchy, metrics placement, review placement, and action placement.
+
+Activities own only:
+
+- Completion message.
+- Activity-specific summary text.
+- Metrics data.
+- Correction or review data.
+- Optional activity extension data.
+
+The shared result screen appears only on round or activity completion. Routine correct answers use local feedback and must not render the full result component.
+
+### Result Regions
+
+Required structure:
+
+1. Completion card.
+2. Metrics summary.
+3. Optional activity extension slot.
+4. Optional review slot.
+5. Actions.
+
+Completion card:
+
+- Tick or success marker.
+- `Great work, {learnerName}!`
+- Activity-specific completion message.
+- Optional clap visual only for activity completion.
+
+Metrics summary should include these fields where available:
+
+- Questions.
+- Correct / Total.
+- Accuracy.
+- Time Taken.
+- Average Time.
+- Hints Used.
+- Mistakes Corrected.
+
+Activity extension slot:
+
+- Optional.
+- Used only for activity-specific summary context.
+- Must not redesign the result page.
+
+Approved extension examples:
+
+- Pattern Memory: Copy Mode C1-C4.
+- Schulte: Grid Size / Mode.
+- Number Bridges: Operation / Level.
+- Attribute Matching: Attribute type.
+
+Review slot:
+
+- Optional.
+- Used for corrections, attempted answers, correct answers, pattern review, or activity-specific review.
+- When no corrections exist, show `No corrections needed.`
+
+Actions:
+
+- Required.
+- Include `Try Again` or `Next Round` where applicable.
+- Include `Home`.
+- Result screen must remain visible until the learner chooses an action.
+
+### Result Model
+
+Worksheet result screens should provide this normalized model to the template helper:
+
+```js
+{
+  learnerName,
+  title,
+  completionMessage,
+  metrics,
+  extension,
+  review,
+  actions
+}
+```
+
+### Result Guardrails
+
+- No duplicate completion cards.
+- No generic success card and result page together.
+- No repeated activity title inside the result body when the Activity Shell already shows it.
+- No internal scrolling unless specifically justified.
+- No hidden or clipped actions.
+- No result screen auto-dismiss.
+- Routine correct answers must not use the full result component.
+- Full result component appears only on round or activity completion.
+
+### Current Reference And Migration Targets
+
+Number Bridges has the strongest current result-page implementation and is the reference for Shared Worksheet Result Component v1.0.
+
+Future migration targets:
+
+- Pattern Memory.
+- Attribute Matching.
+- Attribute Explorer, if still not aligned.
+
 ## Helper Module
 
 Current lightweight helper:
@@ -256,6 +360,7 @@ Responsibilities:
 - Header round/star state updates.
 - Standard support prompt text.
 - Shared worksheet completion rendering through `renderSiraashCompletionFeedback`.
+- Shared worksheet result rendering through `renderWorksheetResultScreen(model)`.
 
 This helper is intentionally small. It is not a new framework.
 

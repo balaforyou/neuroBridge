@@ -177,3 +177,109 @@ export function renderWorksheetResultSummary({
         </section>
     `;
 }
+
+function normalizeWorksheetMetric(metric) {
+    if (typeof metric === 'string') {
+        return { label: metric, value: '' };
+    }
+
+    return {
+        label: String(metric?.label || ''),
+        value: metric?.value ?? ''
+    };
+}
+
+function renderWorksheetResultMetric(metric, testIdPrefix, index) {
+    const normalized = normalizeWorksheetMetric(metric);
+    if (!normalized.label) return '';
+
+    const valueText = normalized.value === '' ? '' : ` ${normalized.value}`;
+    return `<p data-testid="${testIdPrefix}-metric-${index}">${normalized.label}:${valueText}</p>`;
+}
+
+function renderWorksheetResultAction(action, testIdPrefix, index) {
+    if (typeof action === 'string') {
+        return {
+            label: action,
+            testId: `${testIdPrefix}-action-${index}`
+        };
+    }
+
+    return {
+        label: String(action?.label || ''),
+        testId: action?.testId || `${testIdPrefix}-action-${index}`,
+        type: action?.type || 'button'
+    };
+}
+
+export function renderWorksheetResultScreen({
+    learnerName = 'Learner',
+    title = '',
+    completionMessage = 'You finished your activity.',
+    metrics = [],
+    extension = null,
+    review = null,
+    actions = []
+} = {}) {
+    const normalizedLearnerName = normalizeWorksheetLearnerName(learnerName);
+    const testIdPrefix = title
+        ? String(title).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'worksheet'
+        : 'worksheet';
+    const normalizedMetrics = Array.isArray(metrics) ? metrics : [];
+    const normalizedActions = Array.isArray(actions) && actions.length
+        ? actions
+        : [
+            { label: 'Try Again', testId: `${testIdPrefix}-try-again-button` },
+            { label: 'Home', testId: `${testIdPrefix}-home-button` }
+        ];
+    const extensionMarkup = extension
+        ? `
+                <div data-testid="${testIdPrefix}-extension" class="w-full shrink-0 rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-black text-emerald-900">
+                    ${typeof extension === 'string' ? extension : extension.content || ''}
+                </div>
+        `
+        : '';
+    const reviewContent = review
+        ? (typeof review === 'string' ? review : review.content || 'No corrections needed.')
+        : 'No corrections needed.';
+    const reviewTitle = typeof review === 'object' && review?.title ? review.title : 'Review';
+
+    return `
+        <section data-testid="${testIdPrefix}-results" class="grid h-full min-h-0 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] gap-2 overflow-hidden rounded-2xl border-2 border-emerald-200 bg-white p-3 text-center md:grid-cols-[minmax(0,1fr)_minmax(18rem,0.86fr)] md:grid-rows-1">
+            <div data-testid="${testIdPrefix}-result-summary" class="flex min-h-0 flex-col gap-2 md:h-full">
+                <div data-testid="siraash-completion-feedback" class="w-full shrink-0 rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 text-slate-950 shadow-sm">
+                    <div class="flex items-center justify-center gap-3">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-3xl font-black text-white" aria-hidden="true">&#10003;</div>
+                        <div class="text-left">
+                            <p data-testid="siraash-completion-title" class="text-lg font-black leading-tight sm:text-xl">Great work, ${normalizedLearnerName}! &#127793;</p>
+                            <p data-testid="siraash-completion-message" class="text-sm font-bold text-emerald-900 sm:text-base">${completionMessage}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div data-testid="${testIdPrefix}-metrics" class="w-full shrink-0 rounded-2xl border-2 border-sky-200 bg-sky-50 p-3">
+                    <div class="grid grid-cols-2 gap-2 text-left text-sm font-black text-slate-950 lg:grid-cols-3">
+                        ${normalizedMetrics.map((metric, index) => renderWorksheetResultMetric(metric, testIdPrefix, index)).join('')}
+                    </div>
+                </div>
+
+                ${extensionMarkup}
+
+                <div data-testid="${testIdPrefix}-actions" class="flex shrink-0 flex-wrap justify-center gap-3 md:mt-auto">
+                    ${normalizedActions.map((action, index) => {
+                        const normalizedAction = renderWorksheetResultAction(action, testIdPrefix, index);
+                        const secondary = normalizedAction.label.toLowerCase() === 'home';
+                        const className = secondary
+                            ? 'min-h-[44px] rounded-full border-2 border-emerald-200 bg-white px-5 py-2 text-base font-black text-emerald-900'
+                            : 'min-h-[44px] rounded-full bg-emerald-700 px-5 py-2 text-base font-black text-white shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-300';
+                        return `<button data-testid="${normalizedAction.testId}" type="${normalizedAction.type || 'button'}" class="${className}">${normalizedAction.label}</button>`;
+                    }).join('')}
+                </div>
+            </div>
+            <div data-testid="${testIdPrefix}-review" class="flex min-h-0 w-full flex-col rounded-2xl border-2 border-amber-100 bg-[#fffaf0] p-3 text-left">
+                <h3 class="shrink-0 text-base font-black text-slate-950">${reviewTitle}</h3>
+                ${reviewContent}
+            </div>
+        </section>
+    `;
+}

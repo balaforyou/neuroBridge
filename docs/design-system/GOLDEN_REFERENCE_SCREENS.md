@@ -84,7 +84,9 @@ Priority 4: Help
 
 ### Reference Activity
 
-Matching Worksheet
+Matching Worksheet for in-progress worksheet layout.
+
+Number Bridges for completed worksheet result layout.
 
 ### Purpose
 
@@ -119,6 +121,8 @@ Priority 4: Feedback
 - No overlap between regions.
 - No internal scrolling by default.
 - Feedback visible without scrolling.
+- Completion uses Shared Worksheet Result Component v1.0.
+- Result actions remain visible and the result screen persists until learner action.
 
 ## Family 3: Activity Template
 

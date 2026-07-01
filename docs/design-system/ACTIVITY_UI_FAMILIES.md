@@ -47,6 +47,7 @@ Templates should provide:
 - Instruction placement
 - Feedback placement
 - Help placement
+- Result layout
 - Responsive behavior
 
 This separation keeps learner experience consistent and prevents every activity from solving shell, spacing, feedback, and viewport behavior independently.
@@ -128,7 +129,7 @@ Header
 -> Activity Zone
 -> Support Zone
 -> Feedback Zone
--> Completion
+-> Shared Result Screen
 ```
 
 ### Current Activities
@@ -141,6 +142,7 @@ Worksheet variants:
 
 - Attribute Matching Worksheet
 - Pattern Memory, as a future migration target
+- Attribute Explorer, if still not aligned with the shared result screen
 
 ### Future Activities
 

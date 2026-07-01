@@ -241,6 +241,30 @@ Purpose: Capture design-system and UI templating work for NeuroBridge after the 
 - Status: Done
 - Notes: Implemented `createWorksheetShell(config)` with instruction, activity, help, feedback, and celebration placeholder zones in `js/worksheetShell.js`.
 
+- Story ID: NB-STD-004
+- Title: Shared Worksheet Result Component Standard
+- Priority: P1
+- Status: Done
+- Notes: Defined Shared Worksheet Result Component v1.0, clarified activity/template ownership, documented required result regions, and added `renderWorksheetResultScreen(model)` as the lightweight runtime helper. Number Bridges is the current reference.
+
+- Story ID: NB-PM-RESULT-001
+- Title: Migrate Pattern Memory to shared worksheet result component
+- Priority: P1
+- Status: Backlog
+- Notes: Replace the custom Pattern Memory completion/result screen with Shared Worksheet Result Component v1.0 without gameplay or analytics changes.
+
+- Story ID: NB-AM-RESULT-001
+- Title: Migrate Attribute Matching to shared worksheet result component
+- Priority: P1
+- Status: Backlog
+- Notes: Move activity-specific completion layout/header content into the shared worksheet result component contract without gameplay or analytics changes.
+
+- Story ID: NB-AE-RESULT-001
+- Title: Migrate Attribute Explorer to shared worksheet result component if still not aligned
+- Priority: P2
+- Status: Backlog
+- Notes: Review Attribute Explorer result screen alignment and migrate only if it still diverges from Shared Worksheet Result Component v1.0.
+
 - Story ID: NB-WS-001.1
 - Title: Matching Worksheet V1
 - Priority: P1

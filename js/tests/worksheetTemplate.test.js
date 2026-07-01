@@ -3,6 +3,7 @@ import {
     createWorksheetTemplateState,
     getWorksheetSupportPrompts,
     renderWorksheetCompletion,
+    renderWorksheetResultScreen,
     renderWorksheetResultSummary,
     WORKSHEET_ACTIVITY_TYPES,
     WORKSHEET_TEMPLATE_REGIONS,
@@ -120,6 +121,41 @@ function testResultSummaryRendering() {
     console.log('Worksheet result summary rendering test passed');
 }
 
+function testResultScreenContractRendering() {
+    const html = renderWorksheetResultScreen({
+        learnerName: 'Adarsh',
+        title: 'Number Bridges',
+        completionMessage: 'You finished your Number Bridges.',
+        metrics: [
+            { label: 'Questions', value: 5 },
+            { label: 'Correct / Total', value: '4 / 5' },
+            { label: 'Accuracy', value: '80%' },
+            { label: 'Time Taken', value: '15 sec' },
+            { label: 'Average Time', value: '3 sec/question' },
+            { label: 'Hints Used', value: 1 },
+            { label: 'Mistakes Corrected', value: 0 }
+        ],
+        extension: { content: 'Addition L1' },
+        review: { title: 'Review', content: 'No corrections needed.' },
+        actions: [
+            { label: 'Try Again', testId: 'number-bridges-try-again-button' },
+            { label: 'Home', testId: 'number-bridges-home-button' }
+        ]
+    });
+
+    assert(html.includes('data-testid="number-bridges-results"'), 'Result screen should expose stable result selector');
+    assert(html.includes('Great work, Adarsh!'), 'Result screen should personalize learner praise');
+    assert(html.includes('You finished your Number Bridges.'), 'Result screen should include completion message');
+    assert(html.includes('Questions: 5'), 'Result screen should render normalized metrics');
+    assert(html.includes('Correct / Total: 4 / 5'), 'Result screen should render score metric');
+    assert(html.includes('data-testid="number-bridges-extension"'), 'Result screen should include extension slot');
+    assert(html.includes('Addition L1'), 'Result screen should render activity extension content');
+    assert(html.includes('No corrections needed.'), 'Result screen should render review slot content');
+    assert(html.includes('data-testid="number-bridges-try-again-button"'), 'Result screen should include primary action');
+    assert(html.includes('data-testid="number-bridges-home-button"'), 'Result screen should include Home action');
+    console.log('Worksheet result screen contract rendering test passed');
+}
+
 function runAllTests() {
     console.log('=== Worksheet Template Unit Tests ===');
     testTemplateConstants();
@@ -128,6 +164,7 @@ function runAllTests() {
     testHeaderStateApplication();
     testCompletionRendering();
     testResultSummaryRendering();
+    testResultScreenContractRendering();
     console.log('=== All Worksheet Template Tests Passed ===');
 }
 
