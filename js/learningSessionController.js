@@ -61,6 +61,8 @@ export function createLearningSessionController(config = {}) {
                 completed = true;
                 if (config.outcomePipeline) {
                     config.outcomePipeline.handleSuccess({
+                        durationMs: result.durationMs,
+                        message: result.message,
                         onComplete: () => {
                             showCompletionSummary();
                             if (config.onSessionComplete) {
@@ -77,6 +79,8 @@ export function createLearningSessionController(config = {}) {
             } else {
                 if (config.outcomePipeline) {
                     config.outcomePipeline.handleSuccess({
+                        durationMs: result.durationMs,
+                        message: result.message,
                         onComplete: () => {
                             nextRound();
                         }
@@ -92,7 +96,10 @@ export function createLearningSessionController(config = {}) {
             }
 
             if (config.outcomePipeline) {
-                config.outcomePipeline.handleMistake();
+                config.outcomePipeline.handleMistake({
+                    durationMs: result.durationMs,
+                    message: result.message
+                });
             }
         }
     }

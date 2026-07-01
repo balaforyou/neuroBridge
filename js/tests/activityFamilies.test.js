@@ -285,6 +285,152 @@ function testResetAndDestroyLifecycle() {
     console.log('Reset and destroy lifecycle test passed');
 }
 
+function testSessionApiExposureAndNoConfigBehavior() {
+    const doc = createFakeDocument();
+    const family = createBaseActivityFamily(createValidConfig(doc));
+
+    assert(typeof family.configureSession === 'function', 'Base family must expose configureSession');
+    assert(typeof family.startSession === 'function', 'Base family must expose startSession');
+    assert(typeof family.submitSessionResult === 'function', 'Base family must expose submitSessionResult');
+    assert(typeof family.restartSession === 'function', 'Base family must expose restartSession');
+    assert(typeof family.resetSession === 'function', 'Base family must expose resetSession');
+    assert(typeof family.getSessionState === 'function', 'Base family must expose getSessionState');
+    assert(typeof family.destroySession === 'function', 'Base family must expose destroySession');
+    assert(family.getSessionState() === null, 'getSessionState should return null before configuration');
+
+    family.startSession();
+    family.submitSessionResult({ correct: true, durationMs: 5 });
+    family.restartSession();
+    family.resetSession();
+    family.destroySession();
+
+    assert(family.getSessionState() === null, 'No-session APIs should remain safe no-ops');
+    console.log('Session API exposure and no-config behavior test passed');
+}
+
+function testConfigureSessionAndProgression() {
+    const doc = createFakeDocument();
+    const family = createBaseActivityFamily(createValidConfig(doc));
+    let renderedRound = null;
+    let startedRound = null;
+    let completedRounds = 0;
+    let sessionCompleted = false;
+
+    family.configureSession({
+        totalRounds: 2,
+        onRenderRound: (round) => { renderedRound = round; },
+        onRoundStart: (round) => { startedRound = round; },
+        onRoundComplete: () => { completedRounds += 1; },
+        onSessionComplete: () => { sessionCompleted = true; }
+    });
+
+    const initialState = family.getSessionState();
+    assert(initialState !== null, 'configureSession should create a session controller');
+    assert(initialState.started === false, 'Configured session should not auto-start');
+
+    family.startSession();
+    let state = family.getSessionState();
+    assert(state.started === true, 'startSession should start the session');
+    assert(state.round === 1, 'startSession should begin at round 1');
+    assert(startedRound === 1, 'onRoundStart should fire for the first round');
+    assert(renderedRound === 1, 'onRenderRound should fire for the first round');
+
+    family.submitSessionResult({ correct: true, durationMs: 5 });
+
+    setTimeout(() => {
+        state = family.getSessionState();
+        assert(state.round === 2, 'Correct result should advance to the next round');
+        assert(state.correct === 1, 'Correct count should increment');
+        assert(completedRounds === 1, 'onRoundComplete should fire for the completed round');
+
+        family.submitSessionResult({ correct: true, durationMs: 5 });
+
+        setTimeout(() => {
+            state = family.getSessionState();
+            assert(state.completed === true, 'Final correct result should complete the session');
+            assert(state.correct === 2, 'Final correct result should update counts');
+            assert(sessionCompleted === true, 'onSessionComplete should fire at completion');
+            const completionSurface = findByTestId(family.shell, 'siraash-completion-surface');
+            assert(completionSurface !== null, 'Session completion should use the shared completion surface');
+            console.log('Configure session and progression test passed');
+        }, 20);
+    }, 20);
+}
+
+function testRestartResetAndDestroySessionLifecycle() {
+    const doc = createFakeDocument();
+    const family = createBaseActivityFamily(createValidConfig(doc));
+
+    family.configureSession({
+        totalRounds: 2,
+        onRenderRound: () => {}
+    });
+    family.startSession();
+    family.submitSessionResult({ correct: true, durationMs: 5 });
+
+    setTimeout(() => {
+        family.restartSession();
+        let state = family.getSessionState();
+        assert(state.round === 1, 'restartSession should return the session to round 1');
+        assert(state.correct === 0, 'restartSession should reset correct counts');
+
+        family.resetSession();
+        state = family.getSessionState();
+        assert(state.started === false, 'resetSession should clear started state');
+        assert(state.round === 0, 'resetSession should clear active round state');
+
+        family.destroySession();
+        assert(family.getSessionState() === null, 'destroySession should fully tear down the session');
+        console.log('Restart/reset/destroy session lifecycle test passed');
+    }, 20);
+}
+
+function testResetAndDestroyAlsoManageConfiguredSession() {
+    const doc = createFakeDocument();
+    const config = createValidConfig(doc);
+    const container = doc.createElement('div');
+    config.container = container;
+    const family = createBaseActivityFamily(config);
+    family.mount();
+
+    family.configureSession({
+        totalRounds: 1,
+        onRenderRound: () => {}
+    });
+    family.startSession();
+
+    family.reset();
+    const stateAfterReset = family.getSessionState();
+    assert(stateAfterReset !== null, 'reset should not destroy configured session');
+    assert(stateAfterReset.started === false, 'reset should reset configured session state');
+
+    family.destroy();
+    assert(family.getSessionState() === null, 'destroy should destroy configured session');
+    assert(container.children.length === 0, 'destroy should still unmount the shell');
+    console.log('Reset and destroy configured session management test passed');
+}
+
+function testSpecializedFamiliesExposeSessionApis() {
+    const doc = createFakeDocument();
+    const families = [
+        createChoiceActivityFamily(createValidConfig(doc)),
+        createGridActivityFamily(createValidConfig(doc)),
+        createQuestionAnswerActivityFamily(createValidConfig(doc))
+    ];
+
+    families.forEach(family => {
+        assert(typeof family.configureSession === 'function', `${family.familyType} family must expose configureSession`);
+        assert(typeof family.startSession === 'function', `${family.familyType} family must expose startSession`);
+        assert(typeof family.submitSessionResult === 'function', `${family.familyType} family must expose submitSessionResult`);
+        assert(typeof family.restartSession === 'function', `${family.familyType} family must expose restartSession`);
+        assert(typeof family.resetSession === 'function', `${family.familyType} family must expose resetSession`);
+        assert(typeof family.getSessionState === 'function', `${family.familyType} family must expose getSessionState`);
+        assert(typeof family.destroySession === 'function', `${family.familyType} family must expose destroySession`);
+    });
+
+    console.log('Specialized family session API exposure test passed');
+}
+
 function testOutcomePipelineIntegration() {
     const doc = createFakeDocument();
     const config = createValidConfig(doc);
@@ -367,6 +513,11 @@ export function runAllTests() {
     testGridFamilySpecialization();
     testQuestionAnswerFamilySpecialization();
     testResetAndDestroyLifecycle();
+    testSessionApiExposureAndNoConfigBehavior();
+    testConfigureSessionAndProgression();
+    testRestartResetAndDestroySessionLifecycle();
+    testResetAndDestroyAlsoManageConfiguredSession();
+    testSpecializedFamiliesExposeSessionApis();
     testOutcomePipelineIntegration();
     testFamilyDefaultModes();
     console.log('=== All Activity Families Unit Tests Passed ===');

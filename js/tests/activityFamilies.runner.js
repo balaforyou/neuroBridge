@@ -8,7 +8,7 @@ function main() {
         setTimeout(() => {
             console.log('\nAll Activity Family API unit tests passed.');
             process.exit(0);
-        }, 30);
+        }, 120);
     } catch (error) {
         console.error('\nActivity Family API unit tests failed:');
         console.error(error.message);

@@ -1,6 +1,7 @@
 import { createActivityShell } from '../activityShell.js';
 import { createActivitySuccessIndicator } from '../activitySuccessIndicator.js';
 import { createActivityOutcomePipeline } from '../activityOutcomePipeline.js';
+import { createLearningSessionController } from '../learningSessionController.js';
 
 /**
  * Factory function creating a Base Activity Family controller.
@@ -18,6 +19,8 @@ import { createActivityOutcomePipeline } from '../activityOutcomePipeline.js';
 export function createBaseActivityFamily(config = {}) {
     const ownerDocument = config.document || document;
     let isMounted = false;
+    let sessionController = null;
+    let sessionConfig = null;
 
     // Create the shared activity shell using standard platform API
     const shell = createActivityShell({
@@ -94,7 +97,51 @@ export function createBaseActivityFamily(config = {}) {
         }
     }
 
+    function configureSession(nextSessionConfig = {}) {
+        destroySession();
+        sessionConfig = { ...nextSessionConfig };
+        sessionController = createLearningSessionController({
+            totalRounds: sessionConfig.totalRounds,
+            currentLevel: sessionConfig.currentLevel,
+            outcomePipeline: pipeline,
+            completionSurface: shell?.completionSurface || null,
+            onRenderRound: sessionConfig.onRenderRound,
+            onRoundStart: sessionConfig.onRoundStart,
+            onRoundComplete: sessionConfig.onRoundComplete,
+            onLevelComplete: sessionConfig.onLevelComplete,
+            onSessionComplete: sessionConfig.onSessionComplete
+        });
+        return sessionController;
+    }
+
+    function startSession() {
+        sessionController?.start?.();
+    }
+
+    function submitSessionResult(result) {
+        sessionController?.submitResult?.(result);
+    }
+
+    function restartSession() {
+        sessionController?.restart?.();
+    }
+
+    function resetSession() {
+        sessionController?.reset?.();
+    }
+
+    function getSessionState() {
+        return sessionController?.getState?.() || null;
+    }
+
+    function destroySession() {
+        sessionController?.destroy?.();
+        sessionController = null;
+        sessionConfig = null;
+    }
+
     function reset() {
+        resetSession();
         clearFeedback();
         pipeline.clear();
         if (shell && typeof shell.hideCompletion === 'function') {
@@ -104,6 +151,7 @@ export function createBaseActivityFamily(config = {}) {
 
     function destroy() {
         reset();
+        destroySession();
         if (isMounted && shell && shell.parentNode) {
             shell.parentNode.removeChild(shell);
             isMounted = false;
@@ -119,6 +167,13 @@ export function createBaseActivityFamily(config = {}) {
         showMistake,
         clearFeedback,
         showCompletion,
+        configureSession,
+        startSession,
+        submitSessionResult,
+        restartSession,
+        resetSession,
+        getSessionState,
+        destroySession,
         reset,
         destroy,
         handleSuccess: (options) => pipeline.handleSuccess(options),

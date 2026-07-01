@@ -69,8 +69,13 @@ Description: Integrate the Activity Outcome Pipeline into the runtime Activity F
 
 ### NB-UX-005.1 Integrate Learning Session Controller into Runtime Activity Families
 
+Status: Done
+Description: Integrated the Learning Session Controller into the runtime Activity Family controller factories.
+
+### NB-UX-005.2 Migrate Directions to Runtime Family Session Flow
+
 Status: Ready
-Description: Integrate the Learning Session Controller into the runtime Activity Family controller factories.
+Description: Migrate Directions onto the runtime activity family session flow.
 
 ### NB-UX-006 Celebration Engine
 
