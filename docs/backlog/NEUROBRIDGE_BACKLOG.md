@@ -163,6 +163,18 @@ Description: Document learner interface families and shared layout expectations.
 Status: Backlog
 Description: Create a reusable learner UI compliance checklist for future packets.
 
+### NB-DOC-002 Design System README
+
+Status: Done
+Description: Created the canonical entry point and navigation guide for the NeuroBridge Design System.
+
+### NB-DOC-001 Design System Consolidation
+
+Priority: Low
+Milestone: Post V1
+Status: Backlog
+Description: Consolidate the design-system documentation after stable cross-activity reuse patterns are confirmed.
+
 ### NB-UI-002 Completion Screen Persistence Audit
 
 Priority: Unassigned
