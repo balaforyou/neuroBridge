@@ -123,40 +123,45 @@ Notes:
 Status: Done
 Description: Created the canonical learner experience constitution for NeuroBridge learner-facing activities.
 
-### NB-UX-002 Simple Learner Activity Tiles
+### NB-UX-002 Activity Family APIs
 
 Status: Backlog
-Description: Create simpler recognition-based learner activity tiles for the launcher.
+Description: Define shared APIs for learner activity families.
 
-### NB-UX-003 Activity UI Family Layout API
-
-Status: Backlog
-Description: Define shared layout APIs for activity UI families so common shells and task surfaces stay consistent.
-
-### NB-UX-004 Surface Tick Feedback Component
+### NB-UX-003 Surface Tick Component
 
 Status: Backlog
-Description: Create a reusable surface-level tick feedback component for brief learner acknowledgements.
+Description: Create a reusable surface tick feedback component.
 
-### NB-UX-005 Adaptive Transition Timing API
-
-Status: Backlog
-Description: Add a shared timing API for adaptive feedback and transition pacing across activity families.
-
-### NB-UX-006 Milestone Celebration Component
+### NB-UX-004 Adaptive Timing Engine
 
 Status: Backlog
-Description: Create a reusable milestone celebration component for meaningful completion moments.
+Description: Add a shared adaptive timing engine for learner-facing transitions and feedback.
 
-### NB-UX-007 Executive Control Scaffold Component
-
-Status: Backlog
-Description: Define reusable control scaffolds for learner recovery actions like Home, Play Again, and hint access.
-
-### NB-UX-008 Learner Completion Summary Simplification
+### NB-UX-005 Celebration Engine
 
 Status: Backlog
-Description: Simplify learner completion summaries so they stay calm, focused, and easy to scan.
+Description: Create a reusable celebration engine for milestone moments.
+
+### NB-UX-006 Executive Scaffold Engine
+
+Status: Backlog
+Description: Define reusable executive control scaffolds for learner recovery actions.
+
+### NB-UX-007 Learner Launcher
+
+Status: Backlog
+Description: Create a recognition-based learner launcher surface.
+
+### NB-UX-008 Activity Family Documentation
+
+Status: Backlog
+Description: Document learner interface families and shared layout expectations.
+
+### NB-UX-009 UX Compliance Checklist
+
+Status: Backlog
+Description: Create a reusable learner UI compliance checklist for future packets.
 
 ### NB-UI-002 Completion Screen Persistence Audit
 
