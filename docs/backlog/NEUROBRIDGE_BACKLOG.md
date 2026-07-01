@@ -24,8 +24,8 @@ Description: Created a unified shared feedback component for correct and mistake
 
 ### NB-UI-006.1 Migrate Directions to Shared Feedback Component
 
-Status: Ready
-Description: Move Directions to the shared activity feedback component once the shell composition path is validated.
+Status: Done
+Description: Moved Directions to the shared activity feedback component through the shared activity shell.
 
 ### ENGINEERING-MANIFEST-002 Platform First Principle Update
 

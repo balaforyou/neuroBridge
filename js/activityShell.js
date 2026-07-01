@@ -1,4 +1,4 @@
-import { renderSiraashFeedback } from './siraashFeedback.js';
+import { createActivityFeedback } from './activityFeedback.js';
 
 /**
  * Creates a standard SIRAASH Activity Shell.
@@ -143,6 +143,7 @@ export function createActivityShell(config = {}) {
     const feedbackZone = ownerDocument.createElement('section');
     feedbackZone.className = 'worksheet-shell__feedback min-h-[4rem] shrink-0';
     feedbackZone.setAttribute('data-testid', 'worksheet-feedback');
+    const feedback = createActivityFeedback({ container: feedbackZone, document: ownerDocument });
 
     // E. Grid Layout Controller
     const mainGrid = ownerDocument.createElement('main');
@@ -163,11 +164,16 @@ export function createActivityShell(config = {}) {
     };
 
     shell.showFeedback = (type) => {
-        feedbackZone.innerHTML = renderSiraashFeedback(type);
+        if (type === 'success') {
+            feedback.showSuccess();
+            return;
+        }
+
+        feedback.showMistake();
     };
 
     shell.clearFeedback = () => {
-        feedbackZone.innerHTML = '';
+        feedback.clear();
     };
 
     return shell;

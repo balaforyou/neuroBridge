@@ -22,8 +22,8 @@ export function createActivityFeedback(config = {}) {
         }
 
         root = ownerDocument.createElement('div');
-        root.setAttribute('data-testid', 'activity-feedback');
-        root.className = 'activity-feedback min-h-[4rem]';
+        root.setAttribute('data-testid', 'siraash-feedback');
+        root.className = 'siraash-feedback min-h-[4rem] mx-auto flex max-w-sm flex-col items-center justify-center rounded-2xl border-2 px-4 py-2 text-center shadow-sm';
         clearNodeChildren(container);
         container.appendChild(root);
         syncContainerMarkup(container, '');
@@ -36,11 +36,11 @@ export function createActivityFeedback(config = {}) {
             throw new Error(`Unsupported feedback type: ${type}`);
         }
 
-        const banner = ownerDocument.createElement('div');
-        banner.setAttribute('data-testid', `activity-feedback-${type}`);
+        const banner = ensureRoot();
+        banner.setAttribute('data-feedback-tone', type);
         banner.className = type === 'success'
-            ? 'siraash-feedback siraash-feedback--success mx-auto flex max-w-sm flex-col items-center justify-center rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-2 text-center text-emerald-950 shadow-sm'
-            : 'siraash-feedback siraash-feedback--mistake mx-auto flex max-w-sm flex-col items-center justify-center rounded-2xl border-2 border-amber-300 bg-amber-50 px-4 py-2 text-center text-amber-950 shadow-sm';
+            ? 'siraash-feedback siraash-feedback--success min-h-[4rem] mx-auto flex max-w-sm flex-col items-center justify-center rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-2 text-center text-emerald-950 shadow-sm'
+            : 'siraash-feedback siraash-feedback--mistake min-h-[4rem] mx-auto flex max-w-sm flex-col items-center justify-center rounded-2xl border-2 border-amber-300 bg-amber-50 px-4 py-2 text-center text-amber-950 shadow-sm';
 
         const title = ownerDocument.createElement('div');
         title.className = 'siraash-feedback__title text-lg sm:text-xl font-black leading-tight';
@@ -50,12 +50,9 @@ export function createActivityFeedback(config = {}) {
         messageNode.className = 'siraash-feedback__message mt-1 text-sm sm:text-base font-bold leading-snug';
         messageNode.textContent = message || DEFAULT_MESSAGES[type] || feedback.message;
 
+        clearNodeChildren(banner);
         banner.appendChild(title);
         banner.appendChild(messageNode);
-
-        const rootNode = ensureRoot();
-        clearNodeChildren(rootNode);
-        rootNode.appendChild(banner);
         syncContainerMarkup(container, messageMarkup(type, feedback.title, message || DEFAULT_MESSAGES[type] || feedback.message));
         visible = true;
     }
@@ -88,7 +85,7 @@ function getOwnerDocument() {
 }
 
 function messageMarkup(type, title, message) {
-    return `<div data-testid="activity-feedback-${type}" class="siraash-feedback">${title} ${message}</div>`;
+    return `<div data-testid="siraash-feedback" class="siraash-feedback siraash-feedback--${type}">${title} ${message}</div>`;
 }
 
 function syncContainerMarkup(container, markup) {

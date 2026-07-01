@@ -74,7 +74,7 @@ function testSuccessRendering() {
 
     feedback.showSuccess();
 
-    const banner = findByTestId(container, 'activity-feedback-success');
+    const banner = findByTestId(container, 'siraash-feedback');
     assert(banner, 'Success banner should render');
     assert(getText(banner).includes('Great work!'), 'Success title should use existing SIRAASH styling content');
     assert(getText(banner).includes('You found the answer.'), 'Success banner should use default success message');
@@ -88,7 +88,7 @@ function testMistakeRendering() {
 
     feedback.showMistake();
 
-    const banner = findByTestId(container, 'activity-feedback-mistake');
+    const banner = findByTestId(container, 'siraash-feedback');
     assert(banner, 'Mistake banner should render');
     assert(getText(banner).includes('You got close.'), 'Mistake title should use existing SIRAASH styling content');
     assert(getText(banner).includes('Try again.'), 'Mistake banner should use default mistake message');
@@ -114,12 +114,12 @@ function testClearKeepsReservedFrame() {
     const feedback = createActivityFeedback({ container, document: documentRef });
 
     feedback.showSuccess();
-    const frame = findByTestId(container, 'activity-feedback');
+    const frame = findByTestId(container, 'siraash-feedback');
     assert(frame, 'Reserved feedback frame should exist after rendering');
 
     feedback.clear();
     assert(feedback.isVisible() === false, 'clear() should hide feedback');
-    assert(findByTestId(container, 'activity-feedback'), 'clear() should keep the reserved feedback frame');
+    assert(findByTestId(container, 'siraash-feedback'), 'clear() should keep the reserved feedback frame');
     assert(getText(container).trim() === '', 'clear() should remove visible feedback content');
     console.log('Activity feedback clear lifecycle test passed');
 }
