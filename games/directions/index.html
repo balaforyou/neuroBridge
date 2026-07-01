@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="h-screen w-screen overflow-hidden bg-[#edf8f3] text-slate-950 select-none">
+    <main class="flex h-full w-full flex-col gap-2 p-2 sm:gap-3 sm:p-3">
+        <header class="shrink-0 rounded-2xl border-2 border-emerald-200 bg-gradient-to-r from-[#fff7df] via-[#e2f6ee] to-[#dff1fb] px-3 py-2 shadow-sm sm:px-5 sm:py-3">
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0 flex items-center gap-2 sm:gap-3">
+                    <button id="home-button" class="min-h-[44px] shrink-0 rounded-full border-2 border-emerald-200 bg-white/80 px-3 py-2 text-sm font-black text-emerald-900 shadow-sm transition hover:bg-emerald-50 focus:outline-none focus:ring-4 focus:ring-emerald-300/70 sm:text-base">
+                        <span aria-hidden="true">&#127968;</span>
+                        <span class="hidden sm:inline">Home</span>
+                    </button>
+
+                    <div aria-label="SIRAASH" class="shrink-0 rounded-full border-2 border-emerald-300 bg-emerald-100/90 px-3 py-1.5 text-lg font-black tracking-[0.12em] text-emerald-900 shadow-sm sm:text-2xl">
+                        SIRAASH
+                    </div>
+
+                    <div class="min-w-0">
+                        <div class="text-xs font-black uppercase tracking-[0.12em] text-emerald-800 sm:text-sm">Activity</div>
+                        <h1 class="truncate text-lg font-black text-slate-950 sm:text-2xl">Directions</h1>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="min-h-0 flex-1 rounded-3xl border-4 border-cyan-200 bg-[#fffaf0] p-2 shadow-xl sm:p-3">
+            <div id="directions-root" class="h-full min-h-0 w-full"></div>
+        </section>
+    </main>
+
+    <script type="module" src="./game.js"></script>
+</body>
+</html>

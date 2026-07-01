@@ -19,7 +19,8 @@ export const GAME_IDS = {
     PATTERN_MEMORY: 'patternMemory',
     KUMON_QUIZ: 'kumonQuiz',
     SCHULTE: 'schulte',
-    SOCIAL_DETECTIVE: 'socialDetective'
+    SOCIAL_DETECTIVE: 'socialDetective',
+    DIRECTIONS: 'directions'
 };
 
 export const DEFAULT_GAME_CONFIG = {

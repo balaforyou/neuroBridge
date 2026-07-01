@@ -944,3 +944,19 @@ test.describe('Matrix Reasoning viewport smoke', () => {
         });
     }
 });
+
+test.describe('Directions viewport smoke', () => {
+    for (const viewport of TEST_VIEWPORTS) {
+        test(`keeps layout visible at ${viewport.name}`, async ({ page }) => {
+            await page.setViewportSize({ width: viewport.width, height: viewport.height });
+            await page.goto('/games/directions/');
+            await initializeActivity(page);
+
+            await expect(page.getByLabel('SIRAASH')).toBeVisible();
+            await expect(page.locator('header h1')).toHaveText('Directions');
+            await expect(page.getByTestId('directions-card-grid')).toBeVisible();
+            await expect(page.locator('[data-choice]')).toHaveCount(4);
+            await expectNoPageScrollbar(page);
+        });
+    }
+});

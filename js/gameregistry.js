@@ -244,6 +244,34 @@ export const GAME_REGISTRY = [
         supportsDifficulty: false,
         dashboardViewType: DASHBOARD_VIEW_TYPES.SUMMARY_WITH_CORRECTIONS,
         version: '0.0.0'
+    },
+    {
+        gameId: GAME_IDS.DIRECTIONS,
+        id: GAME_IDS.DIRECTIONS,
+        name: 'Directions',
+        title: 'Directions',
+        category: 'Attention',
+        learnerName: 'Spatial Compass',
+        icon: '🧭',
+        status: ACTIVITY_STATUS.AVAILABLE,
+        identityClass: 'from-blue-100 via-sky-50 to-emerald-50 border-blue-300',
+        iconClass: 'from-blue-300 via-sky-200 to-emerald-200',
+        actionClass: 'bg-blue-600 group-hover:bg-blue-500',
+        folder: 'directions',
+        enabled: true,
+        domain: 'attention',
+        description: 'Follow spatial directions and orient arrows or visual coordinates.',
+        skills: [
+            'visual-search',
+            'working-memory'
+        ],
+        maxStage: 1,
+        maxLevel: 1,
+        maxDifficulty: 1,
+        supportsScaffolds: true,
+        supportsDifficulty: false,
+        dashboardViewType: DASHBOARD_VIEW_TYPES.SUMMARY_WITH_CORRECTIONS,
+        version: '1.0.0'
     }
 ];
 
