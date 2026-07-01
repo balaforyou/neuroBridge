@@ -67,6 +67,16 @@ Description: Migrate the Directions activity to use the standard SIRAASH Choice 
 Status: Ready
 Description: Integrate the Activity Outcome Pipeline into the runtime Activity Family controller factories.
 
+### NB-UX-005.1 Integrate Learning Session Controller into Runtime Activity Families
+
+Status: Ready
+Description: Integrate the Learning Session Controller into the runtime Activity Family controller factories.
+
+### NB-UX-006 Celebration Engine
+
+Status: Ready
+Description: Create a reusable celebration engine for milestone moments.
+
 ### NB-WS-001.2 Attribute Matching Worksheet V1
 
 Status: Ready
@@ -147,22 +157,17 @@ Description: Created a reusable surface-scoped success indicator for learner-fac
 
 
 
-### NB-UX-005 Adaptive Timing Engine
+### NB-UX-007 Adaptive Timing Engine
 
 Status: Ready
 Description: Add a shared adaptive timing engine for learner-facing transitions and feedback.
 
-### NB-UX-006 Celebration Engine
-
-Status: Ready
-Description: Create a reusable celebration engine for milestone moments.
-
-### NB-UX-007 Executive Scaffold Engine
+### NB-UX-008 Executive Scaffold Engine
 
 Status: Ready
 Description: Define reusable executive control scaffolds for learner recovery actions.
 
-### NB-UX-008 Learning Support Panel
+### NB-UX-009 Learning Support Panel
 
 Status: Ready
 Description: Create a reusable shared Learning Support Panel for Question & Answer activities.
@@ -378,6 +383,12 @@ Status: Deferred
 ## Done
 
 Completed feature IDs and closure notes.
+
+### NB-UX-005 Learning Session Controller
+
+Status: Done
+
+Closure note: Implemented the platform-owned `learningSessionController.js` responsible for orchestrating the learner journey. It manages session state (rounds, levels, counts), progression flow, and persists the completion surface display. It features input guards to reject submissions when the session is unstarted, completed, or busy. Added comprehensive tests in `js/tests/learningSessionController.test.js` validating lifecycles, progression, and guards, with a runner script integrated into the node suite.
 
 ### NB-UX-004.1 Activity Outcome Pipeline
 
